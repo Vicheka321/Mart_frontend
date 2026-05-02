@@ -13,7 +13,7 @@ import 'dart:io';
 class ApiService {
   final String baseUrl = 'http://10.0.2.2:8000/api';
 
-  // ==============fetch Banners=================
+  // ==============Products=================
   Future<List<BannersModel>> fetchBanners() async {
     try {
       final response = await http.get(
@@ -34,7 +34,6 @@ class ApiService {
     }
   }
 
-  // ===============fetch Categories=================
   Future<List<CategoriesModel>> fetchCategories() async {
     try {
       final response = await http.get(
@@ -55,7 +54,6 @@ class ApiService {
     }
   }
 
-  // ===============fetch Best Seller=================
   Future<List<BestSellerModel>> fetchBestSellers() async {
     try {
       final response = await http.get(
@@ -76,7 +74,6 @@ class ApiService {
     }
   }
 
-  // ===================fetch New Arrivals=================
   Future<List<NewArrivalsModel>> fetchNewArrivals() async {
     try {
       final response = await http.get(
@@ -97,7 +94,6 @@ class ApiService {
     }
   }
 
-  // ======================fetch Recommended=================
   Future<List<RecommendedModel>> fetchRecommended() async {
     try {
       final response = await http.get(
@@ -183,7 +179,47 @@ class ApiService {
     }
   }
 
-  // ==============Check Login Status=================
+  Future<List<AllbestsellersModel>> fetchAllBestSellers() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/all-best-sellers'),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('all_best_sellers_cache', response.body);
+        return allbestsellersModelFromJson(response.body);
+      } else {
+        throw Exception('Failed to load best sellers: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<List<AllnewarrivalsModel>> fetchAllNewArrivals() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/all-new-arrivals'),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('all_new_arrivals_cache', response.body);
+        return allnewarrivalsModelFromJson(response.body);
+      } else {
+        throw Exception('Failed to load new arrivals: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  // ============== Auth =================
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -196,14 +232,11 @@ class ApiService {
     return true;
   }
 
-  // ===============logout==================
-
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove("token");
   }
 
-  // =================send OTP=================
   Future<Map<String, dynamic>> sendEmailOtp({required String email}) async {
     try {
       final response = await http.post(
@@ -212,7 +245,6 @@ class ApiService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        // body: jsonEncode({"country_code": countryCode, "phone": phone}),
         body: jsonEncode({"email": email}),
       );
 
@@ -227,7 +259,6 @@ class ApiService {
       throw Exception(e.toString());
     }
   }
-  // =================verify OTP=================
 
   Future<Map<String, dynamic>> verifyEmailOtp({
     required String email,
@@ -262,6 +293,25 @@ class ApiService {
     }
   }
 
+  Future<List<AllrecommendedModel>> fetchAllRecommended() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/all-recommended'),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('all_recommended_cache', response.body);
+        return allrecommendedModelFromJson(response.body);
+      } else {
+        throw Exception('Failed to load recommended: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
   // ==================update profile=================
 
   Future<Map<String, dynamic>> updateProfile({
@@ -351,8 +401,6 @@ class ApiService {
     }
   }
 
-  // ======================= update cart=================
-
   Future updateCart({required int productId, required int quantity}) async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -386,7 +434,7 @@ class ApiService {
       }
 
       final response = await http.get(
-        Uri.parse("$baseUrl/card"),
+        Uri.parse("$baseUrl/cart"),
         headers: {
           "Authorization": "Bearer $token",
           "Accept": "application/json",
@@ -400,6 +448,22 @@ class ApiService {
       throw Exception("Failed load cart");
     } catch (e) {
       throw Exception(e.toString());
+    }
+  }
+
+  Future<int> getCartQuantity({required int productId}) async {
+    try {
+      final cart = await getCart();
+
+      try {
+        final item = cart.items.firstWhere((e) => e.productId == productId);
+
+        return item.qty;
+      } catch (_) {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
     }
   }
 
@@ -427,82 +491,6 @@ class ApiService {
       }
 
       return false;
-    } catch (e) {
-      throw Exception(e.toString());
-    }
-  }
-
-  Future<int> getCartQuantity({required int productId}) async {
-    try {
-      final cart = await getCart();
-
-      try {
-        final item = cart.items.firstWhere((e) => e.productId == productId);
-
-        return item.qty;
-      } catch (_) {
-        return 0;
-      }
-    } catch (e) {
-      return 0;
-    }
-  }
-
-  Future<List<AllbestsellersModel>> fetchAllBestSellers() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/all-best-sellers'),
-        headers: {"Accept": "application/json"},
-      );
-
-      if (response.statusCode == 200) {
-        final prefs = await SharedPreferences.getInstance();
-
-        await prefs.setString('all_best_sellers_cache', response.body);
-        return allbestsellersModelFromJson(response.body);
-      } else {
-        throw Exception('Failed to load best sellers: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception(e.toString());
-    }
-  }
-
-  Future<List<AllnewarrivalsModel>> fetchAllNewArrivals() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/all-new-arrivals'),
-        headers: {"Accept": "application/json"},
-      );
-
-      if (response.statusCode == 200) {
-        final prefs = await SharedPreferences.getInstance();
-
-        await prefs.setString('all_new_arrivals_cache', response.body);
-        return allnewarrivalsModelFromJson(response.body);
-      } else {
-        throw Exception('Failed to load new arrivals: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception(e.toString());
-    }
-  }
-
-  Future<List<AllrecommendedModel>> fetchAllRecommended() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/all-recommended'),
-        headers: {"Accept": "application/json"},
-      );
-
-      if (response.statusCode == 200) {
-        final prefs = await SharedPreferences.getInstance();
-
-        await prefs.setString('all_recommended_cache', response.body);
-        return allrecommendedModelFromJson(response.body);
-      } else {
-        throw Exception('Failed to load recommended: ${response.statusCode}');
-      }
     } catch (e) {
       throw Exception(e.toString());
     }

@@ -438,18 +438,8 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Discover',
-            style: TextStyle(
-              fontSize: 23,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF1A1A1A),
-              letterSpacing: -0.5,
-            ),
-          ),
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          
         ],
       ),
     );
@@ -771,29 +761,12 @@ class _BrandsHeader extends StatelessWidget {
           Row(
             children: [
               const Text(
-                'Top Brands',
+                'Brands',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF1A1A1A),
                   letterSpacing: -0.3,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF6B35),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'HOT',
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
                 ),
               ),
             ],

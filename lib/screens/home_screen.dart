@@ -7,6 +7,8 @@ import '../models/bannersModel.dart';
 import '../models/categoriesModel.dart';
 import '../models/productsModel.dart';
 import '../services/api_service.dart';
+import '../widgets/categories_bottom_sheet.dart';
+import '../widgets/floating_cart_bar.dart';
 import '../widgets/product_detail_screen.dart';
 import '../widgets/product_list_screen.dart';
 
@@ -417,7 +419,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   // ── 3. Categories ───────────────────────────────────
                   _SectionHeader(
                     title: 'Categories',
-                    onTap: () {},
+                    onTap: () {
+                      openCategoryBottomSheet(context);
+                    },
                     colors: colors,
                   ),
                   FutureBuilder<List<CategoriesModel>>(
@@ -708,6 +712,7 @@ class _HeaderActionButton extends StatelessWidget {
                 ),
               ),
             ),
+          
         ],
       ),
     );
@@ -1008,7 +1013,7 @@ class _ProductGrid extends StatelessWidget {
         children: products.take(2).map((p) {
           return Expanded(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: s * .015),
+              padding: EdgeInsets.symmetric(horizontal: s * .030),
               child: _ProductCard(
                 product: p,
                 tag: tag,
@@ -1145,7 +1150,7 @@ class _ProductCardState extends State<_ProductCard> {
   @override
   Widget build(BuildContext context) {
     final shortest = MediaQuery.of(context).size.shortestSide;
-    final radius = shortest * .04;
+    final radius = shortest * .025;
     final imageHeight = shortest * .35;
     final titleSize = shortest * .031;
     final smallText = shortest * .026;
@@ -1161,7 +1166,7 @@ class _ProductCardState extends State<_ProductCard> {
         decoration: BoxDecoration(
           color: widget.colors.cardBg,
           borderRadius: BorderRadius.circular(radius),
-          border: Border.all(color: widget.colors.border, width: .5),
+          // border: Border.all(color: widget.colors.border, width: .5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1222,7 +1227,6 @@ class _ProductCardState extends State<_ProductCard> {
               width: double.infinity,
               padding: EdgeInsets.all(shortest * .025),
               decoration: BoxDecoration(
-                color: widget.colors.bginfo,
                 borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(radius),
                 ),
@@ -1453,7 +1457,7 @@ class _RecommendedRowState extends State<_RecommendedRow> {
     final s = MediaQuery.of(context).size.shortestSide;
     final cardWidth = s * .30;
     final imageSize = cardWidth * .85;
-    final radius = s * .04;
+    final radius = s * .025;
 
     return SizedBox(
       height: imageSize + s * .16,
@@ -1481,7 +1485,7 @@ class _RecommendedRowState extends State<_RecommendedRow> {
               decoration: BoxDecoration(
                 color: widget.colors.cardBg,
                 borderRadius: BorderRadius.circular(radius),
-                border: Border.all(color: widget.colors.border, width: .5),
+                // border: Border.all(color: widget.colors.border, width: .5),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1566,7 +1570,7 @@ class _RecommendedRowState extends State<_RecommendedRow> {
                         s * .024,
                       ),
                       decoration: BoxDecoration(
-                        color: widget.colors.bginfo,
+                        // color: widget.colors.bginfo,
                         borderRadius: BorderRadius.vertical(
                           bottom: Radius.circular(radius),
                         ),

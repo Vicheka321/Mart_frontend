@@ -29,42 +29,106 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final s = MediaQuery.of(context).size.shortestSide;
 
     return Scaffold(
-      backgroundColor: colors.surface,
-      appBar: AppBar(
-        title: Text(widget.title),
-        backgroundColor: colors.cardBg,
-        foregroundColor: colors.text1,
-        elevation: 0,
-      ),
-      body: FutureBuilder<List<dynamic>>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const _LoadingState();
-          }
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _Header(title: widget.title),
 
-          if (snapshot.hasError) {
-            return Center(child: Text("Error"));
-          }
+            Expanded(
+              child: FutureBuilder<List<dynamic>>(
+                future: _future,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const _LoadingState();
+                  }
 
-          final products = snapshot.data ?? [];
+                  if (snapshot.hasError) {
+                    return const Center(child: Text("Error"));
+                  }
 
-          return ListView.builder(
-            padding: EdgeInsets.all(s * 0.04),
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              return _ProductCardList(product: products[index], index: index);
-            },
-          );
-        },
+                  final products = snapshot.data ?? [];
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                    itemCount: products.length,
+                    itemBuilder: (context, index) {
+                      return _ProductCardList(
+                        product: products[index],
+                        index: index,
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
+////////////////////////////////////////////////////////////
+/// HEADER (same style as code 1)
+////////////////////////////////////////////////////////////
+class _Header extends StatelessWidget {
+  final String title;
+
+  const _Header({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final s = MediaQuery.of(context).size.shortestSide;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(s * 0.04, s * 0.03, s * 0.04, s * 0.02),
+      child: SizedBox(
+        height: s * 0.12,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: s * 0.11,
+                  height: s * 0.11,
+                  decoration: BoxDecoration(
+                    color: colors.cardBg,
+                    borderRadius: BorderRadius.circular(s * 0.3),
+                  ),
+                  child: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: s * 0.04,
+                    color: colors.text1,
+                  ),
+                ),
+              ),
+            ),
+
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: s * 0.055,
+                fontWeight: FontWeight.w700,
+                color: colors.text1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+////////////////////////////////////////////////////////////
+/// PRODUCT CARD (NOW SAME AS CODE 1)
+////////////////////////////////////////////////////////////
 class _ProductCardList extends StatefulWidget {
   final dynamic product;
   final int index;
@@ -80,20 +144,81 @@ class _ProductCardListState extends State<_ProductCardList>
   int _qty = 0;
   bool _loading = false;
 
-  Future<void> _handleAddTap() async {
-    setState(() => _qty = 1);
-    await ApiService().addToCart(productId: widget.product.id, quantity: 1);
+  late AnimationController _controller;
+  late Animation<Offset> _slide;
+  late Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.15),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+    _fade = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    Future.delayed(Duration(milliseconds: widget.index * 60), () {
+      if (mounted) _controller.forward();
+    });
+
+    _loadCartQty();
   }
 
-  Future<void> _setQty(int q) async {
-    setState(() => _qty = q);
+  Future<void> _loadCartQty() async {
+    try {
+      final qty = await ApiService().getCartQuantity(
+        productId: widget.product.id,
+      );
+      if (mounted) setState(() => _qty = qty);
+    } catch (_) {}
+  }
 
-    if (q <= 0) {
-      await ApiService().removeCart(widget.product.id);
-      setState(() => _qty = 0);
-    } else {
-      await ApiService().updateCart(productId: widget.product.id, quantity: q);
+  Future<void> _handleAddTap() async {
+    final oldQty = _qty;
+    setState(() => _qty = 1);
+
+    try {
+      await ApiService().addToCart(productId: widget.product.id, quantity: 1);
+    } catch (_) {
+      setState(() => _qty = oldQty);
     }
+  }
+
+  Future<void> _setQty(int newQty) async {
+    final prev = _qty;
+    setState(() => _qty = newQty < 0 ? 0 : newQty);
+
+    try {
+      if (newQty <= 0) {
+        await ApiService().removeCart(widget.product.id);
+        setState(() => _qty = 0);
+      } else {
+        await ApiService().updateCart(
+          productId: widget.product.id,
+          quantity: newQty,
+        );
+      }
+    } catch (_) {
+      setState(() => _qty = prev);
+    }
+  }
+
+  bool get _isLowStock => widget.product.quantity < 20;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -102,148 +227,172 @@ class _ProductCardListState extends State<_ProductCardList>
     final colors = context.colors;
     final s = MediaQuery.of(context).size.shortestSide;
 
-    final imageSize = s * 0.26;
-    final fontTitle = s * 0.04;
+    /// ✅ EXACT SAME SIZES AS CODE 1
+    final imageSize = s * 0.24;
+    final gap = s * 0.03;
+    final fontTitle = s * 0.035;
     final fontSmall = s * 0.03;
-    final fontPrice = s * 0.045;
-    final cartSize = s * 0.085;
+    final fontPrice = s * 0.040;
+    final cartSize = s * 0.075;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ProductDetailScreen(productId: p.id),
-          ),
-        );
-      },
-      child: Container(
-        margin: EdgeInsets.only(bottom: s * 0.03),
-        padding: EdgeInsets.all(s * 0.025),
-        decoration: BoxDecoration(
-          color: colors.cardBg,
-          borderRadius: BorderRadius.circular(s * 0.04),
-        ),
-        child: Row(
-          children: [
-            // 🖼 IMAGE
-            Stack(
+    return FadeTransition(
+      opacity: _fade,
+      child: SlideTransition(
+        position: _slide,
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ProductDetailScreen(productId: p.id),
+              ),
+            );
+          },
+          child: Container(
+            margin: EdgeInsets.only(bottom: s * 0.03),
+            padding: EdgeInsets.all(s * 0.025),
+            decoration: BoxDecoration(
+              color: colors.cardBg,
+              borderRadius: BorderRadius.circular(s * 0.04),
+            ),
+            child: Row(
               children: [
+                /// IMAGE
                 ClipRRect(
                   borderRadius: BorderRadius.circular(s * 0.03),
-                  child: Image.network(
-                    p.images.first,
-                    width: imageSize,
-                    height: imageSize,
-                    fit: BoxFit.cover,
-                  ),
+                  child: p.images.isNotEmpty
+                      ? Image.network(
+                          p.images.first,
+                          width: imageSize,
+                          height: imageSize,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          width: imageSize,
+                          height: imageSize,
+                          color: colors.surface2,
+                          child: Icon(Icons.image, color: colors.text3),
+                        ),
                 ),
 
-                // 🔥 DISCOUNT
-                if (p.discount != null)
-                  Positioned(
-                    top: 6,
-                    left: 6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colors.flashText,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        "-${p.discount}",
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+                SizedBox(width: gap),
 
-            SizedBox(width: s * 0.03),
-
-            // 📄 INFO
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // NAME
-                  Text(
-                    p.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: fontTitle,
-                      fontWeight: FontWeight.w600,
-                      color: colors.text1,
-                    ),
-                  ),
-
-                  SizedBox(height: s * 0.01),
-
-                  // CATEGORY + BRAND
-                  Text(
-                    "${p.categoryName ?? ''} • ${p.brandName ?? ''}",
-                    style: TextStyle(fontSize: fontSmall, color: colors.text2),
-                  ),
-
-                  SizedBox(height: s * 0.01),
-
-                  // PRICE
-                  Row(
+                /// INFO (MATCHED TO CODE 1)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "\$${p.finalPrice}",
+                        p.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: fontPrice,
-                          color: colors.accent,
-                          fontWeight: FontWeight.bold,
+                          fontSize: fontTitle,
+                          fontWeight: FontWeight.w600,
+                          color: colors.text1,
                         ),
                       ),
-                      if (p.discount != null) ...[
-                        SizedBox(width: 6),
-                        Text(
-                          "\$${p.salePrice}",
-                          style: TextStyle(
-                            fontSize: fontSmall,
-                            color: colors.text3,
-                            decoration: TextDecoration.lineThrough,
+
+                      SizedBox(height: s * 0.01),
+
+                      Row(
+                        children: [
+                          Text(
+                            "${p.categoryName ?? 'Unknown'}",
+                            style: TextStyle(
+                              fontSize: fontSmall,
+                              color: colors.text2,
+                            ),
                           ),
+                          Text(
+                            " | ",
+                            style: TextStyle(
+                              fontSize: fontSmall,
+                              color: colors.text3,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              "${p.brandName ?? 'No Brand'}",
+                              style: TextStyle(
+                                fontSize: fontSmall,
+                                color: colors.accent,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: s * 0.01),
+
+                      Text(
+                        p.description ?? "",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: fontSmall,
+                          color: colors.text3,
                         ),
-                      ],
+                      ),
+
+                      SizedBox(height: s * 0.015),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Row(
+                              children: [
+                                Text(
+                                  "\$${p.finalPrice}",
+                                  style: TextStyle(
+                                    fontSize: fontPrice,
+                                    color: colors.accent,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                if (p.discount != null) ...[
+                                  SizedBox(width: s * 0.02),
+                                  Text(
+                                    "\$${p.salePrice}",
+                                    style: TextStyle(
+                                      fontSize: fontSmall,
+                                      color: colors.text3,
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+
+                          _CartStepper(
+                            qty: _qty,
+                            loading: _loading,
+                            s: cartSize,
+                            colors: colors,
+                            onAdd: _handleAddTap,
+                            onIncrement: () => _setQty(_qty + 1),
+                            onDecrement: () => _setQty(_qty - 1),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-
-                  SizedBox(height: s * 0.015),
-
-                  // 🛒 CART
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: _CartStepper(
-                      qty: _qty,
-                      loading: _loading,
-                      s: cartSize,
-                      colors: colors,
-                      onAdd: _handleAddTap,
-                      onIncrement: () => _setQty(_qty + 1),
-                      onDecrement: () => _setQty(_qty - 1),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
+////////////////////////////////////////////////////////////
+/// CART BUTTON
+////////////////////////////////////////////////////////////
 class _CartStepper extends StatelessWidget {
   final int qty;
   final bool loading;

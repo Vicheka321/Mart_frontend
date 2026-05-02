@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mart_frontend/widgets/mycart.dart';
-import '../../auth/login_register_screen.dart';
 import '../home_screen.dart';
 import '../categories_screen.dart';
 import '../orders_screen.dart';
@@ -75,7 +74,7 @@ class _FloatingNavBar extends StatelessWidget {
           decoration: BoxDecoration(
             color: colors.cardBg,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: colors.border, width: 1),
+            border: Border.all(color: colors.accent, width: 1),
             boxShadow: [
               BoxShadow(
                 blurRadius: 20,

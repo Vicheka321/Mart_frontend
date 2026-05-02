@@ -320,12 +320,12 @@ class _ProductCardState extends State<_ProductCard>
     final s = MediaQuery.of(context).size.shortestSide;
 
     // 🔧 Responsive scale
-    final imageSize = s * 0.26;
+    final imageSize = s * 0.24;
     final gap = s * 0.03;
-    final fontTitle = s * 0.04;
+    final fontTitle = s * 0.035;
     final fontSmall = s * 0.03;
-    final fontPrice = s * 0.045;
-    final cartSize = s * 0.085;
+    final fontPrice = s * 0.040;
+    final cartSize = s * 0.075;
 
     return FadeTransition(
       opacity: _opacityAnimation,

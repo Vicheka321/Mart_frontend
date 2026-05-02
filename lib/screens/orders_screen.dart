@@ -36,52 +36,77 @@ enum OrderStatus { pending, processing, shipping, delivered, cancelled }
 extension OrderStatusExt on OrderStatus {
   String get label {
     switch (this) {
-      case OrderStatus.pending:     return 'Pending';
-      case OrderStatus.processing:  return 'Processing';
-      case OrderStatus.shipping:    return 'Shipping';
-      case OrderStatus.delivered:   return 'Delivered';
-      case OrderStatus.cancelled:   return 'Cancelled';
+      case OrderStatus.pending:
+        return 'Pending';
+      case OrderStatus.processing:
+        return 'Processing';
+      case OrderStatus.shipping:
+        return 'Shipping';
+      case OrderStatus.delivered:
+        return 'Delivered';
+      case OrderStatus.cancelled:
+        return 'Cancelled';
     }
   }
 
   Color get color {
     switch (this) {
-      case OrderStatus.pending:     return const Color(0xFFF59E0B);
-      case OrderStatus.processing:  return const Color(0xFF8B5CF6);
-      case OrderStatus.shipping:    return const Color(0xFF3B82F6);
-      case OrderStatus.delivered:   return const Color(0xFF10B981);
-      case OrderStatus.cancelled:   return const Color(0xFFEF4444);
+      case OrderStatus.pending:
+        return const Color(0xFFF59E0B);
+      case OrderStatus.processing:
+        return const Color(0xFF8B5CF6);
+      case OrderStatus.shipping:
+        return const Color(0xFF3B82F6);
+      case OrderStatus.delivered:
+        return const Color(0xFF10B981);
+      case OrderStatus.cancelled:
+        return const Color(0xFFEF4444);
     }
   }
 
   Color get bgColor {
     switch (this) {
-      case OrderStatus.pending:     return const Color(0xFFFEF3C7);
-      case OrderStatus.processing:  return const Color(0xFFEDE9FE);
-      case OrderStatus.shipping:    return const Color(0xFFDBEAFE);
-      case OrderStatus.delivered:   return const Color(0xFFD1FAE5);
-      case OrderStatus.cancelled:   return const Color(0xFFFEE2E2);
+      case OrderStatus.pending:
+        return const Color(0xFFFEF3C7);
+      case OrderStatus.processing:
+        return const Color(0xFFEDE9FE);
+      case OrderStatus.shipping:
+        return const Color(0xFFDBEAFE);
+      case OrderStatus.delivered:
+        return const Color(0xFFD1FAE5);
+      case OrderStatus.cancelled:
+        return const Color(0xFFFEE2E2);
     }
   }
 
   IconData get icon {
     switch (this) {
-      case OrderStatus.pending:     return Icons.schedule_rounded;
-      case OrderStatus.processing:  return Icons.inventory_2_outlined;
-      case OrderStatus.shipping:    return Icons.local_shipping_outlined;
-      case OrderStatus.delivered:   return Icons.check_circle_outline_rounded;
-      case OrderStatus.cancelled:   return Icons.cancel_outlined;
+      case OrderStatus.pending:
+        return Icons.schedule_rounded;
+      case OrderStatus.processing:
+        return Icons.inventory_2_outlined;
+      case OrderStatus.shipping:
+        return Icons.local_shipping_outlined;
+      case OrderStatus.delivered:
+        return Icons.check_circle_outline_rounded;
+      case OrderStatus.cancelled:
+        return Icons.cancel_outlined;
     }
   }
 
   // Tracking step index (0-based), -1 for cancelled
   int get trackingStep {
     switch (this) {
-      case OrderStatus.pending:     return 0;
-      case OrderStatus.processing:  return 1;
-      case OrderStatus.shipping:    return 2;
-      case OrderStatus.delivered:   return 3;
-      case OrderStatus.cancelled:   return -1;
+      case OrderStatus.pending:
+        return 0;
+      case OrderStatus.processing:
+        return 1;
+      case OrderStatus.shipping:
+        return 2;
+      case OrderStatus.delivered:
+        return 3;
+      case OrderStatus.cancelled:
+        return -1;
     }
   }
 }
@@ -137,14 +162,16 @@ final List<OrderModel> kOrders = [
       OrderProduct(
         name: 'Pro Headphones X1',
         brand: 'SoundCore',
-        imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200',
+        imageUrl:
+            'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200',
         quantity: 1,
         price: 129.00,
       ),
       OrderProduct(
         name: 'USB-C Cable 2m',
         brand: 'Anker',
-        imageUrl: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200',
+        imageUrl:
+            'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200',
         quantity: 2,
         price: 12.50,
       ),
@@ -162,7 +189,8 @@ final List<OrderModel> kOrders = [
       OrderProduct(
         name: 'Nike Air Max 270',
         brand: 'Nike',
-        imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200',
+        imageUrl:
+            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200',
         quantity: 1,
         price: 145.00,
       ),
@@ -180,14 +208,16 @@ final List<OrderModel> kOrders = [
       OrderProduct(
         name: 'Leather Crossbody Bag',
         brand: 'Coach',
-        imageUrl: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=200',
+        imageUrl:
+            'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=200',
         quantity: 1,
         price: 89.00,
       ),
       OrderProduct(
         name: 'Silver Bracelet',
         brand: 'Tiffany',
-        imageUrl: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=200',
+        imageUrl:
+            'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=200',
         quantity: 1,
         price: 55.00,
       ),
@@ -205,7 +235,8 @@ final List<OrderModel> kOrders = [
       OrderProduct(
         name: 'Smart Watch Series 9',
         brand: 'Apple',
-        imageUrl: 'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=200',
+        imageUrl:
+            'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=200',
         quantity: 1,
         price: 399.00,
       ),
@@ -223,14 +254,16 @@ final List<OrderModel> kOrders = [
       OrderProduct(
         name: 'Laptop Stand Pro',
         brand: 'Rain Design',
-        imageUrl: 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=200',
+        imageUrl:
+            'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=200',
         quantity: 1,
         price: 65.00,
       ),
       OrderProduct(
         name: 'Mechanical Keyboard',
         brand: 'Keychron',
-        imageUrl: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200',
+        imageUrl:
+            'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200',
         quantity: 1,
         price: 110.00,
       ),
@@ -259,9 +292,9 @@ class _OrdersScreenState extends State<OrdersScreen>
   List<OrderModel> _orders = [];
 
   final List<Map<String, dynamic>> _tabs = [
-    {'label': 'All',       'filter': null},
-    {'label': 'Pending',   'filter': OrderStatus.pending},
-    {'label': 'Shipping',  'filter': OrderStatus.shipping},
+    {'label': 'All', 'filter': null},
+    {'label': 'Pending', 'filter': OrderStatus.pending},
+    {'label': 'Shipping', 'filter': OrderStatus.shipping},
     {'label': 'Delivered', 'filter': OrderStatus.delivered},
     {'label': 'Cancelled', 'filter': OrderStatus.cancelled},
   ];
@@ -276,7 +309,11 @@ class _OrdersScreenState extends State<OrdersScreen>
   Future<void> _loadOrders({bool refresh = false}) async {
     if (!refresh) setState(() => _isLoading = true);
     await Future.delayed(Duration(milliseconds: refresh ? 800 : 1200));
-    if (mounted) setState(() { _orders = kOrders; _isLoading = false; });
+    if (mounted)
+      setState(() {
+        _orders = kOrders;
+        _isLoading = false;
+      });
   }
 
   List<OrderModel> _filteredOrders(OrderStatus? filter) {
@@ -295,17 +332,15 @@ class _OrdersScreenState extends State<OrdersScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFF6F5F3),
       body: NestedScrollView(
-        headerSliverBuilder: (_, __) => [
-          _buildAppBar(),
-          _buildTabBar(),
-        ],
+        headerSliverBuilder: (_, __) => [_buildAppBar(), _buildTabBar()],
         body: _isLoading
             ? _buildSkeletonList()
             : TabBarView(
                 controller: _tabController,
                 children: _tabs.map((tab) {
                   final filtered = _filteredOrders(
-                      tab['filter'] as OrderStatus?);
+                    tab['filter'] as OrderStatus?,
+                  );
                   return _OrderTabView(
                     orders: filtered,
                     onRefresh: () => _loadOrders(refresh: true),
@@ -357,8 +392,11 @@ class _OrdersScreenState extends State<OrdersScreen>
             border: Border.all(color: const Color(0xFFE5E5E5)),
           ),
           child: IconButton(
-            icon: const Icon(Icons.search_rounded,
-                color: Color(0xFF444444), size: 20),
+            icon: const Icon(
+              Icons.search_rounded,
+              color: Color(0xFF444444),
+              size: 20,
+            ),
             onPressed: () {},
           ),
         ),
@@ -384,17 +422,23 @@ class _OrdersScreenState extends State<OrdersScreen>
           labelColor: Colors.white,
           unselectedLabelColor: const Color(0xFF888888),
           labelStyle: const TextStyle(
-              fontSize: 13, fontWeight: FontWeight.w600),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
           unselectedLabelStyle: const TextStyle(
-              fontSize: 13, fontWeight: FontWeight.w500),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
           dividerColor: Colors.transparent,
           tabs: _tabs
-              .map((t) => Tab(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Text(t['label'] as String),
-                    ),
-                  ))
+              .map(
+                (t) => Tab(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(t['label'] as String),
+                  ),
+                ),
+              )
               .toList(),
         ),
       ),
@@ -419,11 +463,13 @@ class _OrdersScreenState extends State<OrdersScreen>
         transitionsBuilder: (_, anim, __, child) => FadeTransition(
           opacity: anim,
           child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0.04, 0),
-              end: Offset.zero,
-            ).animate(
-                CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+            position:
+                Tween<Offset>(
+                  begin: const Offset(0.04, 0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(parent: anim, curve: Curves.easeOutCubic),
+                ),
             child: child,
           ),
         ),
@@ -520,8 +566,11 @@ class _OrderTabView extends StatelessWidget {
               color: const Color(0xFFEEEDEB),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.inbox_outlined,
-                size: 44, color: Color(0xFFAAAAAA)),
+            child: const Icon(
+              Icons.inbox_outlined,
+              size: 44,
+              color: Color(0xFFAAAAAA),
+            ),
           ),
           const SizedBox(height: 20),
           const Text(
@@ -537,16 +586,16 @@ class _OrderTabView extends StatelessWidget {
             'Looks like you haven\'t placed\nany orders in this category.',
             textAlign: TextAlign.center,
             style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF888888),
-                height: 1.5),
+              fontSize: 14,
+              color: Color(0xFF888888),
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 28),
           GestureDetector(
             onTap: () {},
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
               decoration: BoxDecoration(
                 color: const Color(0xFF111111),
                 borderRadius: BorderRadius.circular(16),
@@ -554,15 +603,19 @@ class _OrderTabView extends StatelessWidget {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.shopping_bag_outlined,
-                      color: Colors.white, size: 18),
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                   SizedBox(width: 8),
                   Text(
                     'Go Shopping',
                     style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
                   ),
                 ],
               ),
@@ -622,18 +675,27 @@ class _OrderCardState extends State<OrderCard>
   void _toggleExpand() {
     HapticFeedback.selectionClick();
     setState(() => _expanded = !_expanded);
-    _expanded
-        ? _expandController.forward()
-        : _expandController.reverse();
+    _expanded ? _expandController.forward() : _expandController.reverse();
   }
 
   String _formatDate(DateTime d) =>
       '${_monthName(d.month)} ${d.day}, ${d.year}';
 
   String _monthName(int m) => [
-        '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-      ][m];
+    '',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ][m];
 
   @override
   Widget build(BuildContext context) {
@@ -681,7 +743,9 @@ class _OrderCardState extends State<OrderCard>
                         Text(
                           _formatDate(order.date),
                           style: const TextStyle(
-                              fontSize: 11, color: Color(0xFFAAAAAA)),
+                            fontSize: 11,
+                            color: Color(0xFFAAAAAA),
+                          ),
                         ),
                       ],
                     ),
@@ -689,7 +753,9 @@ class _OrderCardState extends State<OrderCard>
                   // Status Chip
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 5),
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: status.bgColor,
                       borderRadius: BorderRadius.circular(20),
@@ -697,8 +763,7 @@ class _OrderCardState extends State<OrderCard>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(status.icon,
-                            size: 12, color: status.color),
+                        Icon(status.icon, size: 12, color: status.color),
                         const SizedBox(width: 4),
                         Text(
                           status.label,
@@ -736,8 +801,10 @@ class _OrderCardState extends State<OrderCard>
                         width: 64,
                         height: 64,
                         color: const Color(0xFFF0F0F0),
-                        child: const Icon(Icons.image_outlined,
-                            color: Color(0xFFCCCCCC)),
+                        child: const Icon(
+                          Icons.image_outlined,
+                          color: Color(0xFFCCCCCC),
+                        ),
                       ),
                     ),
                   ),
@@ -760,14 +827,18 @@ class _OrderCardState extends State<OrderCard>
                         Text(
                           mainProduct.brand,
                           style: const TextStyle(
-                              fontSize: 11, color: Color(0xFFAAAAAA)),
+                            fontSize: 11,
+                            color: Color(0xFFAAAAAA),
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 7, vertical: 2),
+                                horizontal: 7,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF3F3F3),
                                 borderRadius: BorderRadius.circular(6),
@@ -775,9 +846,10 @@ class _OrderCardState extends State<OrderCard>
                               child: Text(
                                 'Qty: ${mainProduct.quantity}',
                                 style: const TextStyle(
-                                    fontSize: 10,
-                                    color: Color(0xFF666666),
-                                    fontWeight: FontWeight.w500),
+                                  fontSize: 10,
+                                  color: Color(0xFF666666),
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                             if (order.products.length > 1) ...[
@@ -785,8 +857,9 @@ class _OrderCardState extends State<OrderCard>
                               Text(
                                 '+${order.products.length - 1} more',
                                 style: const TextStyle(
-                                    fontSize: 10,
-                                    color: Color(0xFFAAAAAA)),
+                                  fontSize: 10,
+                                  color: Color(0xFFAAAAAA),
+                                ),
                               ),
                             ],
                           ],
@@ -815,43 +888,50 @@ class _OrderCardState extends State<OrderCard>
                 child: Column(
                   children: [
                     const Divider(height: 1, color: Color(0xFFF5F5F5)),
-                    ...order.products.skip(1).map((p) => Padding(
-                          padding:
-                              const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  p.imageUrl,
-                                  width: 44,
-                                  height: 44,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
+                    ...order.products
+                        .skip(1)
+                        .map(
+                          (p) => Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    p.imageUrl,
                                     width: 44,
                                     height: 44,
-                                    color: const Color(0xFFF0F0F0),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 44,
+                                      height: 44,
+                                      color: const Color(0xFFF0F0F0),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(p.name,
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    p.name,
                                     style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color: Color(0xFF444444))),
-                              ),
-                              Text(
-                                '\$${p.price.toStringAsFixed(2)}',
-                                style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF444444),
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '\$${p.price.toStringAsFixed(2)}',
+                                  style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF222222)),
-                              ),
-                            ],
+                                    color: Color(0xFF222222),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        )),
+                        ),
                     const SizedBox(height: 10),
                   ],
                 ),
@@ -873,8 +953,11 @@ class _OrderCardState extends State<OrderCard>
                       AnimatedRotation(
                         turns: _expanded ? 0.5 : 0,
                         duration: const Duration(milliseconds: 280),
-                        child: const Icon(Icons.keyboard_arrow_down_rounded,
-                            size: 16, color: Color(0xFF666666)),
+                        child: const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          size: 16,
+                          color: Color(0xFF666666),
+                        ),
                       ),
                     ],
                   ),
@@ -915,8 +998,7 @@ class _OrderCardState extends State<OrderCard>
                       icon: status == OrderStatus.delivered
                           ? Icons.refresh_rounded
                           : Icons.receipt_long_outlined,
-                      isPrimary:
-                          status == OrderStatus.delivered,
+                      isPrimary: status == OrderStatus.delivered,
                       onTap: status == OrderStatus.delivered
                           ? widget.onReorder
                           : widget.onTap,
@@ -959,11 +1041,11 @@ class _ActionButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon,
-                size: 15,
-                color: isPrimary
-                    ? Colors.white
-                    : const Color(0xFF444444)),
+            Icon(
+              icon,
+              size: 15,
+              color: isPrimary ? Colors.white : const Color(0xFF444444),
+            ),
             const SizedBox(width: 6),
             Text(
               label,
@@ -999,8 +1081,9 @@ class _SkeletonOrderCardState extends State<_SkeletonOrderCard>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1100))
-      ..repeat(reverse: true);
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    )..repeat(reverse: true);
     _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
   }
 
@@ -1011,17 +1094,20 @@ class _SkeletonOrderCardState extends State<_SkeletonOrderCard>
   }
 
   Widget _box(double w, double h, {double r = 8}) => AnimatedBuilder(
-        animation: _anim,
-        builder: (_, __) => Container(
-          width: w,
-          height: h,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(r),
-            color: Color.lerp(const Color(0xFFEEEEEE),
-                const Color(0xFFF8F8F8), _anim.value),
-          ),
+    animation: _anim,
+    builder: (_, __) => Container(
+      width: w,
+      height: h,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(r),
+        color: Color.lerp(
+          const Color(0xFFEEEEEE),
+          const Color(0xFFF8F8F8),
+          _anim.value,
         ),
-      );
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -1097,12 +1183,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _fadeAnim = CurvedAnimation(
-        parent: _animController, curve: Curves.easeOut);
-    _slideAnim = Tween<Offset>(
-            begin: const Offset(0, 0.06), end: Offset.zero)
-        .animate(CurvedAnimation(
-            parent: _animController, curve: Curves.easeOutCubic));
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+        );
     _animController.forward();
   }
 
@@ -1129,8 +1214,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFE5E5E5)),
             ),
-            child: const Icon(Icons.arrow_back_ios_new_rounded,
-                size: 16, color: Color(0xFF333333)),
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 16,
+              color: Color(0xFF333333),
+            ),
           ),
         ),
         title: Column(
@@ -1147,9 +1235,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
             Text(
               '${order.products.length} item(s)',
               style: const TextStyle(
-                  fontSize: 11,
-                  color: Color(0xFFAAAAAA),
-                  fontWeight: FontWeight.w400),
+                fontSize: 11,
+                color: Color(0xFFAAAAAA),
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ],
         ),
@@ -1157,8 +1246,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: order.status.bgColor,
                 borderRadius: BorderRadius.circular(20),
@@ -1236,8 +1324,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
     );
   }
 
-  Widget _buildSection(String title, IconData icon,
-      {required Widget child}) {
+  Widget _buildSection(String title, IconData icon, {required Widget child}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1254,8 +1341,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding:
-                const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
             child: Row(
               children: [
                 Container(
@@ -1265,8 +1351,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
                     color: const Color(0xFFF3F3F3),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon,
-                      size: 16, color: const Color(0xFF555555)),
+                  child: Icon(icon, size: 16, color: const Color(0xFF555555)),
                 ),
                 const SizedBox(width: 10),
                 Text(
@@ -1281,10 +1366,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
             ),
           ),
           const Divider(height: 1, color: Color(0xFFF5F5F5)),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: child,
-          ),
+          Padding(padding: const EdgeInsets.all(16), child: child),
         ],
       ),
     );
@@ -1302,15 +1384,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
                 Navigator.pop(context);
               },
               icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: const Text('Buy Again',
-                  style: TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w700)),
+              label: const Text(
+                'Buy Again',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF111111),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 0,
               ),
             ),
@@ -1320,18 +1404,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () {},
-              icon: const Icon(Icons.cancel_outlined,
-                  size: 18, color: Color(0xFFEF4444)),
-              label: const Text('Cancel Order',
-                  style: TextStyle(
-                      color: Color(0xFFEF4444),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15)),
+              icon: const Icon(
+                Icons.cancel_outlined,
+                size: 18,
+                color: Color(0xFFEF4444),
+              ),
+              label: const Text(
+                'Cancel Order',
+                style: TextStyle(
+                  color: Color(0xFFEF4444),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
+              ),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 side: const BorderSide(color: Color(0xFFEF4444)),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
             ),
           ),
@@ -1341,17 +1432,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () {},
-              icon: const Icon(Icons.local_shipping_outlined,
-                  size: 18),
-              label: const Text('Live Tracking',
-                  style: TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w700)),
+              icon: const Icon(Icons.local_shipping_outlined, size: 18),
+              label: const Text(
+                'Live Tracking',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 0,
               ),
             ),
@@ -1423,7 +1515,9 @@ class _OrderTracking extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: isCurrent
                             ? Border.all(
-                                color: const Color(0xFF111111), width: 2)
+                                color: const Color(0xFF111111),
+                                width: 2,
+                              )
                             : null,
                         boxShadow: isCurrent
                             ? [
@@ -1431,16 +1525,14 @@ class _OrderTracking extends StatelessWidget {
                                   color: Colors.black.withOpacity(0.15),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
-                                )
+                                ),
                               ]
                             : null,
                       ),
                       child: Icon(
                         _steps[i].icon,
                         size: 15,
-                        color: isDone
-                            ? Colors.white
-                            : const Color(0xFFCCCCCC),
+                        color: isDone ? Colors.white : const Color(0xFFCCCCCC),
                       ),
                     ),
                     // Line
@@ -1464,8 +1556,7 @@ class _OrderTracking extends StatelessWidget {
               // Content
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(
-                      bottom: isLast ? 0 : 20),
+                  padding: EdgeInsets.only(bottom: isLast ? 0 : 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1496,12 +1587,13 @@ class _OrderTracking extends StatelessWidget {
                         const SizedBox(height: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF0FDF4),
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                                color: const Color(0xFF86EFAC)),
+                            border: Border.all(color: const Color(0xFF86EFAC)),
                           ),
                           child: const Text(
                             '● Current status',
@@ -1528,8 +1620,11 @@ class _OrderTracking extends StatelessWidget {
 class _TrackStep {
   final String label, time;
   final IconData icon;
-  const _TrackStep(
-      {required this.label, required this.time, required this.icon});
+  const _TrackStep({
+    required this.label,
+    required this.time,
+    required this.icon,
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1548,7 +1643,8 @@ class _ProductsList extends StatelessWidget {
         final p = e.value;
         return Padding(
           padding: EdgeInsets.only(
-              bottom: i < order.products.length - 1 ? 14 : 0),
+            bottom: i < order.products.length - 1 ? 14 : 0,
+          ),
           child: Row(
             children: [
               ClipRRect(
@@ -1570,28 +1666,40 @@ class _ProductsList extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(p.name,
-                        style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF222222))),
+                    Text(
+                      p.name,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF222222),
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(p.brand,
-                        style: const TextStyle(
-                            fontSize: 11, color: Color(0xFFAAAAAA))),
+                    Text(
+                      p.brand,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFFAAAAAA),
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('Qty: ${p.quantity}',
-                        style: const TextStyle(
-                            fontSize: 11, color: Color(0xFF777777))),
+                    Text(
+                      'Qty: ${p.quantity}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF777777),
+                      ),
+                    ),
                   ],
                 ),
               ),
               Text(
                 '\$${p.price.toStringAsFixed(2)}',
                 style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF111111)),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111111),
+                ),
               ),
             ],
           ),
@@ -1616,29 +1724,39 @@ class _AddressCard extends StatelessWidget {
             color: const Color(0xFFDBEAFE),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(Icons.location_on_rounded,
-              size: 20, color: Color(0xFF3B82F6)),
+          child: const Icon(
+            Icons.location_on_rounded,
+            size: 20,
+            color: Color(0xFF3B82F6),
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Delivery Address',
-                  style: TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFFAAAAAA),
-                      fontWeight: FontWeight.w500)),
+              const Text(
+                'Delivery Address',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFFAAAAAA),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(order.address,
-                  style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF222222))),
+              Text(
+                order.address,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF222222),
+                ),
+              ),
               const SizedBox(height: 2),
-              Text('Est. delivery: ${order.estimatedDelivery}',
-                  style: const TextStyle(
-                      fontSize: 11, color: Color(0xFF888888))),
+              Text(
+                'Est. delivery: ${order.estimatedDelivery}',
+                style: const TextStyle(fontSize: 11, color: Color(0xFF888888)),
+              ),
             ],
           ),
         ),
@@ -1651,8 +1769,7 @@ class _PaymentCard extends StatelessWidget {
   final OrderModel order;
   const _PaymentCard({required this.order});
 
-  bool get _isCash =>
-      order.paymentMethod.toLowerCase().contains('cash');
+  bool get _isCash => order.paymentMethod.toLowerCase().contains('cash');
 
   @override
   Widget build(BuildContext context) {
@@ -1662,51 +1779,53 @@ class _PaymentCard extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: _isCash
-                ? const Color(0xFFFEF3C7)
-                : const Color(0xFFEDE9FE),
+            color: _isCash ? const Color(0xFFFEF3C7) : const Color(0xFFEDE9FE),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
-            _isCash
-                ? Icons.payments_outlined
-                : Icons.credit_card_rounded,
+            _isCash ? Icons.payments_outlined : Icons.credit_card_rounded,
             size: 20,
-            color: _isCash
-                ? const Color(0xFFF59E0B)
-                : const Color(0xFF8B5CF6),
+            color: _isCash ? const Color(0xFFF59E0B) : const Color(0xFF8B5CF6),
           ),
         ),
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Payment Method',
-                style: TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFFAAAAAA),
-                    fontWeight: FontWeight.w500)),
+            const Text(
+              'Payment Method',
+              style: TextStyle(
+                fontSize: 11,
+                color: Color(0xFFAAAAAA),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(order.paymentMethod,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF222222))),
+            Text(
+              order.paymentMethod,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF222222),
+              ),
+            ),
           ],
         ),
         const Spacer(),
         Container(
-          padding: const EdgeInsets.symmetric(
-              horizontal: 10, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: const Color(0xFFF0FDF4),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Text('Paid',
-              style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF16A34A))),
+          child: const Text(
+            'Paid',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF16A34A),
+            ),
+          ),
         ),
       ],
     );
@@ -1717,30 +1836,35 @@ class _PriceSummary extends StatelessWidget {
   final OrderModel order;
   const _PriceSummary({required this.order});
 
-  Widget _row(String label, String value,
-      {bool bold = false, Color? valueColor}) {
+  Widget _row(
+    String label,
+    String value, {
+    bool bold = false,
+    Color? valueColor,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(
-                  fontSize: 13,
-                  color: bold
-                      ? const Color(0xFF111111)
-                      : const Color(0xFF888888),
-                  fontWeight:
-                      bold ? FontWeight.w700 : FontWeight.w400)),
-          Text(value,
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight:
-                      bold ? FontWeight.w800 : FontWeight.w500,
-                  color: valueColor ??
-                      (bold
-                          ? const Color(0xFF111111)
-                          : const Color(0xFF444444)))),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              color: bold ? const Color(0xFF111111) : const Color(0xFF888888),
+              fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
+              color:
+                  valueColor ??
+                  (bold ? const Color(0xFF111111) : const Color(0xFF444444)),
+            ),
+          ),
         ],
       ),
     );
@@ -1749,7 +1873,9 @@ class _PriceSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final subtotal = order.products.fold(
-        0.0, (sum, p) => sum + p.price * p.quantity);
+      0.0,
+      (sum, p) => sum + p.price * p.quantity,
+    );
     const shipping = 5.00;
     final total = subtotal + shipping;
 
@@ -1758,9 +1884,12 @@ class _PriceSummary extends StatelessWidget {
         _row('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
         _row('Shipping', '\$$shipping'),
         const Divider(height: 16, color: Color(0xFFF0F0F0)),
-        _row('Total', '\$${total.toStringAsFixed(2)}',
-            bold: true,
-            valueColor: const Color(0xFF111111)),
+        _row(
+          'Total',
+          '\$${total.toStringAsFixed(2)}',
+          bold: true,
+          valueColor: const Color(0xFF111111),
+        ),
       ],
     );
   }

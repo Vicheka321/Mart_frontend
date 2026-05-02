@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  final Color background;
   final Color text1, text2, text3;
+
   final Color surface, surface2;
   final Color cardBg, border;
   final Color accent, accentLight;
   final Color flashBg, flashBorder, flashText, bginfo;
 
   const AppColors({
+    required this.background,
     required this.text1,
     required this.text2,
     required this.text3,
@@ -24,6 +27,7 @@ class AppColors {
   });
 
   static const light = AppColors(
+    background: Color(0xFFD9D9D9),
     text1: Color(0xFF111111),
     text2: Color(0xFF555555),
     text3: Color(0xFF999999),
@@ -31,7 +35,7 @@ class AppColors {
     surface2: Color(0xFFEAEAEA),
     cardBg: Color(0xFFFFFFFF),
     border: Colors.green,
-    accent: Colors.green,
+    accent: Colors.blue,
     accentLight: Color(0xFFEDE9FB),
     flashBg: Color(0xFFFFF5F5),
     flashBorder: Color(0xFFFFD0D0),
@@ -40,6 +44,7 @@ class AppColors {
   );
 
   static const dark = AppColors(
+    background: Color.fromARGB(255, 255, 255, 255),
     text1: Color(0xFFF5F5F5),
     text2: Color(0xFFAAAAAA),
     text3: Color(0xFF666666),
