@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:mart_frontend/screens/categories_screen.dart'
+    hide ProductListScreen;
 import 'package:mart_frontend/screens/theme/app_theme.dart';
-import 'package:mart_frontend/widgets/product_by_category_brand.dart';
+import 'package:mart_frontend/widgets/product_by_category.dart';
 import '../auth/login_register_screen.dart';
 import '../models/bannersModel.dart';
 import '../models/categoriesModel.dart';
@@ -450,7 +452,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               builder: (_) => CategoryProductsScreen(
                                 categoryId: id,
                                 categoryName: name,
-                                colors: colors,
+                               
                               ),
                             ),
                           );
@@ -639,7 +641,12 @@ class _StickyHeader extends StatelessWidget {
           _HeaderActionButton(
             icon: 'lib/icons/search.png',
             colors: colors,
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => CategoriesScreen()),
+              );
+            },
           ),
 
           SizedBox(width: s * .025),
@@ -712,7 +719,6 @@ class _HeaderActionButton extends StatelessWidget {
                 ),
               ),
             ),
-          
         ],
       ),
     );

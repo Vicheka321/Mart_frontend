@@ -88,7 +88,7 @@ class Product {
   String unit;
   int quantity;
   String salePrice;
-  double finalPrice;
+  String finalPrice;
   String? discount;
   String categoryName;
   String brandName;
@@ -115,7 +115,7 @@ class Product {
     unit: json["unit"],
     quantity: json["quantity"],
     salePrice: json["sale_price"],
-    finalPrice: json["final_price"].toDouble(),
+    finalPrice: json["final_price"],
     discount: json["discount"],
     categoryName: json["category_name"],
     brandName: json["brand_name"],

@@ -2,6 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../services/api_service.dart';
+import '../widgets/product_by_category.dart';
+import '../widgets/search_screen.dart';
+import 'theme/app_theme.dart';
+
 // ═══════════════════════════════════════════════════════════════
 // MODELS
 // ═══════════════════════════════════════════════════════════════
@@ -46,163 +51,6 @@ class SearchSuggestion {
 
   const SearchSuggestion({required this.text, required this.isProduct});
 }
-
-// ═══════════════════════════════════════════════════════════════
-// FAKE DATA
-// ═══════════════════════════════════════════════════════════════
-
-final List<CategoryModel> kCategories = [
-  CategoryModel(
-    id: '1',
-    name: 'Burgers',
-    imageUrl:
-        'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400',
-    filter: 'food',
-    productCount: 12,
-  ),
-  CategoryModel(
-    id: '2',
-    name: 'Pizza',
-    imageUrl:
-        'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400',
-    filter: 'food',
-    productCount: 8,
-  ),
-  CategoryModel(
-    id: '3',
-    name: 'Sushi',
-    imageUrl:
-        'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400',
-    filter: 'food',
-    productCount: 15,
-  ),
-  CategoryModel(
-    id: '4',
-    name: 'Coffee',
-    imageUrl:
-        'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400',
-    filter: 'drink',
-    productCount: 20,
-  ),
-  CategoryModel(
-    id: '5',
-    name: 'Smoothies',
-    imageUrl: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=400',
-    filter: 'drink',
-    productCount: 10,
-  ),
-  CategoryModel(
-    id: '6',
-    name: 'Pasta',
-    imageUrl:
-        'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=400',
-    filter: 'food',
-    productCount: 7,
-  ),
-  CategoryModel(
-    id: '7',
-    name: 'Salads',
-    imageUrl:
-        'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400',
-    filter: 'food',
-    productCount: 9,
-  ),
-  CategoryModel(
-    id: '8',
-    name: 'Juices',
-    imageUrl:
-        'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400',
-    filter: 'drink',
-    productCount: 14,
-  ),
-  CategoryModel(
-    id: '9',
-    name: 'Desserts',
-    imageUrl:
-        'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400',
-    filter: 'other',
-    productCount: 18,
-  ),
-];
-
-final List<BrandModel> kBrands = [
-  BrandModel(
-    id: 'b1',
-    name: 'Starbucks',
-    logoUrl:
-        'https://images.unsplash.com/photo-1572119865084-43c285814d63?w=200',
-    productCount: 34,
-    isFeatured: true,
-    accentColor: Color(0xFF00704A),
-  ),
-  BrandModel(
-    id: 'b2',
-    name: 'McDonald\'s',
-    logoUrl:
-        'https://images.unsplash.com/photo-1619881585040-d01a8e95f40f?w=200',
-    productCount: 28,
-    isFeatured: true,
-    accentColor: Color(0xFFDA291C),
-  ),
-  BrandModel(
-    id: 'b3',
-    name: 'Shake Shack',
-    logoUrl:
-        'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200',
-    productCount: 19,
-    isFeatured: false,
-    accentColor: Color(0xFF6DB33F),
-  ),
-  BrandModel(
-    id: 'b4',
-    name: 'Nobu',
-    logoUrl:
-        'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=200',
-    productCount: 22,
-    isFeatured: true,
-    accentColor: Color(0xFF1A1A2E),
-  ),
-  BrandModel(
-    id: 'b5',
-    name: 'Jamba',
-    logoUrl: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=200',
-    productCount: 15,
-    isFeatured: false,
-    accentColor: Color(0xFFFF6B35),
-  ),
-  BrandModel(
-    id: 'b6',
-    name: 'Sweetgreen',
-    logoUrl:
-        'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200',
-    productCount: 11,
-    isFeatured: false,
-    accentColor: Color(0xFF4A7C59),
-  ),
-];
-
-final List<String> kAllSuggestions = [
-  'Burgers',
-  'Pizza',
-  'Sushi',
-  'Coffee',
-  'Smoothies',
-  'Pasta',
-  'Salads',
-  'Juices',
-  'Desserts',
-  'Cheese Burger',
-  'Pepperoni Pizza',
-  'Iced Latte',
-  'Mango Smoothie',
-  'Caesar Salad',
-  'Tiramisu',
-  'Starbucks',
-  'McDonald\'s',
-  'Shake Shack',
-  'Nobu',
-];
-
 // ═══════════════════════════════════════════════════════════════
 // MAIN CATEGORIES SCREEN
 // ═══════════════════════════════════════════════════════════════
@@ -218,7 +66,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
     with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
-  bool _isSearchActive = false;
+
   List<SearchSuggestion> _suggestions = [];
   Timer? _debounce;
 
@@ -250,53 +98,56 @@ class _CategoriesScreenState extends State<CategoriesScreen>
       duration: const Duration(milliseconds: 600),
     );
 
-    _searchController.addListener(_onSearchChanged);
-    _searchFocus.addListener(() {
-      setState(() => _isSearchActive = _searchFocus.hasFocus);
-    });
-
     _loadData();
   }
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 1400));
-    if (mounted) {
+
+    try {
+      final api = ApiService();
+
+      final brandsRes = await api.fetchBrands();
+      final categoriesRes = await api.fetchCategories();
+
+      if (!mounted) return;
+
       setState(() {
-        _categories = kCategories;
-        _brands = kBrands;
+        // 🔥 map API → UI model
+        _brands = brandsRes
+            .map(
+              (b) => BrandModel(
+                id: b.id.toString(),
+                name: b.name,
+                logoUrl: b.image,
+                productCount: 0,
+                isFeatured: false,
+                accentColor: Colors.orange,
+              ),
+            )
+            .toList();
+
+        _categories = categoriesRes
+            .map(
+              (c) => CategoryModel(
+                id: c.id.toString(),
+                name: c.name,
+                imageUrl: c.image,
+                filter: '',
+                productCount: 0,
+              ),
+            )
+            .toList();
+
         _isLoading = false;
       });
-      _fadeController.forward();
-      await Future.delayed(const Duration(milliseconds: 100));
-      _brandsAnimController.forward();
-    }
-  }
 
-  void _onSearchChanged() {
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 250), () {
-      final q = _searchController.text.trim().toLowerCase();
-      if (q.isEmpty) {
-        setState(() => _suggestions = []);
-        return;
-      }
-      final results = kAllSuggestions
-          .where((s) => s.toLowerCase().contains(q))
-          .map(
-            (s) => SearchSuggestion(
-              text: s,
-              isProduct:
-                  !kCategories.any(
-                    (c) => c.name.toLowerCase() == s.toLowerCase(),
-                  ) &&
-                  !kBrands.any((b) => b.name.toLowerCase() == s.toLowerCase()),
-            ),
-          )
-          .take(6)
-          .toList();
-      setState(() => _suggestions = results);
-    });
+      _fadeController.forward();
+      _brandsAnimController.forward();
+    } catch (e) {
+      setState(() => _isLoading = false);
+      debugPrint("API ERROR: $e");
+    }
   }
 
   List<CategoryModel> get _filteredCategories {
@@ -322,11 +173,15 @@ class _CategoriesScreenState extends State<CategoriesScreen>
 
   void _navigateToProducts(CategoryModel category) {
     HapticFeedback.lightImpact();
+
     Navigator.push(
       context,
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (_, __, ___) => ProductListScreen(category: category),
+        pageBuilder: (_, __, ___) => CategoryProductsScreen(
+          categoryId: int.parse(category.id),
+          categoryName: category.name,
+        ),
         transitionsBuilder: (_, anim, __, child) => FadeTransition(
           opacity: anim,
           child: SlideTransition(
@@ -347,7 +202,10 @@ class _CategoriesScreenState extends State<CategoriesScreen>
       context,
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (_, __, ___) => BrandScreen(brand: brand),
+        pageBuilder: (_, __, ___) => CategoryProductsScreen(
+          categoryId: int.parse(brand.id),
+          categoryName: brand.name,
+        ),
         transitionsBuilder: (_, anim, __, child) => FadeTransition(
           opacity: anim,
           child: SlideTransition(
@@ -382,8 +240,10 @@ class _CategoriesScreenState extends State<CategoriesScreen>
     final filteredCats = _filteredCategories;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      extendBody: true,
+      backgroundColor: Colors.white,
       body: SafeArea(
+        bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -391,12 +251,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
             const _Header(),
 
             // ── 2. Search Bar ──────────────────────────────────
-            _SearchBar(
-              controller: _searchController,
-              focusNode: _searchFocus,
-              isActive: _isSearchActive,
-              onClear: _clearSearch,
-            ),
+            _SearchBar(context),
 
             // ── 3. Suggestions OR Main Content ─────────────────
             if (_suggestions.isNotEmpty)
@@ -427,6 +282,43 @@ class _CategoriesScreenState extends State<CategoriesScreen>
   }
 }
 
+Widget _SearchBar(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+    child: GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const SearchScreen(),
+            transitionsBuilder: (_, animation, __, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.search, color: Colors.grey),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                "Search categories, brands & products...",
+                style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
 // ═══════════════════════════════════════════════════════════════
 // 1. HEADER
 // ═══════════════════════════════════════════════════════════════
@@ -441,101 +333,6 @@ class _Header extends StatelessWidget {
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           
         ],
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// 2. SEARCH BAR
-// ═══════════════════════════════════════════════════════════════
-
-class _SearchBar extends StatelessWidget {
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final bool isActive;
-  final VoidCallback onClear;
-
-  const _SearchBar({
-    required this.controller,
-    required this.focusNode,
-    required this.isActive,
-    required this.onClear,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFFFF6B35).withOpacity(0.18),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
-                  ),
-                ]
-              : [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 12,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-          border: Border.all(
-            color: isActive
-                ? const Color(0xFFFF6B35).withOpacity(0.5)
-                : Colors.transparent,
-            width: 1.5,
-          ),
-        ),
-        child: TextField(
-          controller: controller,
-          focusNode: focusNode,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A1A),
-          ),
-          decoration: InputDecoration(
-            hintText: 'Search categories, brands & products...',
-            hintStyle: TextStyle(
-              color: Colors.grey.shade400,
-              fontWeight: FontWeight.w400,
-              fontSize: 14,
-            ),
-            prefixIcon: Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: Icon(
-                Icons.search_rounded,
-                color: isActive
-                    ? const Color(0xFFFF6B35)
-                    : Colors.grey.shade400,
-                size: 22,
-              ),
-            ),
-            suffixIcon: controller.text.isNotEmpty
-                ? GestureDetector(
-                    onTap: onClear,
-                    child: Icon(
-                      Icons.close_rounded,
-                      color: Colors.grey.shade400,
-                      size: 20,
-                    ),
-                  )
-                : null,
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(
-              vertical: 14,
-              horizontal: 4,
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -1386,28 +1183,7 @@ class _CategoryCardState extends State<_CategoryCard>
                     ),
                   ),
                 ),
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.92),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${widget.category.productCount} items',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                  ),
-                ),
+
                 Positioned(
                   left: 12,
                   right: 12,
@@ -1911,13 +1687,3 @@ class ProductListScreen extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════
 // ENTRY POINT
 // ═══════════════════════════════════════════════════════════════
-
-void main() {
-  runApp(
-    const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: CategoriesScreen(),
-      title: 'Categories',
-    ),
-  );
-}

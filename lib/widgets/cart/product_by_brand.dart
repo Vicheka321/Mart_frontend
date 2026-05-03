@@ -1,39 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../models/categoriesModel.dart';
-import '../services/api_service.dart';
-import '../screens/theme/app_theme.dart';
-import 'product_detail_screen.dart';
+import 'package:mart_frontend/models/brandsModel.dart';
+import '../../screens/theme/app_theme.dart';
+import '../../services/api_service.dart';
+import '../product_detail_screen.dart';
 
 // ─────────────────────────────────────────────
 //  Screen
 // ─────────────────────────────────────────────
-class CategoryProductsScreen extends StatefulWidget {
-  final int categoryId;
-  final String? categoryName;
-  final AppColors colors;
+class BrandProductsScreen extends StatefulWidget {
+  final int brandId;
+  final String? brandName;
 
-  const CategoryProductsScreen({
-    Key? key,
-    required this.categoryId,
-    this.categoryName,
-    required this.colors,
-  }) : super(key: key);
+  const BrandProductsScreen({Key? key, required this.brandId, this.brandName})
+    : super(key: key);
 
   @override
-  State<CategoryProductsScreen> createState() => _CategoryProductsScreenState();
+  State<BrandProductsScreen> createState() => _CategoryProductsScreenState();
 }
 
-class _CategoryProductsScreenState extends State<CategoryProductsScreen>
+class _CategoryProductsScreenState extends State<BrandProductsScreen>
     with SingleTickerProviderStateMixin {
-  late Future<GetProductsByCategoryModel> _categoryFuture;
+  late Future<GetProductsByBrandModel> _brandFuture;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _categoryFuture = ApiService().fetchCategoryWithProducts(widget.categoryId);
+    _brandFuture = ApiService().fetchPeoductsByBrand(widget.brandId);
 
     _fadeController = AnimationController(
       vsync: this,
@@ -54,7 +49,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final colors = widget.colors;
+    final colors = context.colors;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
@@ -67,15 +62,12 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _AppBar(
-                categoryName: widget.categoryName ?? 'Products',
-                colors: colors,
-              ),
+              _AppBar(brandName: widget.brandName ?? 'Brands', colors: colors),
               SizedBox(height: 15),
 
               Expanded(
-                child: FutureBuilder<GetProductsByCategoryModel>(
-                  future: _categoryFuture,
+                child: FutureBuilder<GetProductsByBrandModel>(
+                  future: _brandFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const _LoadingState();
@@ -87,6 +79,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen>
                       );
                     }
                     final category = snapshot.data;
+                    final country = category?.country ?? "Unknown";
                     if (category == null || category.products.isEmpty) {
                       return _EmptyState(colors: colors);
                     }
@@ -100,6 +93,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen>
                             product: category.products[index],
                             colors: colors,
                             index: index,
+                            country: country,
                           );
                         },
                       ),
@@ -119,10 +113,10 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen>
 //  App Bar
 // ─────────────────────────────────────────────
 class _AppBar extends StatelessWidget {
-  final String categoryName;
+  final String brandName;
   final AppColors colors;
 
-  const _AppBar({required this.categoryName, required this.colors});
+  const _AppBar({required this.brandName, required this.colors});
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +152,7 @@ class _AppBar extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: s * 0.2),
               child: Text(
-                categoryName,
+                brandName,
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -218,9 +212,11 @@ class _ProductCard extends StatefulWidget {
   final dynamic product;
   final AppColors colors;
   final int index;
+  final String country;
 
   const _ProductCard({
     required this.product,
+    required this.country,
     required this.colors,
     required this.index,
   });
@@ -313,7 +309,6 @@ class _ProductCardState extends State<_ProductCard>
 
   @override
   Widget build(BuildContext context) {
-    // Use theme from context (preferred)
     final colors = context.colors;
 
     final p = widget.product;
@@ -424,14 +419,18 @@ class _ProductCardState extends State<_ProductCard>
                       // CATEGORY | BRAND
                       Row(
                         children: [
-                          Text(
-                            "${p.categoryName ?? 'Unknown'}",
-                            style: TextStyle(
-                              fontSize: fontSmall,
-                              color: colors.text2,
+                          // CATEGORY
+                          Flexible(
+                            child: Text(
+                              "${p.categoryName ?? 'Unknown'}",
+                              style: TextStyle(
+                                fontSize: fontSmall,
+                                color: colors.text2,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
+
                           Text(
                             " | ",
                             style: TextStyle(
@@ -439,12 +438,34 @@ class _ProductCardState extends State<_ProductCard>
                               color: colors.text3,
                             ),
                           ),
-                          Expanded(
+
+                          // BRAND
+                          Flexible(
                             child: Text(
                               "${p.brandName ?? 'No Brand'}",
                               style: TextStyle(
                                 fontSize: fontSmall,
                                 color: colors.accent,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+
+                          Text(
+                            " | ",
+                            style: TextStyle(
+                              fontSize: fontSmall,
+                              color: colors.text3,
+                            ),
+                          ),
+
+                          // COUNTRY 🔥 NEW
+                          Flexible(
+                            child: Text(
+                              widget.country,
+                              style: TextStyle(
+                                fontSize: fontSmall,
+                                color: colors.text3,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),

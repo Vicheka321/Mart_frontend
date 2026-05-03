@@ -134,6 +134,29 @@ class ApiService {
     }
   }
 
+  Future<GetProductsByBrandModel> fetchPeoductsByBrand(int id) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/brand/$id'),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('brands_with_products_cache_$id', response.body);
+
+        return getProductsByBrandModelFromJson(response.body);
+      } else {
+        throw Exception(
+          'Failed to load brands with products: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
   Future<GetProductsByCategoryModel> fetchCategoryWithProducts(int id) async {
     try {
       final response = await http.get(

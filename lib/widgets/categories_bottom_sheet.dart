@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mart_frontend/widgets/product_by_category_brand.dart';
+import 'package:mart_frontend/widgets/product_by_category.dart';
 import '../models/categoriesModel.dart';
 import '../services/api_service.dart';
 import '../screens/theme/app_theme.dart';
@@ -150,7 +150,7 @@ class _CategoryCard extends StatelessWidget {
             builder: (_) => CategoryProductsScreen(
               categoryId: category.id,
               categoryName: category.name,
-              colors: colors,
+          
             ),
           ),
         );

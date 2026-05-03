@@ -117,7 +117,7 @@ class GetProductModel {
   String name;
   String description;
   String salePrice;
-  double finalPrice;
+  String finalPrice;
   String? discount;
   int quantity;
   bool status;
@@ -145,7 +145,7 @@ class GetProductModel {
         name: json["name"],
         description: json["description"],
         salePrice: json["sale_price"],
-        finalPrice: json["final_price"].toDouble(),
+        finalPrice: json["final_price"],
         discount: json["discount"],
         quantity: json["quantity"],
         status: json["status"],
@@ -183,8 +183,8 @@ class BestSellerModel {
   int id;
   String name;
   String salePrice;
-  double finalPrice;
-  String? discount; // ← nullable
+  String finalPrice;
+  dynamic discount;
   int sold;
   List<String> images;
 
@@ -193,7 +193,7 @@ class BestSellerModel {
     required this.name,
     required this.salePrice,
     required this.finalPrice,
-    this.discount, // ← no longer required
+    required this.discount,
     required this.sold,
     required this.images,
   });
@@ -203,8 +203,8 @@ class BestSellerModel {
         id: json["id"],
         name: json["name"],
         salePrice: json["sale_price"],
-        finalPrice: (json["final_price"] as num).toDouble(), // ← safe cast
-        discount: json["discount"], // ← null-safe
+        finalPrice: json["final_price"],
+        discount: json["discount"],
         sold: json["sold"],
         images: List<String>.from(json["images"].map((x) => x)),
       );
@@ -234,7 +234,7 @@ class NewArrivalsModel {
   int id;
   String name;
   String salePrice;
-  double finalPrice;
+  String finalPrice;
   String? discount;
   List<String> images;
 
@@ -252,7 +252,7 @@ class NewArrivalsModel {
         id: json["id"],
         name: json["name"],
         salePrice: json["sale_price"],
-        finalPrice: json["final_price"].toDouble(),
+        finalPrice: json["final_price"],
         discount: json["discount"],
         images: List<String>.from(json["images"].map((x) => x)),
       );
@@ -281,7 +281,7 @@ class RecommendedModel {
   int id;
   String name;
   String salePrice;
-  double finalPrice;
+  String finalPrice;
   String? discount;
   int sold;
   List<String> images;
@@ -301,7 +301,7 @@ class RecommendedModel {
         id: json["id"],
         name: json["name"],
         salePrice: json["sale_price"],
-        finalPrice: json["final_price"].toDouble(),
+        finalPrice: json["final_price"],
         discount: json["discount"],
         sold: json["sold"],
         images: List<String>.from(json["images"].map((x) => x)),
@@ -316,72 +316,6 @@ class RecommendedModel {
     "sold": sold,
     "images": List<dynamic>.from(images.map((x) => x)),
   };
-}
-
-// ========================my cart =================
-
-MyCartModel myCartModelFromJson(String str) => MyCartModel.fromJson(json.decode(str));
-
-String myCartModelToJson(MyCartModel data) => json.encode(data.toJson());
-
-class MyCartModel {
-    int cartId;
-    double totalPrice;
-    List<Item> items;
-
-    MyCartModel({
-        required this.cartId,
-        required this.totalPrice,
-        required this.items,
-    });
-
-    factory MyCartModel.fromJson(Map<String, dynamic> json) => MyCartModel(
-        cartId: json["cart_id"],
-        totalPrice: json["total_price"].toDouble(),
-        items: List<Item>.from(json["items"].map((x) => Item.fromJson(x))),
-    );
-
-    Map<String, dynamic> toJson() => {
-        "cart_id": cartId,
-        "total_price": totalPrice,
-        "items": List<dynamic>.from(items.map((x) => x.toJson())),
-    };
-}
-
-class Item {
-    int productId;
-    String name;
-    int qty;
-    String price;
-    double totalPrice;
-    List<String> images;
-
-    Item({
-        required this.productId,
-        required this.name,
-        required this.qty,
-        required this.price,
-        required this.totalPrice,
-        required this.images,
-    });
-
-    factory Item.fromJson(Map<String, dynamic> json) => Item(
-        productId: json["product_id"],
-        name: json["name"],
-        qty: json["qty"],
-        price: json["price"],
-        totalPrice: json["total_price"].toDouble(),
-        images: List<String>.from(json["images"].map((x) => x)),
-    );
-
-    Map<String, dynamic> toJson() => {
-        "product_id": productId,
-        "name": name,
-        "qty": qty,
-        "price": price,
-        "total_price": totalPrice,
-        "images": List<dynamic>.from(images.map((x) => x)),
-    };
 }
 
 // =========================all best sellers=========================
@@ -401,7 +335,7 @@ class AllbestsellersModel {
   String unit;
   int quantity;
   String salePrice;
-  double finalPrice;
+  String finalPrice;
   String? discount;
   String categoryName;
   String brandName;
@@ -431,7 +365,7 @@ class AllbestsellersModel {
         unit: json["unit"],
         quantity: json["quantity"],
         salePrice: json["sale_price"],
-        finalPrice: json["final_price"].toDouble(),
+        finalPrice: json["final_price"],
         discount: json["discount"],
         categoryName: json["category_name"],
         brandName: json["brand_name"],
@@ -472,7 +406,7 @@ class AllnewarrivalsModel {
   String unit;
   int quantity;
   String salePrice;
-  double finalPrice;
+  String finalPrice;
   String? discount;
   String categoryName;
   String brandName;
@@ -502,7 +436,7 @@ class AllnewarrivalsModel {
         unit: json["unit"],
         quantity: json["quantity"],
         salePrice: json["sale_price"],
-        finalPrice: json["final_price"].toDouble(),
+        finalPrice: json["final_price"],
         discount: json["discount"],
         categoryName: json["category_name"],
         brandName: json["brand_name"],
@@ -526,8 +460,6 @@ class AllnewarrivalsModel {
   };
 }
 
-// =========================all recommended=========================
-
 List<AllrecommendedModel> allrecommendedModelFromJson(String str) =>
     List<AllrecommendedModel>.from(
       json.decode(str).map((x) => AllrecommendedModel.fromJson(x)),
@@ -543,7 +475,7 @@ class AllrecommendedModel {
   String unit;
   int quantity;
   String salePrice;
-  double finalPrice;
+  String finalPrice;
   String? discount;
   String categoryName;
   String brandName;
@@ -573,7 +505,7 @@ class AllrecommendedModel {
         unit: json["unit"],
         quantity: json["quantity"],
         salePrice: json["sale_price"],
-        finalPrice: json["final_price"].toDouble(),
+        finalPrice: json["final_price"],
         discount: json["discount"],
         categoryName: json["category_name"],
         brandName: json["brand_name"],
@@ -596,3 +528,72 @@ class AllrecommendedModel {
     "images": List<dynamic>.from(images.map((x) => x)),
   };
 }
+
+// ========================my cart =================
+
+MyCartModel myCartModelFromJson(String str) =>
+    MyCartModel.fromJson(json.decode(str));
+
+String myCartModelToJson(MyCartModel data) => json.encode(data.toJson());
+
+class MyCartModel {
+  int cartId;
+  double totalPrice;
+  List<Item> items;
+
+  MyCartModel({
+    required this.cartId,
+    required this.totalPrice,
+    required this.items,
+  });
+
+  factory MyCartModel.fromJson(Map<String, dynamic> json) => MyCartModel(
+    cartId: json["cart_id"],
+    totalPrice: json["total_price"].toDouble(),
+    items: List<Item>.from(json["items"].map((x) => Item.fromJson(x))),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "cart_id": cartId,
+    "total_price": totalPrice,
+    "items": List<dynamic>.from(items.map((x) => x.toJson())),
+  };
+}
+
+class Item {
+  int productId;
+  String name;
+  int qty;
+  String price;
+  double totalPrice;
+  List<String> images;
+
+  Item({
+    required this.productId,
+    required this.name,
+    required this.qty,
+    required this.price,
+    required this.totalPrice,
+    required this.images,
+  });
+
+  factory Item.fromJson(Map<String, dynamic> json) => Item(
+    productId: json["product_id"],
+    name: json["name"],
+    qty: json["qty"],
+    price: json["price"],
+    totalPrice: json["total_price"].toDouble(),
+    images: List<String>.from(json["images"].map((x) => x)),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "product_id": productId,
+    "name": name,
+    "qty": qty,
+    "price": price,
+    "total_price": totalPrice,
+    "images": List<dynamic>.from(images.map((x) => x)),
+  };
+}
+
+// =========================all recommended=========================
