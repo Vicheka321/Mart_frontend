@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/productsModel.dart';
+import '../models/products_model.dart';
 import '../services/api_service.dart';
 
 class CartProvider extends ChangeNotifier {
@@ -15,11 +15,14 @@ class CartProvider extends ChangeNotifier {
 
       final data = await ApiService().getCart();
 
+      print("CART DATA: ${data.items.length}"); // 👈 ADD THIS
+
       cart = data;
 
       loading = false;
       notifyListeners();
     } catch (e) {
+      print("CART ERROR: $e"); // 👈 ADD THIS
       loading = false;
       notifyListeners();
     }

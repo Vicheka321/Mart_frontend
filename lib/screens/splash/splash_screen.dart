@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mart_frontend/screens/onbording/onboarding_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -6,8 +8,6 @@ import '../main/main_screen.dart';
 import '../theme/app_theme.dart';
 
 // ── AppColors (paste your existing file or keep inline) ──────────────────────
-
-
 
 extension AppThemeExt on BuildContext {
   AppColors get colors {
@@ -251,13 +251,25 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _master.forward().whenComplete(() {
-      Future.delayed(const Duration(milliseconds: 500), () {
+      Future.delayed(const Duration(milliseconds: 500), () async {
         if (!mounted) return;
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const MainScreen()),
-        );
+        final prefs = await SharedPreferences.getInstance();
+        final language = prefs.getString('language');
+
+        if (language == null) {
+          // 👉 First time → onboarding
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => LanguageOnboardingScreen()),
+          );
+        } else {
+          // 👉 Already selected → go main screen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => MainScreen()),
+          );
+        }
       });
     });
   }

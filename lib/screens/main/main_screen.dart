@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mart_frontend/widgets/mycart.dart';
-import '../home_screen.dart';
-import '../categories_screen.dart';
-import '../orders_screen.dart';
-import '../profile_screen.dart';
+import 'package:mart_frontend/screens/cart/mycart.dart';
+import '../../auth/login_register_screen.dart';
+import '../../services/api_service.dart';
+import '../home/home_screen.dart';
+import '../category/categories_screen.dart';
+import '../order/orders_screen.dart';
+import '../../profile/profile_screen.dart';
 import '../theme/app_theme.dart';
 
 class MainScreen extends StatefulWidget {
@@ -24,7 +26,7 @@ class _MainScreenState extends State<MainScreen> {
     _screens = const [
       HomeScreen(),
       CategoriesScreen(),
-      TestCartDataScreen(),
+      OrdersScreen(),
       ProfileScreen(),
     ];
   }
@@ -38,7 +40,17 @@ class _MainScreenState extends State<MainScreen> {
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: _FloatingNavBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
+        onTap: (index) async {
+          // If Orders or Profile tab → require login
+          if (index == 2 || index == 3) {
+            final isLoggedIn = await ApiService().isLoggedIn();
+
+            if (!isLoggedIn) {
+              showAuthBottomSheet(context); // same as home screen
+              return;
+            }
+          }
+
           setState(() {
             _currentIndex = index;
           });

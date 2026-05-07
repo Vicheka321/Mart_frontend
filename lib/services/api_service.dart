@@ -2,13 +2,16 @@ import 'package:http/http.dart' as http;
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:mart_frontend/models/productsModel.dart';
-import '../models/bannersModel.dart';
-import '../models/brandsModel.dart';
-import '../models/categoriesModel.dart';
+import 'package:mart_frontend/models/products_model.dart';
+import '../models/banners_model.dart';
+import '../models/brands_model.dart';
+import '../models/categories_model.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:http_parser/http_parser.dart';
 import 'dart:io';
+
+import '../models/my_orders_model.dart';
+import '../models/profile_model.dart';
 
 class ApiService {
   final String baseUrl = 'http://10.0.2.2:8000/api';
@@ -517,5 +520,144 @@ class ApiService {
     } catch (e) {
       throw Exception(e.toString());
     }
+  }
+
+  Future<MyOrdersModel> fetchMyOrders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null || token.isEmpty) {
+      throw Exception("No token found. User not authenticated.");
+    }
+
+    final response = await http
+        .get(
+          Uri.parse("$baseUrl/orders"),
+          headers: {
+            "Authorization": "Bearer $token",
+            "Accept": "application/json",
+          },
+        )
+        .timeout(const Duration(seconds: 15));
+
+    if (response.statusCode == 200) {
+      try {
+        return myOrdersModelFromJson(response.body);
+      } catch (e) {
+        throw Exception("Invalid response format: $e");
+      }
+    } else {
+      throw Exception(
+        "Failed to load orders (Status: ${response.statusCode}): ${response.body}",
+      );
+    }
+  }
+
+  // ==========================profile================
+  Future<MyProfileModel> fetchMyProfile() async {
+    // ✅ Get token
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/my-profile'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      return myProfileModelFromJson(response.body);
+    } else {
+      throw Exception('Failed to load profile: ${response.body}');
+    }
+  }
+
+  // ===========================order================================
+
+  Future<Map<String, dynamic>> storeAddress({
+    required String phone,
+    required String address,
+    required double lat,
+    required double lng,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/address"),
+
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
+
+      body: {
+        "phone": phone,
+        "address": address,
+        "lat": lat.toString(),
+        "lng": lng.toString(),
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return data;
+    } else {
+      throw Exception(data["message"] ?? "Failed to save address");
+    }
+  }
+
+  Future<Map<String, dynamic>> placeOrder({
+    required int addressId,
+    required String paymentMethod,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/order"),
+
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
+
+      body: {
+        "address_id": addressId.toString(),
+        "payment_method": paymentMethod,
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return data;
+    } else {
+      throw Exception(data["message"] ?? "Failed to place order");
+    }
+  }
+
+  Future<Map<String, dynamic>> generateQR(int orderId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/payment/khqr"),
+
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
+
+      body: {"order_id": orderId.toString()},
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  Future<Map<String, dynamic>> checkPayment(String md5) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/check"),
+
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
+
+      body: {"md5": md5},
+    );
+
+    return jsonDecode(response.body);
   }
 }

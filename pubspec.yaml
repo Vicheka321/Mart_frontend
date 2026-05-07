@@ -39,6 +39,11 @@ dependencies:
   jwt_decoder: ^2.0.1
   provider: ^6.1.5+1
   google_maps_flutter: ^2.17.0
+  get: ^4.7.3
+  image_picker: ^1.2.2
+  geocoding: ^4.0.0
+  geolocator: ^14.0.2
+
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +65,22 @@ flutter:
   assets:
 
     - lib/icons/
+  # fonts:
+  #   - family: NotoSans
+  #     fonts:
+  #       - asset: llb/fonts/NotoSans-Regular.ttf
+
+  #   - family: NotoSansKhmer
+  #     fonts:
+  #       - asset: lib/fonts/NotoSansKhmer-Regular.ttf
+
+  #   - family: NotoSansSC
+  #     fonts:
+  #       - asset: lib/fonts/NotoSansSC-Regular.otf
+
+
+
+
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

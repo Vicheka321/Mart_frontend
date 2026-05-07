@@ -1,54 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/cart_provider.dart';
 import 'screens/splash/splash_screen.dart';
+import 'screens/theme/theme_controller.dart';
+import 'controllers/language_controller.dart';
+import 'translations/app_translations.dart';
 
 void main() {
   runApp(
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => CartProvider()),
-      ],
-      child: const MyApp(),
+      providers: [ChangeNotifierProvider(create: (_) => CartProvider())],
+      child: MyApp(),
     ),
   );
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+//
+// ─────────────────────────────────────────────
+// THEME CONTROLLER (GETX)
+// ─────────────────────────────────────────────
+//
 
-  static _MyAppState? of(BuildContext context) =>
-      context.findAncestorStateOfType<_MyAppState>();
+//
+// ─────────────────────────────────────────────
+// MAIN APP
+// ─────────────────────────────────────────────
+//
 
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
+class MyApp extends StatelessWidget {
+  MyApp({super.key});
 
-class _MyAppState extends State<MyApp> {
-  bool isDark = false;
-
-  void toggleTheme(bool value) {
-    setState(() {
-      isDark = value;
-    });
-  }
+  final ThemeController controller = Get.put(ThemeController());
+  final languageController = Get.put(LanguageController());
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 450),
-      switchInCurve: Curves.easeInOut,
-      switchOutCurve: Curves.easeInOut,
-
-      child: MaterialApp(
-        key: ValueKey(isDark), // important for animation
+    return Obx(
+      () => GetMaterialApp(
+        translations: AppTranslations(),
+        locale: Locale(languageController.language.value),
+        fallbackLocale: const Locale('en'),
         debugShowCheckedModeBanner: false,
 
+        // 🌞 Light Theme
         theme: lightTheme,
+
+        // 🌙 Dark Theme
         darkTheme: darkTheme,
-        themeMode: isDark
-            ? ThemeMode.dark
-            : ThemeMode.light,
+
+        // 🔥 Dynamic Theme
+        themeMode: controller.isDark.value ? ThemeMode.dark : ThemeMode.light,
 
         home: SplashScreen(),
       ),
@@ -56,7 +59,11 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-
+//
+// ─────────────────────────────────────────────
+// LIGHT THEME
+// ─────────────────────────────────────────────
+//
 
 final ThemeData lightTheme = ThemeData(
   useMaterial3: true,
@@ -75,22 +82,22 @@ final ThemeData lightTheme = ThemeData(
     elevation: 0,
   ),
 
-cardTheme: CardThemeData(
-  color: Colors.white,
-  elevation: 4,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(20),
+  cardTheme: CardThemeData(
+    color: Colors.white,
+    elevation: 4,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
   ),
-),
 
   switchTheme: SwitchThemeData(
-    thumbColor: WidgetStateProperty.all(
-      const Color(0xFF8B7CF6),
-    ),
+    thumbColor: WidgetStateProperty.all(const Color(0xFF8B7CF6)),
   ),
 );
 
-
+//
+// ─────────────────────────────────────────────
+// DARK THEME
+// ─────────────────────────────────────────────
+//
 
 final ThemeData darkTheme = ThemeData(
   useMaterial3: true,
@@ -109,17 +116,13 @@ final ThemeData darkTheme = ThemeData(
     elevation: 0,
   ),
 
-cardTheme: CardThemeData(
-  color: Color(0xff1E1E1E),
-  elevation: 0,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(20),
+  cardTheme: CardThemeData(
+    color: Color(0xff1E1E1E),
+    elevation: 0,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
   ),
-),
 
   switchTheme: SwitchThemeData(
-    thumbColor: WidgetStateProperty.all(
-      const Color(0xFF8B7CF6),
-    ),
+    thumbColor: WidgetStateProperty.all(const Color(0xFF8B7CF6)),
   ),
 );
