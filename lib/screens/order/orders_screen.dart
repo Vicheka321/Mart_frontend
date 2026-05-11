@@ -3893,17 +3893,17 @@ class _OrdersScreenState extends State<OrdersScreen>
     }
   }
 
-  List<Order> _filtered(String? filter) {
+  List<Order> _filtered(Object? filter) {
     if (filter == null) return _orders;
-
+    final f = filter.toString();
     return _orders.where((o) {
       final status = o.status.toLowerCase().trim();
 
-      if (filter == 'completed') {
+      if (f == 'completed') {
         return status == 'completed' || status == 'delivered'; // ✅ FIX
       }
 
-      return status == filter;
+      return status == f;
     }).toList();
   }
 
@@ -3966,16 +3966,7 @@ class _OrdersScreenState extends State<OrdersScreen>
           ),
         ],
       ),
-      actions: [
-        Container(
-          margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
-          decoration: BoxDecoration(
-            color: c.cardBg,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: c.border.withOpacity(0.3)),
-          ),
-        ),
-      ],
+      actions: [const SizedBox(width: 16)],
     );
   }
 
@@ -5467,20 +5458,20 @@ class _PriceSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = colors;
-    final subtotal = order.items.fold(
-      0.0,
-      (sum, item) => sum + (double.tryParse(item.finalPrice) ?? 0) * item.qty,
-    );
-    final grandTotal = double.tryParse(order.total) ?? subtotal;
+    final subtotal = order.items.fold(0.0, (sum, item) {
+      final price = double.tryParse(item.finalPrice.toString()) ?? 0.0;
+      return sum + price * item.qty;
+    });
+    final grandTotal = double.tryParse(order.total.toString()) ?? subtotal;
     final shipping = grandTotal - subtotal;
 
     return Column(
       children: [
         _row(c, 'Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
-        if (shipping > 0)
+        if (shipping > 0.001)
           _row(c, 'Shipping', '\$${shipping.toStringAsFixed(2)}'),
-        Divider(height: 16, color: c.border.withOpacity(0.15)),
-        _row(c, 'Total', '\$${order.total}', bold: true),
+        Divider(height: 16, color: c.border.withValues(alpha: 0.15)),
+        _row(c, 'Total', '\$${grandTotal.toStringAsFixed(2)}', bold: true),
       ],
     );
   }

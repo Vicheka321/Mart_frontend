@@ -581,7 +581,7 @@ class Item {
     productId: json["product_id"],
     name: json["name"],
     qty: json["qty"],
-    price: json["price"],
+    price: json["price"].toString(),
     totalPrice: json["total_price"].toDouble(),
     images: List<String>.from(json["images"].map((x) => x)),
   );

@@ -20,6 +20,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   final phoneController = TextEditingController();
   String paymentMethod = "khqr";
+  bool _isPlacingOrder = false; // ← prevents duplicate submissions
 
   @override
   void initState() {
@@ -140,8 +141,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _placeOrder,
-                            child: const Text("Place Order"),
+                            onPressed: _isPlacingOrder ? null : _placeOrder,
+                            child: _isPlacingOrder
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text("Place Order"),
                           ),
                         ),
                       ],
@@ -174,12 +184,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   // }
 
   Future<void> _placeOrder() async {
+    if (_isPlacingOrder) return; // double-tap guard
+
+    setState(() => _isPlacingOrder = true);
+
     try {
       if (currentPosition == null || phoneController.text.isEmpty) {
+        setState(() => _isPlacingOrder = false);
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text("Fill all fields")));
-
         return;
       }
 
@@ -196,8 +210,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         lng: lng,
       );
 
-      print(addressRes);
-
       final addressId = addressRes["address_id"];
 
       /// ✅ PLACE ORDER
@@ -206,17 +218,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         paymentMethod: paymentMethod,
       );
 
-      print(orderRes);
-
       final orderId = orderRes["data"]["order_id"];
 
       /// ✅ CASH
       if (paymentMethod == "cash") {
+        if (!mounted) return;
+        setState(() => _isPlacingOrder = false);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const OrderSuccessScreen()),
         );
-
         return;
       }
 
@@ -224,27 +235,37 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (paymentMethod == "khqr") {
         final qrRes = await ApiService().generateQR(orderId);
 
-        print(qrRes);
+        // Use the amount from placeOrder response — backend returns it
+        // as a num (e.g. 2.50) directly in data["amount"].
+        final orderTotal = orderRes["data"]["amount"];
+        final displayAmount = orderTotal is String
+            ? orderTotal
+            : (orderTotal as num).toStringAsFixed(2);
 
+        if (!mounted) return;
+        setState(() => _isPlacingOrder = false);
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => KhqrScreen(
               qrUrl: qrRes["qr_url"],
-              amount: qrRes["amount"].toString(),
-
-              /// ✅ IMPORTANT
+              amount: displayAmount,
               md5: qrRes["md5"],
             ),
           ),
         );
+        return;
       }
-    } catch (e) {
-      print(e);
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      // Any other payment method — reset flag
+      if (mounted) setState(() => _isPlacingOrder = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isPlacingOrder = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     }
   }
 
