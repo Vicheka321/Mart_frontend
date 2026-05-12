@@ -1450,7 +1450,8 @@ class _EmptyState extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────
 
 class _ErrorState extends StatelessWidget {
-  const _ErrorState();
+  final String? error;
+  const _ErrorState({this.error});
 
   @override
   Widget build(BuildContext context) {
@@ -1476,7 +1477,17 @@ class _ErrorState extends StatelessWidget {
           const SizedBox(height: _T.sp16),
           Text('Something went wrong', style: _T.bodyMd(colors.text2)),
           const SizedBox(height: _T.sp6),
-          Text('Please try again later', style: _T.bodySm(colors.text3)),
+          if (error != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                error!,
+                style: _T.bodySm(colors.flashText),
+                textAlign: TextAlign.center,
+              ),
+            )
+          else
+            Text('Please try again later', style: _T.bodySm(colors.text3)),
         ],
       ),
     );
@@ -1489,7 +1500,7 @@ class _ErrorState extends StatelessWidget {
 
 class ProductListScreen extends StatefulWidget {
   final String title;
-  final Future<List<dynamic>> Function() fetch;
+  final Future<List> Function() fetch;
 
   const ProductListScreen({
     super.key,
@@ -1502,16 +1513,21 @@ class ProductListScreen extends StatefulWidget {
 }
 
 class _ProductListScreenState extends State<ProductListScreen> {
-  late Future<List<dynamic>> _future;
+  late Future<List> _future;
+
+  // Wraps the fetch — model handles null fields with fallback defaults.
+  Future<List> _safeFetch() async {
+    return await widget.fetch();
+  }
 
   @override
   void initState() {
     super.initState();
-    _future = widget.fetch();
+    _future = _safeFetch();
   }
 
   Future<void> _refresh() async {
-    setState(() => _future = widget.fetch());
+    setState(() => _future = _safeFetch());
     await _future;
   }
 
@@ -1527,7 +1543,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
             // ── Content ───────────────────────────────────────
             Expanded(
-              child: FutureBuilder<List<dynamic>>(
+              child: FutureBuilder<List>(
                 future: _future,
                 builder: (context, snapshot) {
                   // Loading
@@ -1537,7 +1553,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
                   // Error
                   if (snapshot.hasError) {
-                    return const _ErrorState();
+                    return _ErrorState(error: snapshot.error.toString());
                   }
 
                   final products = snapshot.data ?? [];
