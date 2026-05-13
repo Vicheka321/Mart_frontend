@@ -394,50 +394,131 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   /// ========== PAYMENT METHOD SECTION WIDGET ==========
   Widget _buildPaymentMethodSection() {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
               "Payment method",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
-            RadioListTile(
-              value: "cash",
-              groupValue: paymentMethod,
-              onChanged: (v) {
-                setState(() {
-                  paymentMethod = v.toString();
-                });
-              },
-              title: const Text("pay by cash"),
-              contentPadding: EdgeInsets.zero,
+          ),
+          const SizedBox(height: 12),
+          _buildPaymentOption(
+            value: "cash",
+            label: "Pay by cash",
+            icon: Icons.money,
+          ),
+          _buildPaymentOption(
+            value: "aba",
+            label: "Pay by ABA",
+            icon: Icons.account_balance,
+          ),
+          _buildPaymentOption(
+            value: "khqr",
+            label: "Pay by KHQR",
+            icon: Icons.qr_code,
+          ),
+          // Previous implementation using RadioListTile options:
+          // RadioListTile(
+          //   value: "cash",
+          //   groupValue: paymentMethod,
+          //   onChanged: (v) {
+          //     setState(() {
+          //       paymentMethod = v.toString();
+          //     });
+          //   },
+          //   title: const Text("pay by cash"),
+          //   contentPadding: EdgeInsets.zero,
+          // ),
+          // RadioListTile(
+          //   value: "aba",
+          //   groupValue: paymentMethod,
+          //   onChanged: (v) {
+          //     setState(() {
+          //       paymentMethod = v.toString();
+          //     });
+          //   },
+          //   title: const Text("pay by ABA"),
+          //   contentPadding: EdgeInsets.zero,
+          // ),
+          // RadioListTile(
+          //   value: "khqr",
+          //   groupValue: paymentMethod,
+          //   onChanged: (v) {
+          //     setState(() {
+          //       paymentMethod = v.toString();
+          //     });
+          //   },
+          //   title: const Text("pay by KHQR"),
+          //   contentPadding: EdgeInsets.zero,
+          // ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentOption({
+    required String value,
+    required String label,
+    required IconData icon,
+  }) {
+    final bool selected = paymentMethod == value;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          paymentMethod = value;
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? Colors.green : Colors.grey.shade300,
+            width: selected ? 1.8 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            RadioListTile(
-              value: "aba",
-              groupValue: paymentMethod,
-              onChanged: (v) {
-                setState(() {
-                  paymentMethod = v.toString();
-                });
-              },
-              title: const Text("pay by ABA"),
-              contentPadding: EdgeInsets.zero,
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: selected ? Colors.green : Colors.grey[700]),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: selected ? Colors.black : Colors.grey[800],
+                ),
+              ),
             ),
-            RadioListTile(
-              value: "khqr",
-              groupValue: paymentMethod,
-              onChanged: (v) {
-                setState(() {
-                  paymentMethod = v.toString();
-                });
-              },
-              title: const Text("pay by KHQR"),
-              contentPadding: EdgeInsets.zero,
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: selected ? Colors.green : Colors.grey.shade400,
+                  width: 2,
+                ),
+                color: selected ? Colors.green : Colors.transparent,
+              ),
+              child: selected
+                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                  : null,
             ),
           ],
         ),
@@ -481,6 +562,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         addressId: addressId,
         paymentMethod: paymentMethod,
       );
+
+      // Refresh cart state after a successful checkout so the UI updates immediately
+      await context.read<CartProvider>().fetchCart();
 
       final orderId = orderRes["data"]["order_id"];
 
