@@ -641,7 +641,9 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../auth/login_register_screen.dart';
+import '../../providers/cart_provider.dart';
 import '../theme/app_theme.dart';
 import '../../services/api_service.dart';
 import 'product_detail_screen.dart';

@@ -1492,6 +1492,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../../providers/cart_provider.dart';
 import '../../services/api_service.dart';
 import '../theme/app_theme.dart';
 
@@ -2508,6 +2510,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           isInCart = true;
           cartQty = qty;
         });
+        // Refresh CartProvider so FloatingCartBar appears immediately
+        context.read<CartProvider>().fetchCart();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(isInCart ? 'Cart updated' : 'Added to cart'),
