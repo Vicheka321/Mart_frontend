@@ -1498,6 +1498,7 @@ import '../../providers/cart_provider.dart';
 import '../../services/api_service.dart';
 import '../../translations/catalog_translation.dart';
 import '../../services/wishlist_service.dart';
+import '../../widgets/skeleton_loader.dart';
 import '../theme/app_theme.dart';
 
 // ─────────────────────────────────────────────────────────────
@@ -2175,13 +2176,12 @@ class _CartButton extends StatelessWidget {
           ),
           child: Center(
             child: loading
-                ? SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.2,
-                      color: Colors.white.withOpacity(.9),
-                    ),
+                ? const SkeletonBox(
+                    width: 92,
+                    height: 12,
+                    borderRadius: BorderRadius.all(Radius.circular(6)),
+                    baseColor: Colors.white54,
+                    highlightColor: Colors.white,
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -2977,13 +2977,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                 ),
                                 child: Center(
                                   child: cartLoading
-                                      ? const SizedBox(
-                                          width: 22,
-                                          height: 22,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2.2,
-                                            color: Colors.white,
+                                      ? const SkeletonBox(
+                                          width: 92,
+                                          height: 12,
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(6),
                                           ),
+                                          baseColor: Colors.white54,
+                                          highlightColor: Colors.white,
                                         )
                                       : Row(
                                           mainAxisAlignment:

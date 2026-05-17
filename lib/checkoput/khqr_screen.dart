@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
+import '../widgets/skeleton_loader.dart';
 import 'OrderSuccessScreen.dart';
 
 
@@ -119,10 +120,10 @@ class _KhqrScreenState
                 ),
                 child: Column(
                   children: [
-                    const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2.5),
+                    const SkeletonBox(
+                      width: 88,
+                      height: 12,
+                      borderRadius: BorderRadius.all(Radius.circular(6)),
                     ),
                     const SizedBox(height: 12),
                     Text(
@@ -257,7 +258,11 @@ class _KhqrCard extends StatelessWidget {
                         if (loadingProgress == null) return child;
 
                         return const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2.5),
+                          child: SkeletonBox(
+                            width: 180,
+                            height: 180,
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
                         );
                       },
                       errorBuilder: (context, error, stackTrace) {

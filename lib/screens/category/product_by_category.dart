@@ -4,6 +4,7 @@ import '../../auth/login_register_screen.dart';
 import '../../models/categories_model.dart';
 import '../../services/api_service.dart';
 import '../../translations/catalog_translation.dart';
+import '../../widgets/skeleton_loader.dart';
 import '../theme/app_theme.dart';
 import '../product/product_detail_screen.dart';
 
@@ -574,11 +575,13 @@ class _CartStepper extends StatelessWidget {
       return SizedBox(
         width: btn,
         height: btn,
-        child: Padding(
-          padding: EdgeInsets.all(btn * 0.25),
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: colors.accent,
+        child: Center(
+          child: SkeletonBox(
+            width: btn * 0.58,
+            height: btn * 0.58,
+            borderRadius: BorderRadius.circular(btn * 0.29),
+            baseColor: colors.accent.withValues(alpha: 0.18),
+            highlightColor: colors.accent.withValues(alpha: 0.35),
           ),
         ),
       );

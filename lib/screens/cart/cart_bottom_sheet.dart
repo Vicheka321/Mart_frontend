@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../checkoput/checkout_screen.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/api_service.dart';
+import '../../widgets/skeleton_loader.dart';
 import '../theme/app_theme.dart';
 
 class CartBottomSheet extends StatefulWidget {
@@ -182,9 +183,18 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                               ? SizedBox(
                                   width: s * 0.06,
                                   height: s * 0.06,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: colors.accent,
+                                  child: SkeletonBox(
+                                    width: s * 0.06,
+                                    height: s * 0.06,
+                                    borderRadius: BorderRadius.circular(
+                                      s * 0.03,
+                                    ),
+                                    baseColor: colors.accent.withValues(
+                                      alpha: 0.18,
+                                    ),
+                                    highlightColor: colors.accent.withValues(
+                                      alpha: 0.35,
+                                    ),
                                   ),
                                 )
                               : _QtyStepper(

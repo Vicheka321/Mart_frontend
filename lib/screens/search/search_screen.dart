@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../services/api_service.dart';
 import '../../translations/catalog_translation.dart';
+import '../../widgets/skeleton_loader.dart';
 import '../product/product_detail_screen.dart';
 import '../theme/app_theme.dart';
 
@@ -121,7 +122,9 @@ class _SearchScreenState extends State<SearchScreen> {
               future: _productsFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const SkeletonList(
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, 32),
+                  );
                 }
 
                 if (snapshot.hasError) {

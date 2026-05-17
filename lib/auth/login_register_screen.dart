@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../services/api_service.dart';
+import '../widgets/skeleton_loader.dart';
 
 // ─────────────────────────────────────────────
 // ENTRY POINT — call this to open the sheet
@@ -1317,13 +1318,12 @@ class _PrimaryButton extends StatelessWidget {
         ),
         child: Center(
           child: loading
-              ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2.5,
-                  ),
+              ? const SkeletonBox(
+                  width: 82,
+                  height: 12,
+                  borderRadius: BorderRadius.all(Radius.circular(6)),
+                  baseColor: Colors.white54,
+                  highlightColor: Colors.white,
                 )
               : Text(
                   label,

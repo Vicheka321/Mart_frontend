@@ -9,6 +9,7 @@ import '../services/api_service.dart';
 import '../services/address_history_service.dart';
 import '../providers/cart_provider.dart';
 import '../screens/theme/app_theme.dart';
+import '../widgets/skeleton_loader.dart';
 import 'OrderSuccessScreen.dart';
 import 'khqr_screen.dart';
 
@@ -69,7 +70,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Scaffold(
       appBar: AppBar(title: Text("checkout".tr)),
       body: currentPosition == null
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: SkeletonBox(
+                width: 180,
+                height: 16,
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+              ),
+            )
           : SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -103,15 +110,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           disabledBackgroundColor: Colors.grey,
                         ),
                         child: _isPlacingOrder
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
+                            ? const SkeletonBox(
+                                width: 86,
+                                height: 12,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(6),
                                 ),
+                                baseColor: Colors.white54,
+                                highlightColor: Colors.white,
                               )
                             : Text(
                                 "place_order".tr,
@@ -249,7 +255,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Center(child: CircularProgressIndicator()),
+                  const SkeletonBox(
+                    width: 150,
+                    height: 14,
+                    borderRadius: BorderRadius.all(Radius.circular(7)),
+                  ),
                 ],
               ),
             ),

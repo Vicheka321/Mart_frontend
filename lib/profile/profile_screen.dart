@@ -1380,6 +1380,7 @@ import '../controllers/language_controller.dart';
 import '../models/profile_model.dart';
 import '../screens/theme/theme_controller.dart';
 import '../translations/catalog_translation.dart';
+import '../widgets/skeleton_loader.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // THEME HELPERS
@@ -1921,7 +1922,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                       color: context.card,
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    child: const CircularProgressIndicator(),
+                    child: const SkeletonBox(
+                      width: 88,
+                      height: 12,
+                      borderRadius: BorderRadius.all(Radius.circular(6)),
+                    ),
                   ),
                 ),
               );
@@ -3108,7 +3113,9 @@ class _WishlistPageState extends State<_WishlistPage> {
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const SkeletonList(
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 32),
+            );
           }
 
           final products = snapshot.data ?? [];
@@ -3195,7 +3202,10 @@ class _AddressPageState extends State<_AddressPage> {
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const SkeletonList(
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 32),
+              showImage: false,
+            );
           }
 
           final addresses = snapshot.data ?? [];
