@@ -1492,9 +1492,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/api_service.dart';
+import '../../translations/catalog_translation.dart';
+import '../../services/wishlist_service.dart';
 import '../theme/app_theme.dart';
 
 // ─────────────────────────────────────────────────────────────
@@ -1659,9 +1662,9 @@ class _ShimmerState extends State<_Shimmer>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final base = isDark ? const Color(0xFF1E2A3A) : const Color(0xFFECEFF4);
+    final base = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFECEFF4);
     final highlight = isDark
-        ? const Color(0xFF2A3A4E)
+        ? const Color(0xFF252525)
         : const Color(0xFFF8FAFB);
 
     return AnimatedBuilder(
@@ -1914,9 +1917,9 @@ class _ErrorState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: _T.sp16),
-            Text('Failed to load product', style: _T.heading2(colors.text2)),
+            Text('failed_to_load_product'.tr, style: _T.heading2(colors.text2)),
             const SizedBox(height: _T.sp6),
-            Text('Please try again', style: _T.bodySm(colors.text3)),
+            Text('please_try_again'.tr, style: _T.bodySm(colors.text3)),
           ],
         ),
       ),
@@ -2401,7 +2404,7 @@ class _ExpandableDescriptionState extends State<_ExpandableDescription> {
           GestureDetector(
             onTap: () => setState(() => _expanded = !_expanded),
             child: Text(
-              _expanded ? 'Show less' : 'ReadMore',
+              _expanded ? 'show_less'.tr : 'read_more'.tr,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -2449,6 +2452,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     super.initState();
     productFuture = ApiService().fetchProduct(widget.productId);
     _loadCartQty();
+    _loadFavorite();
 
     // favourite bounce
     _favCtrl = AnimationController(
@@ -2514,7 +2518,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         context.read<CartProvider>().fetchCart();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isInCart ? 'Cart updated' : 'Added to cart'),
+            content: Text(isInCart ? 'cart_updated'.tr : 'added_to_cart'.tr),
             duration: const Duration(milliseconds: 900),
           ),
         );
@@ -2523,23 +2527,27 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Something went wrong')));
+        ).showSnackBar(SnackBar(content: Text('something_went_wrong'.tr)));
       }
     } finally {
       if (mounted) setState(() => cartLoading = false);
     }
   }
 
-  void _toggleFavourite() {
+  Future<void> _loadFavorite() async {
+    final saved = await WishlistService().isFavorite(widget.productId);
+    if (mounted) setState(() => isFavorite = saved);
+  }
+
+  Future<void> _toggleFavourite() async {
     HapticFeedback.lightImpact();
-    setState(() => isFavorite = !isFavorite);
+    final saved = await WishlistService().toggle(widget.productId);
+    if (mounted) setState(() => isFavorite = saved);
     _favCtrl.forward(from: 0);
   }
 
   // ── Build ───────────────────────────────────────────────────
 
-  @override
-  // ── Build ───────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -2547,25 +2555,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     final s = mq.size;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
             size: 18,
-            color: Colors.black87,
+            color: colors.text1,
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Detail',
+        title: Text(
+          'detail'.tr,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Colors.black87,
+            color: colors.text1,
           ),
         ),
         centerTitle: true,
@@ -2582,7 +2590,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                       ? Icons.favorite_rounded
                       : Icons.favorite_border_rounded,
                   key: ValueKey(isFavorite),
-                  color: isFavorite ? colors.flashText : Colors.black54,
+                  color: isFavorite ? colors.flashText : colors.text2,
                   size: 22,
                 ),
               ),
@@ -2618,7 +2626,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                       borderRadius: BorderRadius.circular(24),
                       child: Container(
                         height: s.height * .42,
-                        color: const Color(0xFFF2F2F2),
+                        color: colors.surface2,
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
@@ -2675,11 +2683,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colors.cardBg,
                         borderRadius: BorderRadius.circular(28),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
+                            color: Colors.black.withValues(alpha: 0.30),
                             blurRadius: 20,
                             offset: const Offset(0, 4),
                           ),
@@ -2698,7 +2706,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                             // brand above name
                             if ((p.brandName as String?)?.isNotEmpty == true)
                               Text(
-                                p.brandName as String,
+                                (p.brandName as String).trCatalog,
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
@@ -2734,12 +2742,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                 const SizedBox(width: _T.sp4),
                                 Text(
                                   (p.brandName as String?)?.isNotEmpty == true
-                                      ? p.brandName as String
+                                      ? (p.brandName as String).trCatalog
                                       : '—',
                                   style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFFE65100),
+                                    color: Color(0xFF00E676),
                                   ),
                                 ),
                                 const SizedBox(width: _T.sp16),
@@ -2796,10 +2804,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                     ],
                                     Text(
                                       '\$${p.finalPrice}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.w900,
-                                        color: Color(0xFFE65100),
+                                        color: colors.text1,
                                         letterSpacing: -.5,
                                       ),
                                     ),
@@ -2812,7 +2820,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
                             // Description accordion
                             _AccordionRow(
-                              title: 'Description',
+                              title: 'description'.tr,
                               colors: colors,
                               child: Padding(
                                 padding: const EdgeInsets.only(
@@ -2832,7 +2840,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
                             // Quantity accordion
                             _AccordionRow(
-                              title: 'Quantity',
+                              title: 'quantity'.tr,
                               colors: colors,
                               child: Padding(
                                 padding: const EdgeInsets.only(
@@ -2910,7 +2918,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                           CrossAxisAlignment.end,
                                       children: [
                                         Text(
-                                          'Total',
+                                          'total'.tr,
                                           style: TextStyle(
                                             fontSize: 11,
                                             color: colors.text3,
@@ -2918,10 +2926,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                         ),
                                         Text(
                                           '\$${((double.tryParse(p.finalPrice.toString()) ?? 0) * qty).toStringAsFixed(2)}',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w800,
-                                            color: Color(0xFFE65100),
+                                            color: colors.text1,
                                             letterSpacing: -.4,
                                           ),
                                         ),
@@ -2942,19 +2950,27 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                 height: 52,
                                 decoration: BoxDecoration(
                                   color: cartLoading
-                                      ? const Color(
-                                          0xFFE65100,
+                                      ? const Color.fromARGB(
+                                          255,
+                                          0,
+                                          230,
+                                          119,
                                         ).withValues(alpha: 0.6)
-                                      : const Color(0xFFE65100),
+                                      : const Color.fromARGB(
+                                          255,
+                                          0,
+                                          230,
+                                          119,
+                                        ).withValues(alpha: 0.6),
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: cartLoading
                                       ? []
                                       : [
                                           BoxShadow(
                                             color: const Color(
-                                              0xFFE65100,
-                                            ).withValues(alpha: 0.28),
-                                            blurRadius: 12,
+                                              0xFF00FF00,
+                                            ).withValues(alpha: 0.08),
+                                            blurRadius: 9,
                                             offset: const Offset(0, 4),
                                           ),
                                         ],
@@ -2975,8 +2991,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                           children: [
                                             Text(
                                               isInCart
-                                                  ? 'Update Cart'
-                                                  : 'Add to Cart',
+                                                  ? 'update_cart'.tr
+                                                  : 'add_to_cart'.tr,
                                               style: const TextStyle(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w700,

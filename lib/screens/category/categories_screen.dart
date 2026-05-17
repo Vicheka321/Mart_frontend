@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 
 import '../../services/api_service.dart';
+import '../../translations/catalog_translation.dart';
 import 'product_by_category.dart';
 import '../search/search_screen.dart';
 import '../theme/app_theme.dart';
@@ -153,7 +155,9 @@ class _CategoriesScreenState extends State<CategoriesScreen>
   List<CategoryModel> get _filteredCategories {
     final q = _searchController.text.trim().toLowerCase();
     if (q.isEmpty) return _categories;
-    return _categories.where((c) => c.name.toLowerCase().contains(q)).toList();
+    return _categories.where((c) {
+      return c.name.toLowerCase().contains(q);
+    }).toList();
   }
 
   void _clearSearch() {
@@ -241,7 +245,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
 
     return Scaffold(
       extendBody: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -309,7 +313,7 @@ Widget _SearchBar(BuildContext context) {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                "Search categories, brands & products...",
+                'search_categories_brands_products'.tr,
                 style: TextStyle(color: Colors.grey[500], fontSize: 14),
               ),
             ),
@@ -330,10 +334,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          
-        ],
-      ),
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: []),
     );
   }
 }
@@ -350,10 +351,12 @@ class _SuggestionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 8, 20, 0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.cardBg,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -378,7 +381,7 @@ class _SuggestionList extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   border: index < suggestions.length - 1
-                      ? Border(bottom: BorderSide(color: Colors.grey.shade100))
+                      ? Border(bottom: BorderSide(color: colors.border))
                       : null,
                 ),
                 child: Row(
@@ -408,18 +411,17 @@ class _SuggestionList extends StatelessWidget {
                       children: [
                         Text(
                           suggestion.text,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF1A1A1A),
+                            color: colors.text1,
                           ),
                         ),
                         Text(
-                          suggestion.isProduct ? 'Product' : 'Category / Brand',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade400,
-                          ),
+                          suggestion.isProduct
+                              ? 'product'.tr
+                              : 'category_brand'.tr,
+                          style: TextStyle(fontSize: 11, color: colors.text2),
                         ),
                       ],
                     ),
@@ -427,7 +429,7 @@ class _SuggestionList extends StatelessWidget {
                     Icon(
                       Icons.north_west_rounded,
                       size: 14,
-                      color: Colors.grey.shade300,
+                      color: colors.text3,
                     ),
                   ],
                 ),
@@ -465,6 +467,8 @@ class _MainScroll extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return FadeTransition(
       opacity: fadeAnimation,
       child: CustomScrollView(
@@ -493,18 +497,18 @@ class _MainScroll extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'All Categories',
+                  Text(
+                    'all_categories'.tr,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF1A1A1A),
+                      color: colors.text1,
                       letterSpacing: -0.3,
                     ),
                   ),
                   Text(
-                    '${filteredCategories.length} found',
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                    '${filteredCategories.length} ${'found'.tr}',
+                    style: TextStyle(fontSize: 13, color: colors.text2),
                   ),
                 ],
               ),
@@ -550,6 +554,8 @@ class _BrandsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       child: Row(
@@ -557,12 +563,12 @@ class _BrandsHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text(
-                'Brands',
+              Text(
+                'brands'.tr,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1A1A1A),
+                  color: colors.text1,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -570,9 +576,9 @@ class _BrandsHeader extends StatelessWidget {
           ),
           GestureDetector(
             onTap: () {},
-            child: const Text(
-              'See all',
-              style: TextStyle(
+            child: Text(
+              'see_all'.tr,
+              style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFFFF6B35),
@@ -741,7 +747,7 @@ class _FeaturedBrandCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              featured.name,
+                              featured.name.trCatalog,
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w800,
@@ -854,6 +860,8 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -872,23 +880,19 @@ class _EmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'No categories found',
+          Text(
+            'no_products_found'.tr,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1A1A1A),
+              color: colors.text1,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Try adjusting your search\nor filter selection',
+            'try_adjusting_search'.tr,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade500,
-              height: 1.5,
-            ),
+            style: TextStyle(fontSize: 14, color: colors.text2, height: 1.5),
           ),
           const SizedBox(height: 24),
           GestureDetector(
@@ -906,9 +910,9 @@ class _EmptyState extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Text(
-                'Clear filters',
-                style: TextStyle(
+              child: Text(
+                'clear_filters'.tr,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
@@ -1011,6 +1015,8 @@ class _BrandCardState extends State<_BrandCard>
   @override
   Widget build(BuildContext context) {
     final b = widget.brand;
+    final colors = context.colors;
+
     return GestureDetector(
       onTapDown: (_) => _press.forward(),
       onTapUp: (_) async {
@@ -1025,7 +1031,7 @@ class _BrandCardState extends State<_BrandCard>
         child: Container(
           width: 88,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colors.cardBg,
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
@@ -1068,17 +1074,17 @@ class _BrandCardState extends State<_BrandCard>
               ),
               const SizedBox(height: 6),
               Text(
-                b.name,
-                style: const TextStyle(
+                b.name.trCatalog,
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1A1A1A),
+                  color: colors.text1,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
                 '${b.productCount} items',
-                style: TextStyle(fontSize: 9, color: Colors.grey.shade500),
+                style: TextStyle(fontSize: 9, color: colors.text2),
               ),
             ],
           ),
@@ -1541,7 +1547,7 @@ class BrandScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              brand.name,
+                              brand.name.trCatalog,
                               style: const TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.w800,
@@ -1627,25 +1633,27 @@ class ProductListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F5F0),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF1A1A1A),
+            color: colors.text1,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           category.name,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF1A1A1A),
+            color: colors.text1,
           ),
         ),
         centerTitle: true,
@@ -1666,16 +1674,16 @@ class ProductListScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               '${category.productCount} products in ${category.name}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF555555),
+                color: colors.text2,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Product list UI goes here',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+              style: TextStyle(fontSize: 13, color: colors.text3),
             ),
           ],
         ),

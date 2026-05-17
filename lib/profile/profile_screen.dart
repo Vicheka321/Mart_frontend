@@ -1370,12 +1370,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mart_frontend/screens/main/main_screen.dart';
+import 'package:mart_frontend/screens/product/product_detail_screen.dart';
+import 'package:mart_frontend/services/address_history_service.dart';
 import 'package:mart_frontend/services/api_service.dart';
+import 'package:mart_frontend/services/wishlist_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
 import '../controllers/language_controller.dart';
 import '../models/profile_model.dart';
 import '../screens/theme/theme_controller.dart';
+import '../translations/catalog_translation.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // THEME HELPERS
@@ -1419,6 +1423,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   MyProfileModel? _profile;
   bool _isLoading = true;
   String? _error;
+  int _wishlistCount = 0;
+  int _addressCount = 0;
 
   late AnimationController _headerAnim;
   late Animation<double> _headerFade;
@@ -1426,10 +1432,18 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   // Stats — will update from API where possible
   List<Map<String, dynamic>> get _stats => [
-    {'icon': Icons.shopping_bag_outlined, 'value': '24', 'label': 'Orders'},
-    {'icon': Icons.favorite_border_rounded, 'value': '18', 'label': 'Wishlist'},
-    {'icon': Icons.star_outline_rounded, 'value': '1,240', 'label': 'Points'},
-    {'icon': Icons.local_offer_outlined, 'value': '6', 'label': 'Coupons'},
+    {'icon': Icons.shopping_bag_outlined, 'value': '24', 'label': 'orders'.tr},
+    {
+      'icon': Icons.favorite_border_rounded,
+      'value': _wishlistCount.toString(),
+      'label': 'wishlist'.tr,
+    },
+    {
+      'icon': Icons.star_outline_rounded,
+      'value': '1,240',
+      'label': 'points'.tr,
+    },
+    {'icon': Icons.local_offer_outlined, 'value': '6', 'label': 'coupons'.tr},
   ];
 
   @override
@@ -1446,6 +1460,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     ).animate(CurvedAnimation(parent: _headerAnim, curve: Curves.easeOutCubic));
     _headerAnim.forward();
     _loadProfile();
+    _loadLocalCounts();
   }
 
   @override
@@ -1474,6 +1489,18 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
+  Future<void> _loadLocalCounts() async {
+    final counts = await Future.wait<int>([
+      WishlistService().count(),
+      AddressHistoryService().count(),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _wishlistCount = counts[0];
+      _addressCount = counts[1];
+    });
+  }
+
   // ── Logout ─────────────────────────────────────────────────────
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
@@ -1494,7 +1521,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             backgroundColor: c.bg,
             elevation: 0,
             title: Text(
-              'My Profile',
+              'my_profile'.tr,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
@@ -1555,7 +1582,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           Icon(Icons.cloud_off_rounded, size: 56, color: c.text2),
           const SizedBox(height: 16),
           Text(
-            'Failed to load profile',
+            'failed_to_load_profile'.tr,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -1572,7 +1599,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           ElevatedButton.icon(
             onPressed: _loadProfile,
             icon: const Icon(Icons.refresh_rounded, size: 16),
-            label: const Text('Retry'),
+            label: Text('retry'.tr),
             style: ElevatedButton.styleFrom(
               backgroundColor: c.accent,
               foregroundColor: Colors.white,
@@ -1603,31 +1630,31 @@ class _ProfileScreenState extends State<ProfileScreen>
         const SizedBox(height: 20),
 
         // 2. My Account
-        _SectionLabel(label: 'My Account'),
+        _SectionLabel(label: 'my_account'.tr),
         _MenuGroup(
           items: [
             _MenuItem(
               icon: Icons.favorite_border_rounded,
               iconBg: const Color(0xFFFFE4E6),
               iconColor: const Color(0xFFF43F5E),
-              title: 'Wishlist',
-              subtitle: '18 saved items',
+              title: 'wishlist'.tr,
+              subtitle: '$_wishlistCount ${'saved_items'.tr}',
               onTap: () => _navigate(context, _WishlistPage()),
             ),
             _MenuItem(
               icon: Icons.location_on_outlined,
               iconBg: const Color(0xFFD1FAE5),
               iconColor: const Color(0xFF10B981),
-              title: 'Addresses',
-              subtitle: '2 saved addresses',
+              title: 'addresses'.tr,
+              subtitle: '$_addressCount ${'saved_addresses'.tr}',
               onTap: () => _navigate(context, _AddressPage()),
             ),
             _MenuItem(
               icon: Icons.credit_card_rounded,
               iconBg: const Color(0xFFFEF3C7),
               iconColor: const Color(0xFFF59E0B),
-              title: 'Payment Methods',
-              subtitle: 'Visa, Cash on delivery',
+              title: 'payment_methods'.tr,
+              subtitle: 'visa_cash_delivery'.tr,
               onTap: () => _navigate(context, _PaymentPage()),
             ),
           ],
@@ -1636,7 +1663,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         const SizedBox(height: 20),
 
         // 3. Preferences
-        _SectionLabel(label: 'Preferences'),
+        _SectionLabel(label: 'preferences'.tr),
         _MenuGroup(
           items: [
             _MenuItem(
@@ -1649,8 +1676,10 @@ class _ProfileScreenState extends State<ProfileScreen>
               iconColor: themeController.isDark.value
                   ? const Color(0xFF8B7CF6)
                   : const Color(0xFFF59E0B),
-              title: 'Dark Mode',
-              subtitle: themeController.isDark.value ? 'Enabled' : 'Disabled',
+              title: 'dark_mode'.tr,
+              subtitle: themeController.isDark.value
+                  ? 'enabled'.tr
+                  : 'disabled'.tr,
               customTrailing: Obx(
                 () => Switch.adaptive(
                   value: themeController.isDark.value,
@@ -1699,7 +1728,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         const SizedBox(height: 20),
 
         // 4. Security
-        _SectionLabel(label: 'Security'),
+        _SectionLabel(label: 'security'.tr),
         _MenuGroup(
           items: [
             // _MenuItem(
@@ -1735,8 +1764,8 @@ class _ProfileScreenState extends State<ProfileScreen>
               icon: Icons.shield_outlined,
               iconBg: const Color(0xFFFEF3C7),
               iconColor: const Color(0xFFF59E0B),
-              title: 'Privacy Settings',
-              subtitle: 'Data & permissions',
+              title: 'privacy_settings'.tr,
+              subtitle: 'data_permissions'.tr,
               onTap: () {},
             ),
           ],
@@ -1745,31 +1774,31 @@ class _ProfileScreenState extends State<ProfileScreen>
         const SizedBox(height: 20),
 
         // 5. Support
-        _SectionLabel(label: 'Support'),
+        _SectionLabel(label: 'support'.tr),
         _MenuGroup(
           items: [
             _MenuItem(
               icon: Icons.help_outline_rounded,
               iconBg: const Color(0xFFDBEAFE),
               iconColor: const Color(0xFF3B82F6),
-              title: 'Help Center',
-              subtitle: 'FAQ & support',
+              title: 'help_center'.tr,
+              subtitle: 'faq_support'.tr,
               onTap: () {},
             ),
             _MenuItem(
               icon: Icons.chat_bubble_outline_rounded,
               iconBg: const Color(0xFFD1FAE5),
               iconColor: const Color(0xFF10B981),
-              title: 'Contact Us',
-              subtitle: 'Chat, email, phone',
+              title: 'contact_us'.tr,
+              subtitle: 'chat_email_phone'.tr,
               onTap: () {},
             ),
             _MenuItem(
               icon: Icons.star_outline_rounded,
               iconBg: const Color(0xFFFEF3C7),
               iconColor: const Color(0xFFF59E0B),
-              title: 'Rate the App',
-              subtitle: 'Share your feedback',
+              title: 'rate_app'.tr,
+              subtitle: 'share_feedback'.tr,
               onTap: () {},
             ),
           ],
@@ -1785,16 +1814,16 @@ class _ProfileScreenState extends State<ProfileScreen>
           'Version 2.4.1 · Build 201',
           style: TextStyle(fontSize: 11, color: context.text2),
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: 120 + MediaQuery.of(context).padding.bottom),
       ],
     );
   }
 
   // ── Helpers ───────────────────────────────────────────────────
 
-  void _navigate(BuildContext context, Widget page) {
+  Future<void> _navigate(BuildContext context, Widget page) async {
     HapticFeedback.selectionClick();
-    Navigator.push(
+    await Navigator.push(
       context,
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 280),
@@ -1811,6 +1840,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         ),
       ),
     );
+    if (mounted) _loadLocalCounts();
   }
 
   void _showEditProfile(BuildContext context, MyProfileModel profile) {
@@ -1858,19 +1888,19 @@ class _ProfileScreenState extends State<ProfileScreen>
       builder: (_) => AlertDialog(
         backgroundColor: context.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Log out?',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+        title: Text(
+          'logout_question'.tr,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
         ),
         content: Text(
-          'You will be returned to login.',
+          'logout_message'.tr,
           style: TextStyle(fontSize: 14, color: context.text2),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Cancel',
+              'cancel'.tr,
               style: TextStyle(
                 color: context.text2,
                 fontWeight: FontWeight.w600,
@@ -1913,9 +1943,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text(
-              'Log out',
-              style: TextStyle(fontWeight: FontWeight.w700),
+            child: Text(
+              'logout'.tr,
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -2101,7 +2131,7 @@ class _ProfileHeader extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      profile.phone?.toString() ?? 'No phone added',
+                      profile.phone?.toString() ?? 'no_phone_added'.tr,
                       style: TextStyle(fontSize: 12, color: c.text2),
                     ),
                   ],
@@ -2356,12 +2386,16 @@ class _LogoutButton extends StatelessWidget {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.logout_rounded, size: 18, color: Color(0xFFEF4444)),
-            SizedBox(width: 8),
+          children: [
+            const Icon(
+              Icons.logout_rounded,
+              size: 18,
+              color: Color(0xFFEF4444),
+            ),
+            const SizedBox(width: 8),
             Text(
-              'Log Out',
-              style: TextStyle(
+              'logout'.tr,
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFFEF4444),
@@ -2434,7 +2468,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Could not pick image: $e'),
+            content: Text('${'could_not_pick_image'.tr}: $e'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -2465,7 +2499,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Choose Photo',
+              'choose_photo'.tr,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
@@ -2475,7 +2509,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
             const SizedBox(height: 16),
             _ImageSourceTile(
               icon: Icons.camera_alt_outlined,
-              label: 'Take a photo',
+              label: 'take_photo'.tr,
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
@@ -2484,7 +2518,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
             const SizedBox(height: 10),
             _ImageSourceTile(
               icon: Icons.photo_library_outlined,
-              label: 'Choose from gallery',
+              label: 'choose_gallery'.tr,
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -2494,7 +2528,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               const SizedBox(height: 10),
               _ImageSourceTile(
                 icon: Icons.delete_outline_rounded,
-                label: 'Remove photo',
+                label: 'remove_photo'.tr,
                 color: const Color(0xFFEF4444),
                 onTap: () {
                   Navigator.pop(context);
@@ -2577,7 +2611,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Edit Profile',
+            'edit_profile'.tr,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
@@ -2642,7 +2676,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
           const SizedBox(height: 8),
           Center(
             child: Text(
-              'Tap to change photo',
+              'tap_change_photo'.tr,
               style: TextStyle(fontSize: 12, color: context.text2),
             ),
           ),
@@ -2651,20 +2685,20 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
 
           // ── Fields ────────────────────────────────────────
           _SheetField(
-            label: 'Full Name',
-            hint: 'Your name',
+            label: 'full_name'.tr,
+            hint: 'your_name'.tr,
             controller: _nameCtrl,
           ),
           const SizedBox(height: 14),
           _SheetField(
-            label: 'Email',
+            label: 'email'.tr,
             hint: 'your@email.com',
             controller: _emailCtrl,
             keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: 14),
           _SheetField(
-            label: 'Phone',
+            label: 'phone'.tr,
             hint: '+855 12 345 678',
             controller: _phoneCtrl,
             keyboardType: TextInputType.phone,
@@ -2889,7 +2923,7 @@ class _LanguageSheet extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            'Select Language',
+            'select_language'.tr,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
@@ -3030,33 +3064,432 @@ class _PlaceholderScreen extends StatelessWidget {
   }
 }
 
-class _WishlistPage extends StatelessWidget {
+class _WishlistPage extends StatefulWidget {
   @override
-  Widget build(BuildContext context) => const _PlaceholderScreen(
-    title: 'Wishlist',
-    icon: Icons.favorite_border_rounded,
-    color: Color(0xFFF43F5E),
-    description: 'Your saved items go here',
-  );
+  State<_WishlistPage> createState() => _WishlistPageState();
 }
 
-class _AddressPage extends StatelessWidget {
+class _WishlistPageState extends State<_WishlistPage> {
+  late Future<List<dynamic>> _future;
+
   @override
-  Widget build(BuildContext context) => const _PlaceholderScreen(
-    title: 'Addresses',
-    icon: Icons.location_on_outlined,
-    color: Color(0xFF10B981),
-    description: 'Manage your delivery addresses',
-  );
+  void initState() {
+    super.initState();
+    _future = _loadWishlistProducts();
+  }
+
+  Future<List<dynamic>> _loadWishlistProducts() async {
+    final ids = await WishlistService().getProductIds();
+    final products = <dynamic>[];
+
+    for (final id in ids) {
+      try {
+        products.add(await ApiService().fetchProduct(id));
+      } catch (_) {
+        // Keep the rest of the wishlist visible if one product is unavailable.
+      }
+    }
+
+    return products;
+  }
+
+  Future<void> _remove(dynamic product) async {
+    await WishlistService().remove(product.id as int);
+    if (!mounted) return;
+    setState(() => _future = _loadWishlistProducts());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: context.bg,
+      appBar: _ProfileSubAppBar(title: 'wishlist'.tr),
+      body: FutureBuilder<List<dynamic>>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final products = snapshot.data ?? [];
+          if (products.isEmpty) {
+            return _ProfileEmptyState(
+              icon: Icons.favorite_border_rounded,
+              color: const Color(0xFFF43F5E),
+              title: 'no_saved_products'.tr,
+              subtitle: 'save_product_hint'.tr,
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              setState(() => _future = _loadWishlistProducts());
+              await _future;
+            },
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+              itemCount: products.length,
+              itemBuilder: (_, index) => _WishlistProductTile(
+                product: products[index],
+                onRemove: () => _remove(products[index]),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AddressPage extends StatefulWidget {
+  @override
+  State<_AddressPage> createState() => _AddressPageState();
+}
+
+class _AddressPageState extends State<_AddressPage> {
+  late Future<List<AddressHistoryEntry>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _loadAddresses();
+  }
+
+  Future<List<AddressHistoryEntry>> _loadAddresses() async {
+    final byKey = <String, AddressHistoryEntry>{};
+
+    for (final entry in await AddressHistoryService().loadAddresses()) {
+      byKey[_keyFor(entry)] = entry;
+    }
+
+    try {
+      final orders = await ApiService().fetchMyOrders();
+      for (final order in orders.orders) {
+        if (order.address.trim().isEmpty) continue;
+        final entry = AddressHistoryEntry(
+          phone: order.phone,
+          address: order.address,
+          savedAt: DateTime.tryParse(order.createdAt) ?? DateTime.now(),
+        );
+        byKey.putIfAbsent(_keyFor(entry), () => entry);
+      }
+    } catch (_) {
+      // Local history is still useful when orders cannot be loaded.
+    }
+
+    final addresses = byKey.values.toList()
+      ..sort((a, b) => b.savedAt.compareTo(a.savedAt));
+    return addresses;
+  }
+
+  String _keyFor(AddressHistoryEntry entry) {
+    return '${entry.phone.trim().toLowerCase()}|${entry.address.trim().toLowerCase()}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: context.bg,
+      appBar: _ProfileSubAppBar(title: 'addresses'.tr),
+      body: FutureBuilder<List<AddressHistoryEntry>>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final addresses = snapshot.data ?? [];
+          if (addresses.isEmpty) {
+            return _ProfileEmptyState(
+              icon: Icons.location_on_outlined,
+              color: const Color(0xFF10B981),
+              title: 'no_address_history'.tr,
+              subtitle: 'address_history_hint'.tr,
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              setState(() => _future = _loadAddresses());
+              await _future;
+            },
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+              itemCount: addresses.length,
+              itemBuilder: (_, index) =>
+                  _AddressHistoryTile(entry: addresses[index]),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ProfileSubAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+
+  const _ProfileSubAppBar({required this.title});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: context.bg,
+      foregroundColor: context.text1,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.w800,
+          color: context.text1,
+        ),
+      ),
+    );
+  }
+}
+
+class _WishlistProductTile extends StatelessWidget {
+  final dynamic product;
+  final VoidCallback onRemove;
+
+  const _WishlistProductTile({required this.product, required this.onRemove});
+
+  @override
+  Widget build(BuildContext context) {
+    final images = (product.images as List?) ?? [];
+    final imageUrl = images.isNotEmpty ? images.first.toString() : null;
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProductDetailScreen(productId: product.id as int),
+        ),
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: context.card,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: context.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(context.isDark ? 0.22 : 0.05),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: imageUrl == null
+                  ? _ProfileImageFallback()
+                  : Image.network(
+                      imageUrl,
+                      width: 74,
+                      height: 74,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _ProfileImageFallback(),
+                    ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name?.toString() ?? '',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: context.text1,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    CatalogTranslation.translate(product.brandName),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: context.text2, fontSize: 12),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '\$${product.finalPrice}',
+                    style: TextStyle(
+                      color: context.accent,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              onPressed: onRemove,
+              icon: const Icon(
+                Icons.favorite_rounded,
+                color: Color(0xFFF43F5E),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AddressHistoryTile extends StatelessWidget {
+  final AddressHistoryEntry entry;
+
+  const _AddressHistoryTile({required this.entry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.card,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: context.border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withOpacity(0.14),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.location_on_outlined,
+              color: Color(0xFF10B981),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  entry.address,
+                  style: TextStyle(
+                    color: context.text1,
+                    fontSize: 14,
+                    height: 1.35,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (entry.phone.isNotEmpty)
+                  Text(
+                    entry.phone,
+                    style: TextStyle(color: context.text2, fontSize: 12),
+                  ),
+                const SizedBox(height: 4),
+                Text(
+                  _formatAddressDate(entry.savedAt),
+                  style: TextStyle(color: context.text2, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatAddressDate(DateTime value) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${value.year}-${two(value.month)}-${two(value.day)} ${two(value.hour)}:${two(value.minute)}';
+  }
+}
+
+class _ProfileImageFallback extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 74,
+      height: 74,
+      color: context.accentBg,
+      child: Icon(Icons.image_outlined, color: context.text2),
+    );
+  }
+}
+
+class _ProfileEmptyState extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+
+  const _ProfileEmptyState({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 82,
+              height: 82,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 38, color: color),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: context.text1,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: context.text2, fontSize: 13),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _PaymentPage extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => const _PlaceholderScreen(
-    title: 'Payment Methods',
+  Widget build(BuildContext context) => _PlaceholderScreen(
+    title: 'payment_methods'.tr,
     icon: Icons.credit_card_rounded,
-    color: Color(0xFFF59E0B),
-    description: 'Your saved payment methods',
+    color: const Color(0xFFF59E0B),
+    description: 'payment_methods_hint'.tr,
   );
 }
 
@@ -3085,7 +3518,7 @@ class _ChangePasswordPage extends StatelessWidget {
           ),
         ),
         title: Text(
-          'Change Password',
+          'change_password'.tr,
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w800,
@@ -3098,11 +3531,11 @@ class _ChangePasswordPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SheetField(label: 'Current Password', hint: '••••••••'),
+            _SheetField(label: 'current_password'.tr, hint: '••••••••'),
             const SizedBox(height: 14),
-            _SheetField(label: 'New Password', hint: '••••••••'),
+            _SheetField(label: 'new_password'.tr, hint: '••••••••'),
             const SizedBox(height: 14),
-            _SheetField(label: 'Confirm New Password', hint: '••••••••'),
+            _SheetField(label: 'confirm_new_password'.tr, hint: '••••••••'),
             const SizedBox(height: 28),
             SizedBox(
               width: double.infinity,
@@ -3117,9 +3550,12 @@ class _ChangePasswordPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'Update Password',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                child: Text(
+                  'update_password'.tr,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),

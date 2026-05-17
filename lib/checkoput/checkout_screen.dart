@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 import '../services/api_service.dart';
+import '../services/address_history_service.dart';
 import '../providers/cart_provider.dart';
+import '../screens/theme/app_theme.dart';
 import 'OrderSuccessScreen.dart';
 import 'khqr_screen.dart';
 
@@ -64,7 +67,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Checkout")),
+      appBar: AppBar(title: Text("checkout".tr)),
       body: currentPosition == null
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -110,9 +113,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   ),
                                 ),
                               )
-                            : const Text(
-                                "Place Order",
-                                style: TextStyle(
+                            : Text(
+                                "place_order".tr,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
@@ -137,16 +140,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Details",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              "details".tr,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             // Name field
             TextField(
               controller: userNameController,
               decoration: InputDecoration(
-                labelText: "Name",
+                labelText: "full_name".tr,
                 prefixIcon: const Icon(Icons.person),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -159,7 +162,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               controller: phoneController,
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
-                labelText: "Phone Number",
+                labelText: "phone".tr,
                 prefixIcon: const Icon(Icons.phone),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -181,9 +184,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Address",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              "address".tr,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             // Google Map
@@ -212,11 +215,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
-                "Tap on map to change location",
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                "tap_map_change_location".tr,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ),
           ],
@@ -238,9 +241,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Order Summary",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  Text(
+                    "order_summary".tr,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   const Center(child: CircularProgressIndicator()),
@@ -258,7 +264,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Order Summary (${cart.items.length} items)",
+                  "${"order_summary".tr} (${cart.items.length} items)",
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -356,7 +362,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("Subtotal"),
+                    Text("subtotal".tr),
                     Text(
                       "\$${cart.totalPrice.toStringAsFixed(2)}",
                       style: const TextStyle(fontWeight: FontWeight.w600),
@@ -368,9 +374,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      "Total",
-                      style: TextStyle(
+                    Text(
+                      "total".tr,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -399,27 +405,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              "Payment method",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              "payment_method".tr,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 12),
           _buildPaymentOption(
             value: "cash",
-            label: "Pay by cash",
+            label: "pay_by_cash".tr,
             icon: Icons.money,
           ),
           _buildPaymentOption(
             value: "aba",
-            label: "Pay by ABA",
+            label: "pay_by_aba".tr,
             icon: Icons.account_balance,
           ),
           _buildPaymentOption(
             value: "khqr",
-            label: "Pay by KHQR",
+            label: "pay_by_khqr".tr,
             icon: Icons.qr_code,
           ),
           // Previous implementation using RadioListTile options:
@@ -501,7 +507,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: selected ? Colors.black : Colors.grey[800],
+                  color: selected ? context.colors.text1 : context.colors.text2,
                 ),
               ),
             ),
@@ -538,7 +544,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         setState(() => _isPlacingOrder = false);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
+        ).showSnackBar(SnackBar(content: Text("please_fill_all_fields".tr)));
         return;
       }
 
@@ -556,6 +562,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       );
 
       final addressId = addressRes["address_id"];
+
+      await AddressHistoryService().saveAddress(
+        phone: phoneController.text,
+        address: address,
+        lat: lat,
+        lng: lng,
+      );
 
       /// ✅ PLACE ORDER
       final orderRes = await ApiService().placeOrder(
@@ -625,7 +638,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       return "${place.name}, ${place.locality}";
     } catch (e) {
-      return "Unknown location";
+      return "unknown_location".tr;
     }
   }
 }

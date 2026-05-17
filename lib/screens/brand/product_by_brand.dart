@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:mart_frontend/models/brands_model.dart';
 import '../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../translations/catalog_translation.dart';
 import '../product/product_detail_screen.dart';
 
 // ─────────────────────────────────────────────
@@ -52,12 +53,14 @@ class _CategoryProductsScreenState extends State<BrandProductsScreen>
     final colors = context.colors;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
+      value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
+        statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark
+            ? Brightness.light
+            : Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,7 +155,7 @@ class _AppBar extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: s * 0.2),
               child: Text(
-                brandName,
+                brandName.trCatalog,
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -422,7 +425,7 @@ class _ProductCardState extends State<_ProductCard>
                           // CATEGORY
                           Flexible(
                             child: Text(
-                              "${p.categoryName ?? 'Unknown'}",
+                              p.categoryName ?? 'Unknown',
                               style: TextStyle(
                                 fontSize: fontSmall,
                                 color: colors.text2,
@@ -442,7 +445,9 @@ class _ProductCardState extends State<_ProductCard>
                           // BRAND
                           Flexible(
                             child: Text(
-                              "${p.brandName ?? 'No Brand'}",
+                              CatalogTranslation.translate(
+                                p.brandName ?? 'No Brand',
+                              ),
                               style: TextStyle(
                                 fontSize: fontSmall,
                                 color: colors.accent,

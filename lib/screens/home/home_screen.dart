@@ -1632,6 +1632,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'package:mart_frontend/screens/category/categories_screen.dart'
     hide ProductListScreen;
@@ -1789,9 +1790,9 @@ class _ShimmerState extends State<_Shimmer>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final base = isDark ? const Color(0xFF1E2A3A) : const Color(0xFFECEFF4);
+    final base = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFECEFF4);
     final highlight = isDark
-        ? const Color(0xFF2A3A4E)
+        ? const Color(0xFF252525)
         : const Color(0xFFF8FAFB);
 
     return AnimatedBuilder(
@@ -2035,6 +2036,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   pinned: true,
                   floating: false,
                   expandedHeight: 0,
+                  toolbarHeight: 12,
                   backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   elevation: 0,
                   surfaceTintColor: Colors.transparent,
@@ -2071,7 +2073,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       // ── Categories ──────────────────────────────────
                       _AppSectionHeader(
-                        title: 'Categories',
+                        title: 'categories'.tr,
                         onTap: () => openCategoryBottomSheet(context),
                         colors: colors,
                       ),
@@ -2101,12 +2103,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       // ── Best Sellers ────────────────────────────────
                       _AppSectionHeader(
-                        title: '🔥 Best Sellers',
+                        title: '🔥 ${'best_sellers'.tr}',
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => ProductListScreen(
-                              title: 'Best Sellers',
+                              title: 'best_sellers'.tr,
                               fetch: ApiService().fetchAllBestSellers,
                             ),
                           ),
@@ -2122,7 +2124,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           }
                           return _ProductGrid(
                             products: snap.data!,
-                            tag: 'Best Seller',
+                            tag: 'best_seller'.tr,
                             tagColor: Colors.red,
                             colors: colors,
                           );
@@ -2131,12 +2133,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       // ── New Arrivals ────────────────────────────────
                       _AppSectionHeader(
-                        title: '🆕 New Arrivals',
+                        title: '🆕 ${'new_arrivals'.tr}',
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => ProductListScreen(
-                              title: 'New Arrivals',
+                              title: 'new_arrivals'.tr,
                               fetch: ApiService().fetchAllNewArrivals,
                             ),
                           ),
@@ -2152,7 +2154,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           }
                           return _ProductGrid(
                             products: snap.data!,
-                            tag: 'New Arrival',
+                            tag: 'new_arrival'.tr,
                             tagColor: colors.accent,
                             colors: colors,
                           );
@@ -2161,12 +2163,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       // ── Recommended ─────────────────────────────────
                       _AppSectionHeader(
-                        title: '✨ For You',
+                        title: '✨ ${'for_you'.tr}',
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => ProductListScreen(
-                              title: 'Recommended',
+                              title: 'recommended'.tr,
                               fetch: ApiService().fetchAllRecommended,
                             ),
                           ),
@@ -2211,6 +2213,14 @@ class _StickyHeader extends StatelessWidget {
   final AppColors colors;
   const _StickyHeader({required this.colors});
 
+  String get _greetingKey {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) return 'good_morning';
+    if (hour >= 12 && hour < 17) return 'good_afternoon';
+    if (hour >= 17 && hour < 21) return 'good_evening';
+    return 'good_night';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -2223,12 +2233,9 @@ class _StickyHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Good Morning 👋', style: _T.heading1(colors.text1)),
+                Text('${_greetingKey.tr} 👋', style: _T.heading1(colors.text1)),
                 const SizedBox(height: _T.sp4),
-                Text(
-                  'Find what you love today',
-                  style: _T.bodyMd(colors.text2),
-                ),
+                Text('search_home_hint'.tr, style: _T.bodyMd(colors.text2)),
               ],
             ),
           ),
@@ -2353,7 +2360,7 @@ class _AppSectionHeader extends StatelessWidget {
                   color: colors.accentLight,
                   borderRadius: BorderRadius.circular(_T.radiusFull),
                 ),
-                child: Text('See All', style: _T.seeAll(colors.accent)),
+                child: Text('see_all'.tr, style: _T.seeAll(colors.accent)),
               ),
             ),
         ],

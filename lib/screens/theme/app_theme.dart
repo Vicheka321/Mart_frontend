@@ -63,39 +63,25 @@ class AppColors {
   );
 
   static const dark = AppColors(
-    // background: Color.fromARGB(255, 255, 255, 255),
-    // text1: Color(0xFFF5F5F5),
-    // text2: Color(0xFFAAAAAA),
-    // text3: Color(0xFF666666),
-    // surface: Color(0xFF1E1E1E),
-    // surface2: Color(0xFF2A2A2A),
-    // cardBg: Color(0xFF1A1A1A),
-    // border: Color(0xFF2E2E2E),
-    // accent: Color(0xFF3949AB),
-    // accentLight: Color(0xFFEDE9FB),
-    // flashBg: Color(0xFF2A1A1A),
-    // flashBorder: Color(0xFF4A2020),
-    // flashText: Color(0xFFE24B4A),
-    // bginfo: Color(0xFFF6F6F6),
-    background: Color(0xFF0F172A), // deep navy (better than pure black)
-    text1: Color(0xFFF9FAFB),
-    text2: Color(0xFFCBD5F5),
-    text3: Color(0xFF64748B),
+    background: Color(0xFF0E0E0E),
+    text1: Color(0xFFF0F0F0),
+    text2: Color(0xFFB8B8B8),
+    text3: Color(0xFF8A8A8A),
 
-    surface: Color(0xFF111827),
-    surface2: Color(0xFF1F2937),
+    surface: Color(0xFF121212),
+    surface2: Color(0xFF252525),
 
-    cardBg: Color(0xFF111827),
-    border: Color(0xFF1F2937),
+    cardBg: Color(0xFF1A1A1A),
+    border: Color(0xFF2A2A2A),
 
-    accent: Color(0xFF3B82F6),
-    accentLight: Color(0xFF1E3A8A),
+    accent: Color(0xFF8B7CF6),
+    accentLight: Color(0xFF2A2340),
 
     flashBg: Color(0xFF2A1A1A),
     flashBorder: Color(0xFF7F1D1D),
     flashText: Color(0xFFF87171),
 
-    bginfo: Color(0xFF1F2937),
+    bginfo: Color(0xFF252525),
   );
 }
 

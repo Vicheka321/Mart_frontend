@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mart_frontend/screens/cart/mycart.dart';
+import 'package:get/get.dart';
 import '../../auth/login_register_screen.dart';
 import '../../services/api_service.dart';
 import '../home/home_screen.dart';
@@ -67,10 +67,10 @@ class _FloatingNavBar extends StatelessWidget {
   const _FloatingNavBar({required this.currentIndex, required this.onTap});
 
   static const _items = [
-    _NavItem(icon: AssetImage('lib/icons/home.png'), label: 'Home'),
-    _NavItem(icon: AssetImage('lib/icons/categories.png'), label: 'Categories'),
-    _NavItem(icon: AssetImage('lib/icons/orders.png'), label: 'Orders'),
-    _NavItem(icon: AssetImage('lib/icons/profile.png'), label: 'Profile'),
+    _NavItem(icon: AssetImage('lib/icons/home.png'), label: 'home'),
+    _NavItem(icon: AssetImage('lib/icons/categories.png'), label: 'categories'),
+    _NavItem(icon: AssetImage('lib/icons/orders.png'), label: 'orders'),
+    _NavItem(icon: AssetImage('lib/icons/profile.png'), label: 'profile'),
   ];
 
   @override
@@ -136,7 +136,7 @@ class _FloatingNavBar extends StatelessWidget {
                         if (!selected) const SizedBox(height: 4),
 
                         Text(
-                          _items[i].label,
+                          _items[i].label.tr,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
