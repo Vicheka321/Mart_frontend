@@ -94,7 +94,7 @@ class Product {
   int id;
   String name;
   String description;
-  String unit;
+  String? unit;
   int quantity;
   String salePrice;
   String finalPrice;
@@ -107,7 +107,7 @@ class Product {
     required this.id,
     required this.name,
     required this.description,
-    required this.unit,
+    this.unit,
     required this.quantity,
     required this.salePrice,
     required this.finalPrice,

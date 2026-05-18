@@ -483,6 +483,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     required IconData icon,
   }) {
     final bool selected = paymentMethod == value;
+    final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return InkWell(
       onTap: () {
         setState(() {
@@ -493,15 +496,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: selected ? Colors.white : Colors.white,
+          color: selected
+              ? (isDark ? colors.surface2 : colors.cardBg)
+              : colors.cardBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected ? Colors.green : Colors.grey.shade300,
+            color: selected ? Colors.green : colors.border,
             width: selected ? 1.8 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: isDark
+                  ? Colors.transparent
+                  : Colors.black.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -509,7 +516,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon, color: selected ? Colors.green : Colors.grey[700]),
+            Icon(icon, color: selected ? Colors.green : colors.text2),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -517,7 +524,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: selected ? context.colors.text1 : context.colors.text2,
+                  color: selected ? colors.text1 : colors.text2,
                 ),
               ),
             ),
@@ -527,7 +534,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: selected ? Colors.green : Colors.grey.shade400,
+                  color: selected ? Colors.green : colors.border,
                   width: 2,
                 ),
                 color: selected ? Colors.green : Colors.transparent,

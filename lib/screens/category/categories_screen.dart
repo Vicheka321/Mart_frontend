@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../services/api_service.dart';
 import '../../translations/catalog_translation.dart';
+import '../brand/product_by_brand.dart';
 import 'product_by_category.dart';
 import '../search/search_screen.dart';
 import '../theme/app_theme.dart';
@@ -206,9 +207,9 @@ class _CategoriesScreenState extends State<CategoriesScreen>
       context,
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (_, __, ___) => CategoryProductsScreen(
-          categoryId: int.parse(brand.id),
-          categoryName: brand.name,
+        pageBuilder: (_, __, ___) => BrandProductsScreen(
+          brandId: int.parse(brand.id),
+          brandName: brand.name,
         ),
         transitionsBuilder: (_, anim, __, child) => FadeTransition(
           opacity: anim,
@@ -474,7 +475,17 @@ class _MainScroll extends StatelessWidget {
       child: CustomScrollView(
         slivers: [
           // ── Brands ──────────────────────────────────────────
-          const SliverToBoxAdapter(child: _BrandsHeader()),
+          SliverToBoxAdapter(
+            child: _BrandsHeader(
+              onTap: brands.isEmpty
+                  ? null
+                  : () => _showBrandsBottomSheet(
+                      context,
+                      brands,
+                      onNavigateToBrand,
+                    ),
+            ),
+          ),
           SliverToBoxAdapter(
             child: _FeaturedBrandCard(
               brands: brands,
@@ -550,7 +561,9 @@ class _MainScroll extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════
 
 class _BrandsHeader extends StatelessWidget {
-  const _BrandsHeader();
+  final VoidCallback? onTap;
+
+  const _BrandsHeader({this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -574,21 +587,150 @@ class _BrandsHeader extends StatelessWidget {
               ),
             ],
           ),
-          GestureDetector(
-            onTap: () {},
-            child: Text(
-              'see_all'.tr,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFFF6B35),
+          if (onTap != null)
+            GestureDetector(
+              onTap: onTap,
+              child: Text(
+                'see_all'.tr,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFFF6B35),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
   }
+}
+
+void _showBrandsBottomSheet(
+  BuildContext context,
+  List<BrandModel> brands,
+  ValueChanged<BrandModel> onSelect,
+) {
+  final colors = context.colors;
+
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: colors.cardBg,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (sheetContext) {
+      return SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(sheetContext).size.height * 0.72,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 12, 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'brands'.tr,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: colors.text1,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(sheetContext),
+                      icon: Icon(Icons.close_rounded, color: colors.text1),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  itemCount: brands.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.35,
+                  ),
+                  itemBuilder: (context, index) {
+                    final brand = brands[index];
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.pop(sheetContext);
+                        onSelect(brand);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: colors.surface,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: colors.border),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    brand.logoUrl,
+                                    width: 48,
+                                    height: 48,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 48,
+                                      height: 48,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: colors.accentLight,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        brand.name.isEmpty
+                                            ? '?'
+                                            : brand.name[0].toUpperCase(),
+                                        style: TextStyle(
+                                          color: colors.accent,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              brand.name.trCatalog,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: colors.text1,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -808,7 +950,7 @@ class _BrandsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final otherBrands = brands.skip(1).toList();
+    final otherBrands = brands.where((b) => !b.isFeatured).toList();
 
     return Column(
       children: [
@@ -1082,10 +1224,10 @@ class _BrandCardState extends State<_BrandCard>
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
-              Text(
-                '${b.productCount} items',
-                style: TextStyle(fontSize: 9, color: colors.text2),
-              ),
+              // Text(
+              //   '${b.productCount} items',
+              //   style: TextStyle(fontSize: 9, color: colors.text2),
+              // ),
             ],
           ),
         ),
