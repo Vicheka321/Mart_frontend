@@ -1381,6 +1381,8 @@ import '../models/profile_model.dart';
 import '../screens/theme/theme_controller.dart';
 import '../translations/catalog_translation.dart';
 import '../widgets/skeleton_loader.dart';
+import 'rate_app_screen.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // THEME HELPERS
@@ -1433,18 +1435,14 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   // Stats — will update from API where possible
   List<Map<String, dynamic>> get _stats => [
-    {'icon': Icons.shopping_bag_outlined, 'value': '24', 'label': 'orders'.tr},
+    {'image': 'lib/icons/order.png', 'value': '24', 'label': 'orders'.tr},
     {
-      'icon': Icons.favorite_border_rounded,
+      'image': 'lib/icons/wishlist.png',
       'value': _wishlistCount.toString(),
       'label': 'wishlist'.tr,
     },
-    {
-      'icon': Icons.star_outline_rounded,
-      'value': '1,240',
-      'label': 'points'.tr,
-    },
-    {'icon': Icons.local_offer_outlined, 'value': '6', 'label': 'coupons'.tr},
+    {'image': 'lib/icons/point.png', 'value': '1,240', 'label': 'points'.tr},
+    {'image': 'lib/icons/coupon.png', 'value': '6', 'label': 'coupons'.tr},
   ];
 
   @override
@@ -1635,27 +1633,46 @@ class _ProfileScreenState extends State<ProfileScreen>
         _MenuGroup(
           items: [
             _MenuItem(
-              icon: Icons.favorite_border_rounded,
-              iconBg: const Color(0xFFFFE4E6),
-              iconColor: const Color(0xFFF43F5E),
+              icon: HugeIcons.strokeRoundedFileFavourite,
+              iconBg: Colors.transparent,
+              iconColor: const Color.fromARGB(255, 179, 24, 6),
               title: 'wishlist'.tr,
               subtitle: '$_wishlistCount ${'saved_items'.tr}',
+              customIconWidget: Image.asset(
+                'lib/icons/favourite.png',
+                width: 28,
+                height: 28,
+                fit: BoxFit.contain,
+                color: Color.fromARGB(255, 179, 24, 6),
+              ),
               onTap: () => _navigate(context, _WishlistPage()),
             ),
             _MenuItem(
-              icon: Icons.location_on_outlined,
-              iconBg: const Color(0xFFD1FAE5),
-              iconColor: const Color(0xFF10B981),
+              icon: HugeIcons.strokeRoundedLocation01,
+              iconBg: Colors.transparent,
+              iconColor: const Color.fromARGB(255, 197, 57, 57),
               title: 'addresses'.tr,
               subtitle: '$_addressCount ${'saved_addresses'.tr}',
+              customIconWidget: Image.asset(
+                'lib/icons/Pin.png',
+                width: 50,
+                height: 50,
+                fit: BoxFit.contain,
+              ),
               onTap: () => _navigate(context, _AddressPage()),
             ),
             _MenuItem(
-              icon: Icons.credit_card_rounded,
-              iconBg: const Color(0xFFFEF3C7),
+              icon: HugeIcons.strokeRoundedCreditCard,
+              iconBg: Colors.transparent,
               iconColor: const Color(0xFFF59E0B),
               title: 'payment_methods'.tr,
               subtitle: 'visa_cash_delivery'.tr,
+              customIconWidget: Image.asset(
+                'lib/icons/payment.png',
+                width: 38,
+                height: 38,
+                fit: BoxFit.contain,
+              ),
               onTap: () => _navigate(context, _PaymentPage()),
             ),
           ],
@@ -1671,9 +1688,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               icon: themeController.isDark.value
                   ? Icons.dark_mode_rounded
                   : Icons.light_mode_rounded,
-              iconBg: themeController.isDark.value
-                  ? const Color(0xFF2A2340)
-                  : const Color(0xFFFEF3C7),
+              iconBg: Colors.transparent,
               iconColor: themeController.isDark.value
                   ? const Color(0xFF8B7CF6)
                   : const Color(0xFFF59E0B),
@@ -1681,6 +1696,14 @@ class _ProfileScreenState extends State<ProfileScreen>
               subtitle: themeController.isDark.value
                   ? 'enabled'.tr
                   : 'disabled'.tr,
+              customIconWidget: Image.asset(
+                themeController.isDark.value
+                    ? 'lib/icons/Dark.png'
+                    : 'lib/icons/light.png',
+                width: themeController.isDark.value ? 43 : 28,
+                height: themeController.isDark.value ? 43 : 28,
+                fit: BoxFit.contain,
+              ),
               customTrailing: Obx(
                 () => Switch.adaptive(
                   value: themeController.isDark.value,
@@ -1717,10 +1740,17 @@ class _ProfileScreenState extends State<ProfileScreen>
             // ),
             _MenuItem(
               icon: Icons.language_rounded,
-              iconBg: const Color(0xFFDBEAFE),
+              iconBg: Colors.transparent,
               iconColor: const Color(0xFF3B82F6),
               title: 'language'.tr,
               subtitle: langController.language.value.toUpperCase(),
+              customIconWidget: Image.asset(
+                'lib/icons/language.png',
+                width: 28,
+                height: 28,
+                fit: BoxFit.contain,
+                color: context.isDark ? const Color(0xFF888888) : null,
+              ),
               onTap: () => _showLanguagePicker(context),
             ),
           ],
@@ -1763,10 +1793,16 @@ class _ProfileScreenState extends State<ProfileScreen>
             // ),
             _MenuItem(
               icon: Icons.shield_outlined,
-              iconBg: const Color(0xFFFEF3C7),
+              iconBg: Colors.transparent,
               iconColor: const Color(0xFFF59E0B),
               title: 'privacy_settings'.tr,
               subtitle: 'data_permissions'.tr,
+              customIconWidget: Image.asset(
+                'lib/icons/Privacy_security.png',
+                width: 38,
+                height: 38,
+                fit: BoxFit.contain,
+              ),
               onTap: () {},
             ),
           ],
@@ -1780,27 +1816,51 @@ class _ProfileScreenState extends State<ProfileScreen>
           items: [
             _MenuItem(
               icon: Icons.help_outline_rounded,
-              iconBg: const Color(0xFFDBEAFE),
+              iconBg: Colors.transparent,
               iconColor: const Color(0xFF3B82F6),
               title: 'help_center'.tr,
               subtitle: 'faq_support'.tr,
+              customIconWidget: Builder(
+                builder: (context) => Image.asset(
+                  'lib/icons/FQA.png',
+                  width: 28,
+                  height: 28,
+                  fit: BoxFit.contain,
+                ),
+              ),
               onTap: () {},
             ),
             _MenuItem(
               icon: Icons.chat_bubble_outline_rounded,
-              iconBg: const Color(0xFFD1FAE5),
+              iconBg: Colors.transparent,
               iconColor: const Color(0xFF10B981),
               title: 'contact_us'.tr,
               subtitle: 'chat_email_phone'.tr,
+              customIconWidget: Builder(
+                builder: (context) => Image.asset(
+                  'lib/icons/Contact_Us.png',
+                  width: 28,
+                  height: 28,
+                  fit: BoxFit.contain,
+                  color: context.isDark ? const Color(0xFF888888) : null,
+                ),
+              ),
               onTap: () {},
             ),
             _MenuItem(
               icon: Icons.star_outline_rounded,
-              iconBg: const Color(0xFFFEF3C7),
+              iconBg: Colors.transparent,
               iconColor: const Color(0xFFF59E0B),
               title: 'rate_app'.tr,
               subtitle: 'share_feedback'.tr,
-              onTap: () {},
+              customIconWidget: Image.asset(
+                'lib/icons/rating.png',
+                width: 38,
+                height: 38,
+                fit: BoxFit.contain,
+                color: Color(0xFFD4AF37),
+              ),
+              onTap: () => _navigate(context, const RateAppScreen()),
             ),
           ],
         ),
@@ -2153,7 +2213,18 @@ class _ProfileHeader extends StatelessWidget {
               return Expanded(
                 child: Column(
                   children: [
-                    Icon(s['icon'] as IconData, size: 20, color: c.accent),
+                    s['image'] != null
+                        ? Image.asset(
+                            s['image'] as String,
+                            width: 28,
+                            height: 28,
+                            fit: BoxFit.contain,
+                          )
+                        : Icon(
+                            s['icon'] as IconData,
+                            size: 20,
+                            color: c.accent,
+                          ),
                     const SizedBox(height: 4),
                     Text(
                       s['value'] as String,
@@ -2259,6 +2330,7 @@ class _MenuItem extends StatefulWidget {
   final String subtitle;
   final Widget? trailing;
   final Widget? customTrailing;
+  final Widget? customIconWidget;
   final VoidCallback? onTap;
 
   const _MenuItem({
@@ -2269,6 +2341,7 @@ class _MenuItem extends StatefulWidget {
     required this.subtitle,
     this.trailing,
     this.customTrailing,
+    this.customIconWidget,
     this.onTap,
   });
 
@@ -2303,7 +2376,9 @@ class _MenuItemState extends State<_MenuItem> {
                 color: widget.iconBg,
                 borderRadius: BorderRadius.circular(11),
               ),
-              child: Icon(widget.icon, size: 19, color: widget.iconColor),
+              child: widget.customIconWidget != null
+                  ? Center(child: widget.customIconWidget)
+                  : Icon(widget.icon, size: 19, color: widget.iconColor),
             ),
             const SizedBox(width: 14),
             Expanded(
