@@ -2663,6 +2663,22 @@ class _ProductCardState extends State<_ProductCard> {
     _loadCartQty();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Re-check cart qty when CartProvider changes (e.g. item deleted from cart screen)
+    final cart = context.watch<CartProvider>().cart;
+    if (cart != null) {
+      final item = cart.items.where((e) => e.productId == widget.product.id);
+      final newQty = item.isNotEmpty ? item.first.qty : 0;
+      if (newQty != _qty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() => _qty = newQty);
+        });
+      }
+    }
+  }
+
   Future<void> _loadCartQty() async {
     try {
       final qty = await ApiService().getCartQuantity(

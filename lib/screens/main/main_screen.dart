@@ -11,12 +11,20 @@ import '../theme/app_theme.dart';
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
+  static void switchToHome(BuildContext context) {
+    context.findAncestorStateOfType<_MainScreenState>()?.switchToTab(0);
+  }
+
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+
+  void switchToTab(int index) {
+    setState(() => _currentIndex = index);
+  }
 
   late final List<Widget> _screens;
 

@@ -3750,6 +3750,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/my_orders_model.dart';
 import '../../services/api_service.dart';
+import '../main/main_screen.dart';
 
 import '../theme/app_theme.dart'; // adjust import path to your project
 
@@ -3923,6 +3924,7 @@ class _OrdersScreenState extends State<OrdersScreen>
             ? _buildError(c)
             : TabBarView(
                 controller: _tabController,
+                physics: const NeverScrollableScrollPhysics(),
                 children: _tabDefs.map((tab) {
                   return _OrderTabView(
                     orders: _filtered(tab['filter']),
@@ -4081,23 +4083,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   void _openDetail(Order order) {
     Navigator.push(
       context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 320),
-        pageBuilder: (_, __, ___) => OrderDetailScreen(order: order),
-        transitionsBuilder: (_, anim, __, child) => FadeTransition(
-          opacity: anim,
-          child: SlideTransition(
-            position:
-                Tween<Offset>(
-                  begin: const Offset(0.04, 0),
-                  end: Offset.zero,
-                ).animate(
-                  CurvedAnimation(parent: anim, curve: Curves.easeOutCubic),
-                ),
-            child: child,
-          ),
-        ),
-      ),
+      MaterialPageRoute(builder: (_) => OrderDetailScreen(order: order)),
     );
   }
 
@@ -4161,7 +4147,7 @@ class _OrderTabView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (orders.isEmpty) return _emptyState();
+    if (orders.isEmpty) return _emptyState(context);
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -4179,7 +4165,7 @@ class _OrderTabView extends StatelessWidget {
     );
   }
 
-  Widget _emptyState() {
+  Widget _emptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -4209,30 +4195,33 @@ class _OrderTabView extends StatelessWidget {
             style: TextStyle(fontSize: 14, color: colors.text3, height: 1.5),
           ),
           const SizedBox(height: 28),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-            decoration: BoxDecoration(
-              color: colors.accent,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.shopping_bag_outlined,
-                  color: Colors.white,
-                  size: 18,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  'Go Shopping',
-                  style: TextStyle(
+          GestureDetector(
+            onTap: () => MainScreen.switchToHome(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+              decoration: BoxDecoration(
+                color: colors.accent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.shopping_bag_outlined,
                     color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    size: 18,
                   ),
-                ),
-              ],
+                  SizedBox(width: 8),
+                  Text(
+                    'Go Shopping',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

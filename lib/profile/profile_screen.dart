@@ -1382,6 +1382,13 @@ import '../screens/theme/theme_controller.dart';
 import '../translations/catalog_translation.dart';
 import '../widgets/skeleton_loader.dart';
 import 'rate_app_screen.dart';
+import 'contact_us_screen.dart';
+import 'faq_screen.dart';
+import 'tell_a_friend_screen.dart';
+import 'social_media_screen.dart';
+import 'about_us_screen.dart';
+import 'terms_screen.dart';
+import 'privacy_policy_screen.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 // ═══════════════════════════════════════════════════════════════
@@ -1815,11 +1822,11 @@ class _ProfileScreenState extends State<ProfileScreen>
         _MenuGroup(
           items: [
             _MenuItem(
-              icon: Icons.help_outline_rounded,
+              icon: Icons.quiz_outlined,
               iconBg: Colors.transparent,
               iconColor: const Color(0xFF3B82F6),
-              title: 'help_center'.tr,
-              subtitle: 'faq_support'.tr,
+              title: 'FAQs',
+              subtitle: 'Common questions',
               customIconWidget: Builder(
                 builder: (context) => Image.asset(
                   'lib/icons/FQA.png',
@@ -1828,14 +1835,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                   fit: BoxFit.contain,
                 ),
               ),
-              onTap: () {},
+              onTap: () => _navigate(context, const FaqScreen()),
             ),
             _MenuItem(
               icon: Icons.chat_bubble_outline_rounded,
               iconBg: Colors.transparent,
               iconColor: const Color(0xFF10B981),
               title: 'contact_us'.tr,
-              subtitle: 'chat_email_phone'.tr,
+              subtitle: 'chat, phone'.tr,
               customIconWidget: Builder(
                 builder: (context) => Image.asset(
                   'lib/icons/Contact_Us.png',
@@ -1845,7 +1852,82 @@ class _ProfileScreenState extends State<ProfileScreen>
                   color: context.isDark ? const Color(0xFF888888) : null,
                 ),
               ),
-              onTap: () {},
+              onTap: () => _navigate(context, const ContactUsScreen()),
+            ),
+            _MenuItem(
+              icon: Icons.people_outline_rounded,
+              iconBg: Colors.transparent,
+              iconColor: const Color(0xFF8B5CF6),
+              title: 'Tell a friend',
+              subtitle: 'Share with friends',
+              customIconWidget: Image.asset(
+                'lib/icons/share.png',
+                width: 28,
+                height: 28,
+                fit: BoxFit.contain,
+                color: context.isDark ? const Color(0xFF888888) : null,
+              ),
+              onTap: () => _navigate(context, const TellAFriendScreen()),
+            ),
+            _MenuItem(
+              icon: Icons.alternate_email_rounded,
+              iconBg: Colors.transparent,
+              iconColor: const Color(0xFFEC4899),
+              title: 'Social Media',
+              subtitle: 'Follow us',
+              customIconWidget: Image.asset(
+                'lib/icons/socail.png',
+                width: 28,
+                height: 28,
+                fit: BoxFit.contain,
+                color: context.isDark ? const Color(0xFF888888) : null,
+              ),
+              onTap: () => _navigate(context, const SocialMediaScreen()),
+            ),
+            _MenuItem(
+              icon: Icons.info_outline_rounded,
+              iconBg: Colors.transparent,
+              iconColor: const Color(0xFF3B82F6),
+              title: 'About us',
+              subtitle: 'Learn more',
+              customIconWidget: Image.asset(
+                'lib/icons/about_us.png',
+                width: 28,
+                height: 28,
+                fit: BoxFit.contain,
+                color: context.isDark ? const Color(0xFF888888) : null,
+              ),
+              onTap: () => _navigate(context, const AboutUsScreen()),
+            ),
+            _MenuItem(
+              icon: Icons.description_outlined,
+              iconBg: Colors.transparent,
+              iconColor: const Color(0xFF10B981),
+              title: 'Terms and Conditions',
+              subtitle: 'Our policies',
+              customIconWidget: Image.asset(
+                'lib/icons/term.png',
+                width: 28,
+                height: 28,
+                fit: BoxFit.contain,
+                color: context.isDark ? const Color(0xFF888888) : null,
+              ),
+              onTap: () => _navigate(context, const TermsScreen()),
+            ),
+            _MenuItem(
+              icon: Icons.lock_outline_rounded,
+              iconBg: Colors.transparent,
+              iconColor: const Color(0xFFF59E0B),
+              title: 'Privacy Policy',
+              subtitle: 'Data & privacy',
+              customIconWidget: Image.asset(
+                'lib/icons/policy.png',
+                width: 28,
+                height: 28,
+                fit: BoxFit.contain,
+                color: context.isDark ? const Color(0xFF888888) : null,
+              ),
+              onTap: () => _navigate(context, const PrivacyPolicyScreen()),
             ),
             _MenuItem(
               icon: Icons.star_outline_rounded,
@@ -1884,23 +1966,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Future<void> _navigate(BuildContext context, Widget page) async {
     HapticFeedback.selectionClick();
-    await Navigator.push(
-      context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 280),
-        pageBuilder: (_, __, ___) => page,
-        transitionsBuilder: (_, anim, __, child) => FadeTransition(
-          opacity: anim,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0.04, 0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
-            child: child,
-          ),
-        ),
-      ),
-    );
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => page));
     if (mounted) _loadLocalCounts();
   }
 

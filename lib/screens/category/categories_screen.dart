@@ -74,6 +74,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
   Timer? _debounce;
 
   bool _isLoading = true;
+  bool _hasError = false;
   List<CategoryModel> _categories = [];
   List<BrandModel> _brands = [];
 
@@ -105,7 +106,10 @@ class _CategoriesScreenState extends State<CategoriesScreen>
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
 
     try {
       final api = ApiService();
@@ -143,12 +147,17 @@ class _CategoriesScreenState extends State<CategoriesScreen>
             .toList();
 
         _isLoading = false;
+        _hasError = false;
       });
 
       _fadeController.forward();
       _brandsAnimController.forward();
     } catch (e) {
-      setState(() => _isLoading = false);
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+      });
       debugPrint("API ERROR: $e");
     }
   }
@@ -181,21 +190,10 @@ class _CategoriesScreenState extends State<CategoriesScreen>
 
     Navigator.push(
       context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (_, __, ___) => CategoryProductsScreen(
+      MaterialPageRoute(
+        builder: (_) => CategoryProductsScreen(
           categoryId: int.parse(category.id),
           categoryName: category.name,
-        ),
-        transitionsBuilder: (_, anim, __, child) => FadeTransition(
-          opacity: anim,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0.05, 0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
-            child: child,
-          ),
         ),
       ),
     );
@@ -205,21 +203,10 @@ class _CategoriesScreenState extends State<CategoriesScreen>
     HapticFeedback.lightImpact();
     Navigator.push(
       context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (_, __, ___) => BrandProductsScreen(
+      MaterialPageRoute(
+        builder: (_) => BrandProductsScreen(
           brandId: int.parse(brand.id),
           brandName: brand.name,
-        ),
-        transitionsBuilder: (_, anim, __, child) => FadeTransition(
-          opacity: anim,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0.05, 0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
-            child: child,
-          ),
         ),
       ),
     );
@@ -269,6 +256,8 @@ class _CategoriesScreenState extends State<CategoriesScreen>
               Expanded(
                 child: _isLoading
                     ? const _SkeletonScroll()
+                    : _hasError
+                    ? _ErrorState(onRetry: _loadData)
                     : _MainScroll(
                         fadeAnimation: _fadeAnimation,
                         brandsAnimController: _brandsAnimController,
@@ -294,12 +283,7 @@ Widget _SearchBar(BuildContext context) {
       onTap: () {
         Navigator.push(
           context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const SearchScreen(),
-            transitionsBuilder: (_, animation, __, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-          ),
+          MaterialPageRoute(builder: (_) => const SearchScreen()),
         );
       },
       child: Container(
@@ -1069,7 +1053,63 @@ class _EmptyState extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 9. SKELETON SCROLL
+// 9. ERROR STATE
+// ═══════════════════════════════════════════════════════════════
+
+class _ErrorState extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _ErrorState({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.wifi_off_rounded, size: 56, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Connection failed',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Could not load categories. Please check your connection and try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black87,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 10. SKELETON SCROLL
 // ═══════════════════════════════════════════════════════════════
 
 class _SkeletonScroll extends StatelessWidget {
