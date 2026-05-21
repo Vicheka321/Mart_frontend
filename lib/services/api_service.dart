@@ -14,7 +14,7 @@ import '../models/my_orders_model.dart';
 import '../models/profile_model.dart';
 
 class ApiService {
-  final String baseUrl = 'http://192.168.100.41:8000/api';
+  final String baseUrl = 'http://192.168.1.161:8000/api';
 
   // ==============Products=================
   Future<List<BannersModel>> fetchBanners() async {
@@ -656,6 +656,19 @@ class ApiService {
       headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
 
       body: {"md5": md5},
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  Future<Map<String, dynamic>> getABADeeplink(int orderId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/aba-pay"),
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
+      body: {"order_id": orderId.toString()},
     );
 
     return jsonDecode(response.body);

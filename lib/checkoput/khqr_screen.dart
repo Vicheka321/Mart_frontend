@@ -6,9 +6,7 @@ import '../services/api_service.dart';
 import '../widgets/skeleton_loader.dart';
 import 'OrderSuccessScreen.dart';
 
-
 class KhqrScreen extends StatefulWidget {
-
   final String qrUrl;
   final String amount;
 
@@ -23,13 +21,10 @@ class KhqrScreen extends StatefulWidget {
   });
 
   @override
-  State<KhqrScreen> createState() =>
-      _KhqrScreenState();
+  State<KhqrScreen> createState() => _KhqrScreenState();
 }
 
-class _KhqrScreenState
-    extends State<KhqrScreen> {
-
+class _KhqrScreenState extends State<KhqrScreen> {
   bool loading = false;
 
   Timer? timer;
@@ -39,15 +34,11 @@ class _KhqrScreenState
     super.initState();
 
     /// ✅ AUTO CHECK EVERY 1 SECOND
-    timer = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) => checkPayment(),
-    );
+    timer = Timer.periodic(const Duration(seconds: 1), (_) => checkPayment());
   }
 
   @override
   void dispose() {
-
     /// ✅ STOP TIMER
     timer?.cancel();
 
@@ -56,24 +47,17 @@ class _KhqrScreenState
 
   /// ✅ CHECK PAYMENT
   Future<void> checkPayment() async {
-
     if (loading) return;
 
     try {
-
       loading = true;
 
-      final res =
-          await ApiService().checkPayment(
-        widget.md5,
-      );
+      final res = await ApiService().checkPayment(widget.md5);
 
       loading = false;
 
       /// ✅ SUCCESS
-      if (res["success"] == true &&
-          res["status"] == "SUCCESS") {
-
+      if (res["success"] == true && res["status"] == "SUCCESS") {
         /// ✅ STOP CHECKING
         timer?.cancel();
 
@@ -81,22 +65,16 @@ class _KhqrScreenState
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) =>
-                const OrderSuccessScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const OrderSuccessScreen()),
         );
       }
-
     } catch (e) {
-
       loading = false;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(title: const Text("KHQR Payment")),
       body: SafeArea(
@@ -151,7 +129,6 @@ class _KhqrScreenState
                 child: OutlinedButton(
                   onPressed: () {
                     timer?.cancel();
-
                     Navigator.pop(context);
                   },
                   child: const Text("Cancel"),

@@ -4,6 +4,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../services/api_service.dart';
 import '../services/address_history_service.dart';
@@ -632,6 +633,40 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
           ),
         );
+        return;
+      }
+
+      /// ✅ ABA PAY (Deep Link)
+      if (paymentMethod == "aba") {
+        final abaRes = await ApiService().getABADeeplink(orderId);
+
+        if (!mounted) return;
+        setState(() => _isPlacingOrder = false);
+
+        if (abaRes['success'] == true && abaRes['deeplink'] != null) {
+          final deeplink = abaRes['deeplink'] as String;
+          final uri = Uri.parse(deeplink);
+
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Cannot open ABA app. Please make sure it is installed.',
+                ),
+              ),
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                abaRes['message'] ?? 'Failed to generate ABA payment',
+              ),
+            ),
+          );
+        }
         return;
       }
 
