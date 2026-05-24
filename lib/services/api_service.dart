@@ -14,7 +14,7 @@ import '../models/my_orders_model.dart';
 import '../models/profile_model.dart';
 
 class ApiService {
-  final String baseUrl = 'http://192.168.1.161:8000/api';
+  final String baseUrl = 'http://172.20.10.7:8000/api';
 
   // ==============Products=================
   Future<List<BannersModel>> fetchBanners() async {

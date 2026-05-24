@@ -31,8 +31,8 @@ class CategoriesModel {
   factory CategoriesModel.fromJson(Map<String, dynamic> json) =>
       CategoriesModel(
         id: json["id"],
-        name: json["name"],
-        image: json["image"],
+        name: json["name"] ?? '',
+        image: json["image"] ?? '',
         createdAt: DateTime.parse(json["created_at"]),
         updatedAt: DateTime.parse(json["updated_at"]),
       );

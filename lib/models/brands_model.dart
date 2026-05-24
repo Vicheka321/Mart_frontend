@@ -17,23 +17,23 @@ String brandsModelToJson(List<BrandsModel> data) =>
 class BrandsModel {
   int id;
   String name;
-  String country;
-  String image;
+  String? country;
+  String? image;
   DateTime createdAt;
   DateTime updatedAt;
 
   BrandsModel({
     required this.id,
     required this.name,
-    required this.country,
-    required this.image,
+    this.country,
+    this.image,
     required this.createdAt,
     required this.updatedAt,
   });
 
   factory BrandsModel.fromJson(Map<String, dynamic> json) => BrandsModel(
     id: json["id"],
-    name: json["name"],
+    name: json["name"] ?? '',
     country: json["country"],
     image: json["image"],
     createdAt: DateTime.parse(json["created_at"]),

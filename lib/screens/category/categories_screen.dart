@@ -126,7 +126,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
               (b) => BrandModel(
                 id: b.id.toString(),
                 name: b.name,
-                logoUrl: b.image,
+                logoUrl: b.image ?? '',
                 productCount: 0,
                 isFeatured: false,
                 accentColor: Colors.orange,
