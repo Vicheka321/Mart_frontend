@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 
 import '../../services/api_service.dart';
+import '../../translations/catalog_translation.dart';
+import '../brand/product_by_brand.dart';
 import 'product_by_category.dart';
 import '../search/search_screen.dart';
 import '../theme/app_theme.dart';
@@ -71,6 +74,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
   Timer? _debounce;
 
   bool _isLoading = true;
+  bool _hasError = false;
   List<CategoryModel> _categories = [];
   List<BrandModel> _brands = [];
 
@@ -102,7 +106,10 @@ class _CategoriesScreenState extends State<CategoriesScreen>
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
 
     try {
       final api = ApiService();
@@ -119,7 +126,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
               (b) => BrandModel(
                 id: b.id.toString(),
                 name: b.name,
-                logoUrl: b.image,
+                logoUrl: b.image ?? '',
                 productCount: 0,
                 isFeatured: false,
                 accentColor: Colors.orange,
@@ -140,12 +147,17 @@ class _CategoriesScreenState extends State<CategoriesScreen>
             .toList();
 
         _isLoading = false;
+        _hasError = false;
       });
 
       _fadeController.forward();
       _brandsAnimController.forward();
     } catch (e) {
-      setState(() => _isLoading = false);
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+      });
       debugPrint("API ERROR: $e");
     }
   }
@@ -153,7 +165,9 @@ class _CategoriesScreenState extends State<CategoriesScreen>
   List<CategoryModel> get _filteredCategories {
     final q = _searchController.text.trim().toLowerCase();
     if (q.isEmpty) return _categories;
-    return _categories.where((c) => c.name.toLowerCase().contains(q)).toList();
+    return _categories.where((c) {
+      return c.name.toLowerCase().contains(q);
+    }).toList();
   }
 
   void _clearSearch() {
@@ -176,21 +190,10 @@ class _CategoriesScreenState extends State<CategoriesScreen>
 
     Navigator.push(
       context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (_, __, ___) => CategoryProductsScreen(
+      MaterialPageRoute(
+        builder: (_) => CategoryProductsScreen(
           categoryId: int.parse(category.id),
           categoryName: category.name,
-        ),
-        transitionsBuilder: (_, anim, __, child) => FadeTransition(
-          opacity: anim,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0.05, 0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
-            child: child,
-          ),
         ),
       ),
     );
@@ -200,21 +203,10 @@ class _CategoriesScreenState extends State<CategoriesScreen>
     HapticFeedback.lightImpact();
     Navigator.push(
       context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (_, __, ___) => CategoryProductsScreen(
-          categoryId: int.parse(brand.id),
-          categoryName: brand.name,
-        ),
-        transitionsBuilder: (_, anim, __, child) => FadeTransition(
-          opacity: anim,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0.05, 0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
-            child: child,
-          ),
+      MaterialPageRoute(
+        builder: (_) => BrandProductsScreen(
+          brandId: int.parse(brand.id),
+          brandName: brand.name,
         ),
       ),
     );
@@ -241,7 +233,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
 
     return Scaffold(
       extendBody: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -264,6 +256,8 @@ class _CategoriesScreenState extends State<CategoriesScreen>
               Expanded(
                 child: _isLoading
                     ? const _SkeletonScroll()
+                    : _hasError
+                    ? _ErrorState(onRetry: _loadData)
                     : _MainScroll(
                         fadeAnimation: _fadeAnimation,
                         brandsAnimController: _brandsAnimController,
@@ -289,12 +283,7 @@ Widget _SearchBar(BuildContext context) {
       onTap: () {
         Navigator.push(
           context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const SearchScreen(),
-            transitionsBuilder: (_, animation, __, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-          ),
+          MaterialPageRoute(builder: (_) => const SearchScreen()),
         );
       },
       child: Container(
@@ -309,7 +298,7 @@ Widget _SearchBar(BuildContext context) {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                "Search categories, brands & products...",
+                'search_categories_brands_products'.tr,
                 style: TextStyle(color: Colors.grey[500], fontSize: 14),
               ),
             ),
@@ -330,10 +319,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          
-        ],
-      ),
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: []),
     );
   }
 }
@@ -350,10 +336,12 @@ class _SuggestionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 8, 20, 0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.cardBg,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -378,7 +366,7 @@ class _SuggestionList extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   border: index < suggestions.length - 1
-                      ? Border(bottom: BorderSide(color: Colors.grey.shade100))
+                      ? Border(bottom: BorderSide(color: colors.border))
                       : null,
                 ),
                 child: Row(
@@ -408,18 +396,17 @@ class _SuggestionList extends StatelessWidget {
                       children: [
                         Text(
                           suggestion.text,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF1A1A1A),
+                            color: colors.text1,
                           ),
                         ),
                         Text(
-                          suggestion.isProduct ? 'Product' : 'Category / Brand',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade400,
-                          ),
+                          suggestion.isProduct
+                              ? 'product'.tr
+                              : 'category_brand'.tr,
+                          style: TextStyle(fontSize: 11, color: colors.text2),
                         ),
                       ],
                     ),
@@ -427,7 +414,7 @@ class _SuggestionList extends StatelessWidget {
                     Icon(
                       Icons.north_west_rounded,
                       size: 14,
-                      color: Colors.grey.shade300,
+                      color: colors.text3,
                     ),
                   ],
                 ),
@@ -465,12 +452,24 @@ class _MainScroll extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return FadeTransition(
       opacity: fadeAnimation,
       child: CustomScrollView(
         slivers: [
           // ── Brands ──────────────────────────────────────────
-          const SliverToBoxAdapter(child: _BrandsHeader()),
+          SliverToBoxAdapter(
+            child: _BrandsHeader(
+              onTap: brands.isEmpty
+                  ? null
+                  : () => _showBrandsBottomSheet(
+                      context,
+                      brands,
+                      onNavigateToBrand,
+                    ),
+            ),
+          ),
           SliverToBoxAdapter(
             child: _FeaturedBrandCard(
               brands: brands,
@@ -493,18 +492,18 @@ class _MainScroll extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'All Categories',
+                  Text(
+                    'all_categories'.tr,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF1A1A1A),
+                      color: colors.text1,
                       letterSpacing: -0.3,
                     ),
                   ),
                   Text(
-                    '${filteredCategories.length} found',
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                    '${filteredCategories.length} ${'found'.tr}',
+                    style: TextStyle(fontSize: 13, color: colors.text2),
                   ),
                 ],
               ),
@@ -546,10 +545,14 @@ class _MainScroll extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════
 
 class _BrandsHeader extends StatelessWidget {
-  const _BrandsHeader();
+  final VoidCallback? onTap;
+
+  const _BrandsHeader({this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       child: Row(
@@ -557,32 +560,161 @@ class _BrandsHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text(
-                'Brands',
+              Text(
+                'brands'.tr,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1A1A1A),
+                  color: colors.text1,
                   letterSpacing: -0.3,
                 ),
               ),
             ],
           ),
-          GestureDetector(
-            onTap: () {},
-            child: const Text(
-              'See all',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFFF6B35),
+          if (onTap != null)
+            GestureDetector(
+              onTap: onTap,
+              child: Text(
+                'see_all'.tr,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFFF6B35),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
   }
+}
+
+void _showBrandsBottomSheet(
+  BuildContext context,
+  List<BrandModel> brands,
+  ValueChanged<BrandModel> onSelect,
+) {
+  final colors = context.colors;
+
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: colors.cardBg,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (sheetContext) {
+      return SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(sheetContext).size.height * 0.72,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 12, 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'brands'.tr,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: colors.text1,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(sheetContext),
+                      icon: Icon(Icons.close_rounded, color: colors.text1),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  itemCount: brands.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.35,
+                  ),
+                  itemBuilder: (context, index) {
+                    final brand = brands[index];
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.pop(sheetContext);
+                        onSelect(brand);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: colors.surface,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: colors.border),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    brand.logoUrl,
+                                    width: 48,
+                                    height: 48,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 48,
+                                      height: 48,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: colors.accentLight,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        brand.name.isEmpty
+                                            ? '?'
+                                            : brand.name[0].toUpperCase(),
+                                        style: TextStyle(
+                                          color: colors.accent,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              brand.name.trCatalog,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: colors.text1,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -741,7 +873,7 @@ class _FeaturedBrandCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              featured.name,
+                              featured.name.trCatalog,
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w800,
@@ -802,7 +934,7 @@ class _BrandsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final otherBrands = brands.skip(1).toList();
+    final otherBrands = brands.where((b) => !b.isFeatured).toList();
 
     return Column(
       children: [
@@ -854,6 +986,8 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -872,23 +1006,19 @@ class _EmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'No categories found',
+          Text(
+            'no_products_found'.tr,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1A1A1A),
+              color: colors.text1,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Try adjusting your search\nor filter selection',
+            'try_adjusting_search'.tr,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade500,
-              height: 1.5,
-            ),
+            style: TextStyle(fontSize: 14, color: colors.text2, height: 1.5),
           ),
           const SizedBox(height: 24),
           GestureDetector(
@@ -906,9 +1036,9 @@ class _EmptyState extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Text(
-                'Clear filters',
-                style: TextStyle(
+              child: Text(
+                'clear_filters'.tr,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
@@ -923,7 +1053,63 @@ class _EmptyState extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 9. SKELETON SCROLL
+// 9. ERROR STATE
+// ═══════════════════════════════════════════════════════════════
+
+class _ErrorState extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _ErrorState({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.wifi_off_rounded, size: 56, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Connection failed',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Could not load categories. Please check your connection and try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black87,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 10. SKELETON SCROLL
 // ═══════════════════════════════════════════════════════════════
 
 class _SkeletonScroll extends StatelessWidget {
@@ -1011,6 +1197,8 @@ class _BrandCardState extends State<_BrandCard>
   @override
   Widget build(BuildContext context) {
     final b = widget.brand;
+    final colors = context.colors;
+
     return GestureDetector(
       onTapDown: (_) => _press.forward(),
       onTapUp: (_) async {
@@ -1025,7 +1213,7 @@ class _BrandCardState extends State<_BrandCard>
         child: Container(
           width: 88,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colors.cardBg,
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
@@ -1068,18 +1256,18 @@ class _BrandCardState extends State<_BrandCard>
               ),
               const SizedBox(height: 6),
               Text(
-                b.name,
-                style: const TextStyle(
+                b.name.trCatalog,
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1A1A1A),
+                  color: colors.text1,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
-              Text(
-                '${b.productCount} items',
-                style: TextStyle(fontSize: 9, color: Colors.grey.shade500),
-              ),
+              // Text(
+              //   '${b.productCount} items',
+              //   style: TextStyle(fontSize: 9, color: colors.text2),
+              // ),
             ],
           ),
         ),
@@ -1541,7 +1729,7 @@ class BrandScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              brand.name,
+                              brand.name.trCatalog,
                               style: const TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.w800,
@@ -1627,25 +1815,27 @@ class ProductListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F5F0),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF1A1A1A),
+            color: colors.text1,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           category.name,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF1A1A1A),
+            color: colors.text1,
           ),
         ),
         centerTitle: true,
@@ -1666,16 +1856,16 @@ class ProductListScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               '${category.productCount} products in ${category.name}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF555555),
+                color: colors.text2,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Product list UI goes here',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+              style: TextStyle(fontSize: 13, color: colors.text3),
             ),
           ],
         ),

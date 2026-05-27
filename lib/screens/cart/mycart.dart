@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mart_frontend/models/products_model.dart';
 
 import '../../services/api_service.dart';
+import '../../widgets/skeleton_loader.dart';
 
 class TestCartDataScreen extends StatelessWidget {
   const TestCartDataScreen({super.key});
@@ -21,8 +22,11 @@ class TestCartDataScreen extends StatelessWidget {
           if(snapshot.connectionState ==
              ConnectionState.waiting){
             return const Center(
-              child:
-                CircularProgressIndicator(),
+              child: SkeletonBox(
+                width: 160,
+                height: 16,
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+              ),
             );
           }
 
