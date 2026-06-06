@@ -4,40 +4,96 @@ import '../services/api_service.dart';
 
 class CartProvider extends ChangeNotifier {
   MyCartModel? cart;
-
   bool loading = false;
-
-  // 🔥 CALL API HERE
+  int optimisticCount = 0;
   Future<void> fetchCart() async {
+    final data = await ApiService().getCart();
+
+    cart = data;
+
+    clearOptimistic();
+
+    notifyListeners();
+  }
+
+  Future<void> fetchqty({required int productId}) async {
     try {
-      loading = true;
+      final qty = await ApiService().getCartQuantity(productId: productId);
+      optimisticCount = 0;
+      optimisticTotal = 0;
       notifyListeners();
+    } catch (_) {}
+  }
 
-      final data = await ApiService().getCart();
+  double optimisticTotal = 0;
 
-      print("CART DATA: ${data.items.length}"); // 👈 ADD THIS
+  final List<String> _optimisticImages = [];
 
-      cart = data;
+  List<String> get images {
+    final serverImages =
+        cart?.items
+            .where((e) => e.images.isNotEmpty)
+            .map((e) => e.images.first)
+            .toList() ??
+        [];
 
-      loading = false;
-      notifyListeners();
-    } catch (e) {
-      print("CART ERROR: $e"); // 👈 ADD THIS
-      loading = false;
-      notifyListeners();
+    return [..._optimisticImages, ...serverImages];
+  }
+
+  void addOptimisticItem({
+    required int productId,
+    required int quantity,
+    required String image,
+    required double price,
+  }) {
+    optimisticCount += quantity;
+    optimisticTotal += price * quantity;
+
+    if (!_optimisticImages.contains(image)) {
+      _optimisticImages.insert(0, image);
     }
+
+    notifyListeners();
+  }
+
+  void updateOptimisticQty({required int diff, required double price}) {
+    optimisticCount += diff;
+    optimisticTotal += price * diff;
+
+    if (optimisticCount < 0) {
+      optimisticCount = 0;
+    }
+
+    if (optimisticTotal < 0) {
+      optimisticTotal = 0;
+    }
+
+    notifyListeners();
+  }
+
+  void clearOptimistic() {
+    optimisticCount = 0;
+    optimisticTotal = 0;
+    _optimisticImages.clear();
+  }
+
+  void removeLocalItem(int productId) {
+    if (cart == null) return;
+
+    cart!.items.removeWhere((e) => e.productId == productId);
+
+    notifyListeners();
   }
 
   int get itemCount {
-    if (cart == null) return 0;
-    return cart!.items.fold(0, (sum, e) => sum + e.qty);
+    final serverCount = cart?.items.fold<int>(0, (sum, e) => sum + e.qty) ?? 0;
+
+    return serverCount + optimisticCount;
   }
 
-  List<String> get images {
-    if (cart == null) return [];
-    return cart!.items
-        .where((e) => e.images.isNotEmpty)
-        .map((e) => e.images.first)
-        .toList();
+  double get totalPrice {
+    final serverTotal = cart?.totalPrice ?? 0;
+
+    return serverTotal + optimisticTotal;
   }
 }

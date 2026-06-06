@@ -1,5 +1,18 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:mart_frontend/providers/ProductDetailProvider.dart';
+import 'package:mart_frontend/providers/banner_provider.dart';
+import 'package:mart_frontend/providers/best_seller_provider.dart';
+import 'package:mart_frontend/providers/brands_provider.dart';
+import 'package:mart_frontend/providers/cart_provider.dart';
+import 'package:mart_frontend/providers/category_provider.dart';
+import 'package:mart_frontend/providers/new_arrival_provider.dart';
+import 'package:mart_frontend/providers/profile_provider.dart';
+import 'package:mart_frontend/providers/recommend_provider.dart';
 import 'package:mart_frontend/screens/onbording/onboarding_screen.dart';
+import 'package:mart_frontend/services/api_service.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 import 'dart:ui';
@@ -258,13 +271,240 @@ class _SplashScreenState extends State<SplashScreen>
         final language = prefs.getString('language');
 
         if (language == null) {
-          // 👉 First time → onboarding
+          final loggedIn = await ApiService().isLoggedIn();
+
+          final profileProvider = context.read<ProfileProvider>();
+
+          if (loggedIn) {
+            await profileProvider.loadCache();
+
+            if (profileProvider.profile == null) {
+              await profileProvider.fetchProfile();
+            }
+
+            final avatar = profileProvider.profile?.avatar;
+
+            if (avatar?.isNotEmpty == true) {
+              await precacheImage(CachedNetworkImageProvider(avatar!), context);
+            }
+          } else {
+            await profileProvider.loadGuestProfile();
+
+            final avatar = profileProvider.profile?.avatar;
+
+            if (avatar?.isNotEmpty == true) {
+              await precacheImage(CachedNetworkImageProvider(avatar!), context);
+            }
+          }
+
+          await context.read<BannerProvider>().loadCache();
+          await context.read<CategoryProvider>().loadCache();
+          await context.read<BestSellerProvider>().loadCache();
+          await context.read<NewArrivalsProvider>().loadCache();
+          await context.read<RecommendProvider>().loadCache();
+          // await context.read<CartProvider>().fetchCart();
+
+          final bannerProvider = context.read<BannerProvider>();
+          final categoryProvider = context.read<CategoryProvider>();
+          final bestSellerProvider = context.read<BestSellerProvider>();
+          final newArrivalProvider = context.read<NewArrivalsProvider>();
+          final recommendProvider = context.read<RecommendProvider>();
+          // final cartProvider = context.read<CartProvider>();
+
+          if (bannerProvider.banners.isEmpty) {
+            await bannerProvider.fetchBanners();
+          }
+
+          if (categoryProvider.categories.isEmpty) {
+            await categoryProvider.fetchCategories();
+          }
+
+          if (bestSellerProvider.products.isEmpty) {
+            await bestSellerProvider.fetchBestSellers();
+          }
+
+          if (newArrivalProvider.products.isEmpty) {
+            await newArrivalProvider.fetchNewArrivals();
+          }
+
+          if (recommendProvider.recommended.isEmpty) {
+            await recommendProvider.fetchRecommended();
+          }
+
+          // if (cartProvider.cart == null) {
+          //   await cartProvider.fetchCart();
+          // }
+
+          for (final banner in bannerProvider.banners.take(5)) {
+            await precacheImage(
+              CachedNetworkImageProvider(banner.imageUrl),
+              context,
+            );
+          }
+
+          for (final category in categoryProvider.categories.take(5)) {
+            if (category.image.isNotEmpty) {
+              await precacheImage(
+                CachedNetworkImageProvider(category.image),
+                context,
+              );
+            }
+          }
+
+          for (final product in bestSellerProvider.products.take(3)) {
+            if (product.images.isNotEmpty) {
+              await precacheImage(
+                CachedNetworkImageProvider(product.images.first),
+                context,
+              );
+            }
+          }
+
+          for (final product in newArrivalProvider.products.take(3)) {
+            if (product.images.isNotEmpty) {
+              await precacheImage(
+                CachedNetworkImageProvider(product.images.first),
+                context,
+              );
+            }
+          }
+
+          for (final product in recommendProvider.recommended.take(2)) {
+            if (product.images.isNotEmpty) {
+              await precacheImage(
+                CachedNetworkImageProvider(product.images.first),
+                context,
+              );
+            }
+          }
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => LanguageOnboardingScreen()),
           );
         } else {
-          // 👉 Already selected → go main screen
+          final loggedIn = await ApiService().isLoggedIn();
+
+          final profileProvider = context.read<ProfileProvider>();
+
+          if (loggedIn) {
+            await profileProvider.loadCache();
+
+            if (profileProvider.profile == null) {
+              await profileProvider.fetchProfile();
+            }
+
+            final avatar = profileProvider.profile?.avatar;
+
+            if (avatar?.isNotEmpty == true) {
+              await precacheImage(CachedNetworkImageProvider(avatar!), context);
+            }
+          } else {
+            await profileProvider.loadGuestProfile();
+
+            final avatar = profileProvider.profile?.avatar;
+
+            if (avatar?.isNotEmpty == true) {
+              await precacheImage(CachedNetworkImageProvider(avatar!), context);
+            }
+          }
+
+          await context.read<BannerProvider>().loadCache();
+          await context.read<CategoryProvider>().loadCache();
+          await context.read<BestSellerProvider>().loadCache();
+          await context.read<NewArrivalsProvider>().loadCache();
+          await context.read<RecommendProvider>().loadCache();
+          // await context.read<CartProvider>().fetchCart();
+
+          final bannerProvider = context.read<BannerProvider>();
+          final categoryProvider = context.read<CategoryProvider>();
+          final bestSellerProvider = context.read<BestSellerProvider>();
+          final newArrivalProvider = context.read<NewArrivalsProvider>();
+          final recommendProvider = context.read<RecommendProvider>();
+          // final cartProvider = context.read<CartProvider>();
+
+          if (bannerProvider.banners.isEmpty) {
+            await bannerProvider.fetchBanners();
+          }
+
+          if (categoryProvider.categories.isEmpty) {
+            await categoryProvider.fetchCategories();
+          }
+
+          if (bestSellerProvider.products.isEmpty) {
+            await bestSellerProvider.fetchBestSellers();
+          }
+
+          if (newArrivalProvider.products.isEmpty) {
+            await newArrivalProvider.fetchNewArrivals();
+          }
+
+          if (recommendProvider.recommended.isEmpty) {
+            await recommendProvider.fetchRecommended();
+          }
+
+          // if (cartProvider.cart == null) {
+          //   await cartProvider.fetchCart();
+          // }
+
+          for (final banner in bannerProvider.banners.take(5)) {
+            await precacheImage(
+              CachedNetworkImageProvider(banner.imageUrl),
+              context,
+            );
+          }
+
+          for (final category in categoryProvider.categories.take(5)) {
+            if (category.image.isNotEmpty) {
+              await precacheImage(
+                CachedNetworkImageProvider(category.image),
+                context,
+              );
+            }
+          }
+
+          for (final product in bestSellerProvider.products.take(3)) {
+            if (product.images.isNotEmpty) {
+              await precacheImage(
+                CachedNetworkImageProvider(product.images.first),
+                context,
+              );
+            }
+          }
+
+          for (final product in newArrivalProvider.products.take(3)) {
+            if (product.images.isNotEmpty) {
+              await precacheImage(
+                CachedNetworkImageProvider(product.images.first),
+                context,
+              );
+            }
+          }
+
+          for (final product in recommendProvider.recommended.take(2)) {
+            if (product.images.isNotEmpty) {
+              await precacheImage(
+                CachedNetworkImageProvider(product.images.first),
+                context,
+              );
+            }
+          }
+
+          // for (final p in bestSellerProvider.products.take(3)) {
+          //   await context.read<ProductDetailProvider>().preload(p.id);
+          // }
+
+          // for (final p in newArrivalProvider.products.take(3)) {
+          //   await context.read<ProductDetailProvider>().preload(p.id);
+          // }
+
+          // for (final p in cartProvider.cart!.items.take(3)) {
+          //   await context.read<ProductDetailProvider>().preload(p.productId);
+          // }
+
+          // for (final p in recommendProvider.recommended.take(5)) {
+          //   await context.read<ProductDetailProvider>().preload(p.id);
+          // }
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => MainScreen()),

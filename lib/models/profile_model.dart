@@ -15,8 +15,8 @@ class MyProfileModel {
   String firstName;
   String lastName;
   String email;
-  dynamic phone;
-  dynamic avatar;
+  String phone;
+  String avatar;
   DateTime createdAt;
 
   MyProfileModel({
@@ -37,8 +37,8 @@ class MyProfileModel {
     firstName: json["first_name"] ?? '',
     lastName: json["last_name"] ?? '',
     email: json["email"] ?? '',
-    phone: json["phone"],
-    avatar: json["avatar"],
+    phone: json["phone"] ?? '',
+    avatar: json["avatar"] ?? '',
     createdAt: DateTime.parse(json["created_at"]),
   );
 

@@ -288,6 +288,8 @@ class RecommendedModel {
   String name;
   String salePrice;
   String finalPrice;
+  String category;
+  String brand;
   String? discount;
   int sold;
   List<String> images;
@@ -297,6 +299,8 @@ class RecommendedModel {
     required this.name,
     required this.salePrice,
     required this.finalPrice,
+    required this.category,
+    required this.brand,
     this.discount,
     required this.sold,
     required this.images,
@@ -308,6 +312,8 @@ class RecommendedModel {
         name: json["name"],
         salePrice: json["sale_price"],
         finalPrice: json["final_price"],
+        category: json["category_name"]?.toString() ?? '',
+        brand: json["brand_name"]?.toString() ?? '',
         discount: json["discount"],
         sold: json["sold"],
         images: List<String>.from(json["images"].map((x) => x)),
@@ -318,6 +324,8 @@ class RecommendedModel {
     "name": name,
     "sale_price": salePrice,
     "final_price": finalPrice,
+    "category": category,
+    "brand": brand,
     "discount": discount,
     "sold": sold,
     "images": List<dynamic>.from(images.map((x) => x)),

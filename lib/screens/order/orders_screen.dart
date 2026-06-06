@@ -3746,13 +3746,14 @@
 // }
 
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import '../../models/my_orders_model.dart';
 import '../../services/api_service.dart';
 import '../main/main_screen.dart';
-
-import '../theme/app_theme.dart'; // adjust import path to your project
+import '../theme/app_theme.dart';
 
 class _StatusStyle {
   final String label;
@@ -3773,16 +3774,16 @@ class _StatusStyle {
 _StatusStyle _statusStyle(String status) {
   switch (status.toLowerCase().trim()) {
     case 'pending':
-      return const _StatusStyle(
-        label: 'Pending',
+      return _StatusStyle(
+        label: 'pending'.tr,
         color: Color(0xFFF59E0B),
         bgColor: Color(0xFFFEF3C7),
         icon: Icons.schedule_rounded,
         trackingStep: 0,
       );
     case 'processing':
-      return const _StatusStyle(
-        label: 'Processing',
+      return _StatusStyle(
+        label: 'processing'.tr,
         color: Color(0xFF8B5CF6),
         bgColor: Color(0xFFEDE9FE),
         icon: Icons.inventory_2_outlined,
@@ -3797,16 +3798,17 @@ _StatusStyle _statusStyle(String status) {
     //     trackingStep: 2,
     //   );
     case 'completed':
-      return const _StatusStyle(
-        label: 'Delivered',
+      return _StatusStyle(
+        // label: 'Delivered',
+        label: 'completed'.tr,
         color: Color(0xFF10B981),
         bgColor: Color(0xFFD1FAE5),
         icon: Icons.check_circle_outline_rounded,
         trackingStep: 3,
       );
     case 'cancelled':
-      return const _StatusStyle(
-        label: 'Cancelled',
+      return _StatusStyle(
+        label: 'cancelled'.tr,
         color: Color(0xFFEF4444),
         bgColor: Color(0xFFFEE2E2),
         icon: Icons.cancel_outlined,
@@ -3844,12 +3846,11 @@ class _OrdersScreenState extends State<OrdersScreen>
   String? _error;
 
   static const _tabDefs = [
-    {'label': 'All', 'filter': null},
-    {'label': 'Pending', 'filter': 'pending'},
-    {'label': 'Processing', 'filter': 'processing'},
-    // {'label': 'Shipping', 'filter': 'shipping'},
-    {'label': 'Completed', 'filter': 'completed'},
-    {'label': 'Cancelled', 'filter': 'cancelled'},
+    {'label': 'all'},
+    {'label': 'pending'},
+    {'label': 'processing'},
+    {'label': 'completed'},
+    {'label': 'cancelled'},
   ];
 
   @override
@@ -3864,8 +3865,6 @@ class _OrdersScreenState extends State<OrdersScreen>
     _tabController.dispose();
     super.dispose();
   }
-
-  // ── Data fetching ────────────────────────────────────────────
 
   Future<void> _loadOrders({bool refresh = false}) async {
     if (!refresh)
@@ -3901,34 +3900,35 @@ class _OrdersScreenState extends State<OrdersScreen>
       final status = o.status.toLowerCase().trim();
 
       if (f == 'completed') {
-        return status == 'completed' || status == 'delivered'; // ✅ FIX
+        return status == 'completed' || status == 'delivered';
       }
 
       return status == f;
     }).toList();
   }
 
-  // ── Build ────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: c.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: NestedScrollView(
-        headerSliverBuilder: (_, __) => [_buildAppBar(c), _buildTabBar(c)],
+        headerSliverBuilder: (_, __) => [
+          _buildAppBar(colors),
+          _buildTabBar(colors),
+        ],
         body: _isLoading
-            ? _buildSkeletons(c)
+            ? _buildSkeletons(colors)
             : _error != null
-            ? _buildError(c)
+            ? _buildError(colors)
             : TabBarView(
                 controller: _tabController,
                 physics: const NeverScrollableScrollPhysics(),
                 children: _tabDefs.map((tab) {
                   return _OrderTabView(
                     orders: _filtered(tab['filter']),
-                    colors: c,
+                    colors: colors,
                     onRefresh: () => _loadOrders(refresh: true),
                     onTap: (o) => _openDetail(o),
                     onReorder: (o) => _showReorderSnack(o),
@@ -3939,58 +3939,52 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
   }
 
-  // ── App Bar ──────────────────────────────────────────────────
-
-  Widget _buildAppBar(AppColors c) {
+  Widget _buildAppBar(AppColors colors) {
     return SliverAppBar(
       pinned: true,
-      backgroundColor: c.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
+      centerTitle: true,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
       title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'My Orders',
+            'my_orders'.tr,
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: c.text1,
+              color: colors.text1,
               letterSpacing: -0.5,
             ),
           ),
           Text(
-            '${_orders.length} orders',
-            style: TextStyle(
-              fontSize: 12,
-              color: c.text3,
-              fontWeight: FontWeight.w400,
-            ),
+            '${_orders.length} ${'orders'.tr}',
+            style: TextStyle(fontSize: 12, color: colors.text3),
           ),
         ],
       ),
-      actions: [const SizedBox(width: 16)],
     );
   }
 
-  // ── Tab Bar ──────────────────────────────────────────────────
-
-  Widget _buildTabBar(AppColors c) {
+  Widget _buildTabBar(AppColors colors) {
     return SliverPersistentHeader(
       pinned: true,
       delegate: _TabBarDelegate(
-        color: c.background,
+        color: Theme.of(context).scaffoldBackgroundColor,
         tabBar: TabBar(
           controller: _tabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
           indicator: BoxDecoration(
-            color: c.accent,
+            color: colors.accent,
             borderRadius: BorderRadius.circular(12),
           ),
           indicatorSize: TabBarIndicatorSize.tab,
           labelColor: Colors.white,
-          unselectedLabelColor: c.text3,
+          unselectedLabelColor: colors.text3,
           labelStyle: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
@@ -4005,7 +3999,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                 (t) => Tab(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: Text(t['label']!),
+                    child: Text(t['label']!.tr),
                   ),
                 ),
               )
@@ -4062,8 +4056,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                   color: c.accent,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Text(
-                  'Retry',
+                child: Text(
+                  'retry'.tr,
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -4203,7 +4197,7 @@ class _OrderTabView extends StatelessWidget {
                 color: colors.accent,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
@@ -4213,7 +4207,7 @@ class _OrderTabView extends StatelessWidget {
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'Go Shopping',
+                    'go_shopping'.tr,
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -4398,18 +4392,24 @@ class _OrderCardState extends State<_OrderCard>
                 child: Row(
                   children: [
                     // Image
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        first.image,
-                        width: 64,
-                        height: 64,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          width: 64,
-                          height: 64,
-                          color: c.surface2,
-                          child: Icon(Icons.image_outlined, color: c.text3),
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: c.border, width: .5),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            first.image,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) =>
+                                Icon(Icons.image_outlined, color: c.text3),
+                          ),
                         ),
                       ),
                     ),
@@ -4588,7 +4588,7 @@ class _OrderCardState extends State<_OrderCard>
                   if (!isCancelled && !isDelivered) ...[
                     Expanded(
                       child: _CardButton(
-                        label: 'Track Order',
+                        label: 'track_order'.tr,
                         icon: Icons.local_shipping_outlined,
                         isPrimary: true,
                         colors: c,
@@ -4599,7 +4599,7 @@ class _OrderCardState extends State<_OrderCard>
                   ],
                   Expanded(
                     child: _CardButton(
-                      label: isDelivered ? 'Buy Again' : 'Details',
+                      label: isDelivered ? 'buy_again'.tr : 'details'.tr,
                       icon: isDelivered
                           ? Icons.refresh_rounded
                           : Icons.receipt_long_outlined,
@@ -4711,7 +4711,6 @@ class _SkeletonOrderCardState extends State<_SkeletonOrderCard>
         height: h,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(r),
-          // Shimmer between surface and surface2 from your theme
           color: Color.lerp(c.surface, c.surface2, _anim.value),
         ),
       ),
@@ -4828,8 +4827,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
     return Scaffold(
       backgroundColor: c.background,
       appBar: AppBar(
-        backgroundColor: c.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
           child: Container(
@@ -4839,11 +4841,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: c.border.withOpacity(0.2)),
             ),
-            child: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 16,
-              color: c.text2,
-            ),
+            child: Icon(CupertinoIcons.back, size: 16, color: c.text2),
           ),
         ),
         title: Column(
@@ -4900,7 +4898,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
                 // Tracking timeline
                 if (!isCancelled) ...[
                   _Section(
-                    title: 'Order Tracking',
+                    title: 'order_tracking'.tr,
                     icon: Icons.route_rounded,
                     colors: c,
                     child: _TrackingTimeline(order: order, colors: c),
@@ -4910,8 +4908,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
 
                 // Items
                 _Section(
-                  title: 'Items Ordered',
-                  icon: Icons.shopping_bag_outlined,
+                  title: 'items_ordered'.tr,
+                  icon: CupertinoIcons.shopping_cart,
                   colors: c,
                   child: _DetailItemsList(order: order, colors: c),
                 ),
@@ -4919,8 +4917,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
 
                 // Address
                 _Section(
-                  title: 'Delivery Address',
-                  icon: Icons.location_on_outlined,
+                  title: 'delivery_address'.tr,
+                  icon: CupertinoIcons.location_solid,
                   colors: c,
                   child: _AddressRow(order: order, colors: c),
                 ),
@@ -4928,8 +4926,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
 
                 // Payment
                 _Section(
-                  title: 'Payment',
-                  icon: Icons.payment_rounded,
+                  title: 'payment_method'.tr,
+                  icon: CupertinoIcons.creditcard,
                   colors: c,
                   child: _PaymentRow(order: order, colors: c),
                 ),
@@ -4937,8 +4935,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
 
                 // Price summary
                 _Section(
-                  title: 'Order Summary',
-                  icon: Icons.receipt_outlined,
+                  title: 'order_summary'.tr,
+                  icon: CupertinoIcons.doc_text_fill,
                   colors: c,
                   child: _PriceSummary(order: order, colors: c),
                 ),
@@ -5029,19 +5027,23 @@ class _Section extends StatelessWidget {
 class _TrackingTimeline extends StatelessWidget {
   final Order order;
   final AppColors colors;
-  const _TrackingTimeline({required this.order, required this.colors});
+  _TrackingTimeline({required this.order, required this.colors});
 
-  static const _steps = [
+  final _steps = [
     (
-      label: 'Order Placed',
-      icon: Icons.shopping_cart_checkout_rounded,
+      label: 'order_placed'.tr,
+      icon: CupertinoIcons.shopping_cart,
       sub: 'Confirmed',
     ),
-    (label: 'Packed', icon: Icons.inventory_2_outlined, sub: 'Being prepared'),
+    (
+      label: 'packed'.tr,
+      icon: CupertinoIcons.archivebox,
+      sub: 'Being prepared',
+    ),
     // (label: 'Shipped', icon: Icons.local_shipping_outlined, sub: 'On the way'),
     (
-      label: 'Delivered',
-      icon: Icons.check_circle_outline_rounded,
+      label: 'delivered'.tr,
+      icon: CupertinoIcons.check_mark_circled,
       sub: 'Completed',
     ),
   ];
@@ -5141,8 +5143,8 @@ class _TrackingTimeline extends StatelessWidget {
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(color: const Color(0xFF86EFAC)),
                           ),
-                          child: const Text(
-                            '● Current status',
+                          child: Text(
+                            'current_status'.tr,
                             style: TextStyle(
                               fontSize: 10,
                               color: Color(0xFF16A34A),
@@ -5189,15 +5191,23 @@ class _DetailItemsList extends StatelessWidget {
           padding: EdgeInsets.only(bottom: i < order.items.length - 1 ? 14 : 0),
           child: Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  item.image,
-                  width: 58,
-                  height: 58,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      Container(width: 58, height: 58, color: c.surface2),
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: c.border, width: .5),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Image.network(
+                    item.image,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) =>
+                        Icon(Icons.image_outlined, color: c.text3),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -5300,7 +5310,7 @@ class _AddressRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Delivery Address',
+                'delivery_address'.tr,
                 style: TextStyle(
                   fontSize: 11,
                   color: c.text3,
@@ -5333,12 +5343,12 @@ class _PaymentRow extends StatelessWidget {
   final AppColors colors;
   const _PaymentRow({required this.order, required this.colors});
 
-  bool get _isCash => order.paymentMethod.toLowerCase().contains('cash');
+  bool get _isCash => order.paymentMethod.toUpperCase().contains('cash');
 
   @override
   Widget build(BuildContext context) {
     final c = colors;
-    final isPaid = order.paymentStatus.toLowerCase().contains('paid');
+    final isPaid = order.paymentStatus.toUpperCase().contains('paid');
     final statusLabel = order.paymentStatus.isNotEmpty
         ? order.paymentStatus[0].toUpperCase() +
               order.paymentStatus.substring(1)
@@ -5365,7 +5375,7 @@ class _PaymentRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Payment Method',
+                'payment_method'.tr,
                 style: TextStyle(
                   fontSize: 11,
                   color: c.text3,
@@ -5374,7 +5384,7 @@ class _PaymentRow extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                order.paymentMethod,
+                order.paymentMethod.toUpperCase(),
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -5387,7 +5397,7 @@ class _PaymentRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: isPaid ? const Color(0xFFF0FDF4) : const Color(0xFFFEF3C7),
+            color: isPaid ? const Color(0xFFF0FDF4) : Colors.green,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
@@ -5395,7 +5405,7 @@ class _PaymentRow extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: isPaid ? const Color(0xFF16A34A) : const Color(0xFFF59E0B),
+              color: isPaid ? const Color(0xFF16A34A) : Colors.white,
             ),
           ),
         ),
@@ -5456,11 +5466,11 @@ class _PriceSummary extends StatelessWidget {
 
     return Column(
       children: [
-        _row(c, 'Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
-        if (shipping > 0.001)
-          _row(c, 'Shipping', '\$${shipping.toStringAsFixed(2)}'),
-        Divider(height: 16, color: c.border.withValues(alpha: 0.15)),
-        _row(c, 'Total', '\$${grandTotal.toStringAsFixed(2)}', bold: true),
+        // _row(c, 'subtotal'.tr, '\$${subtotal.toStringAsFixed(2)}'),
+        // if (shipping > 0.001)
+        // _row(c, 'shipping'.tr, '\$${shipping.toStringAsFixed(2)}'),
+        // Divider(height: 16, color: c.border.withValues(alpha: 0.15)),
+        _row(c, 'total'.tr, '\$${grandTotal.toStringAsFixed(2)}', bold: true),
       ],
     );
   }
@@ -5504,33 +5514,33 @@ class _DetailActions extends StatelessWidget {
               ),
             ),
           ),
-        if (status == 'pending')
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.cancel_outlined,
-                size: 18,
-                color: Color(0xFFEF4444),
-              ),
-              label: const Text(
-                'Cancel Order',
-                style: TextStyle(
-                  color: Color(0xFFEF4444),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                side: const BorderSide(color: Color(0xFFEF4444)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-          ),
+        // if (status == 'pending')
+        //   SizedBox(
+        //     width: double.infinity,
+        //     child: OutlinedButton.icon(
+        //       onPressed: () {},
+        //       icon: const Icon(
+        //         Icons.cancel_outlined,
+        //         size: 18,
+        //         color: Color(0xFFEF4444),
+        //       ),
+        //       label: const Text(
+        //         'Cancel Order',
+        //         style: TextStyle(
+        //           color: Color(0xFFEF4444),
+        //           fontWeight: FontWeight.w700,
+        //           fontSize: 15,
+        //         ),
+        //       ),
+        //       style: OutlinedButton.styleFrom(
+        //         padding: const EdgeInsets.symmetric(vertical: 16),
+        //         side: const BorderSide(color: Color(0xFFEF4444)),
+        //         shape: RoundedRectangleBorder(
+        //           borderRadius: BorderRadius.circular(16),
+        //         ),
+        //       ),
+        //     ),
+        //   ),
         if (status == 'shipping')
           SizedBox(
             width: double.infinity,

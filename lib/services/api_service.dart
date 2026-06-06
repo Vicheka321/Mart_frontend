@@ -1,4 +1,6 @@
 import 'package:http/http.dart' as http;
+import 'package:mart_frontend/models/brands_with_products.dart';
+import 'package:mart_frontend/models/categories_with_products_model.dart';
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,9 +16,11 @@ import '../models/my_orders_model.dart';
 import '../models/profile_model.dart';
 
 class ApiService {
-  final String baseUrl = 'http://172.20.10.7:8000/api';
+  final String baseUrl = 'https://glutton-heat-trifle.ngrok-free.dev/api';
+  // final String baseUrl = 'https://127.0.0.1:8000/api';
 
   // ==============Products=================
+
   Future<List<BannersModel>> fetchBanners() async {
     try {
       final response = await http.get(
@@ -51,6 +55,29 @@ class ApiService {
         return categoriesModelFromJson(response.body);
       } else {
         throw Exception('Failed to load categories: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<List<CategoriesWithProductsModel>>
+  fetchCategoriesWithProducts() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/categories'),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('categories_with_products_cache', response.body);
+        return categoriesWithProductsModelFromJson(response.body);
+      } else {
+        throw Exception(
+          'Failed to load categories with products: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception(e.toString());
@@ -131,6 +158,28 @@ class ApiService {
         return brandsModelFromJson(response.body);
       } else {
         throw Exception('Failed to load brands: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<List<BrandsWithProductsModel>> fetchBrandsWithProducts() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/brands'),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('brands_with_products_cache', response.body);
+        return brandsWithProductsModelFromJson(response.body);
+      } else {
+        throw Exception(
+          'Failed to load brands with products: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception(e.toString());
@@ -245,7 +294,28 @@ class ApiService {
     }
   }
 
+  Future<List<AllrecommendedModel>> fetchAllRecommended() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/all-recommended'),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('all_recommended_cache', response.body);
+        return allrecommendedModelFromJson(response.body);
+      } else {
+        throw Exception('Failed to load recommended: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
   // ============== Auth =================
+
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -262,6 +332,150 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove("token");
   }
+
+  Future<Map<String, dynamic>> register({
+    required String fullName,
+    required String login,
+    required String password,
+    required String confirmPassword,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/register'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'full_name': fullName,
+        'login': login,
+        'password': password,
+        'password_confirmation': confirmPassword,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Registration failed');
+  }
+
+  Future<Map<String, dynamic>> login({
+    required String login,
+    required String password,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/login'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'login': login, 'password': password}),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      if (data["token"] != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("token", data["token"]);
+      }
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Login failed');
+  }
+
+  Future<Map<String, dynamic>> forgetPassword({required String login}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/forget-password'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'login': login}),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Failed to send OTP');
+  }
+
+  Future<Map<String, dynamic>> verifyResetOtp({
+    required String login,
+    required String otp,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/verify-reset-password'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'login': login, 'otp': otp}),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'OTP verification failed');
+  }
+
+  Future<Map<String, dynamic>> resetPassword({
+    required String resetToken,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/reset-password'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'reset_token': resetToken,
+        'new_password': newPassword,
+        'new_password_confirmation': confirmPassword,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Password reset failed');
+  }
+
+  Future<Map<String, dynamic>> resendOtp({required String login}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/resend-otp'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'login': login}),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Failed to resend OTP');
+  }
+
+
 
   Future<Map<String, dynamic>> sendEmailOtp({required String email}) async {
     try {
@@ -319,25 +533,6 @@ class ApiService {
     }
   }
 
-  Future<List<AllrecommendedModel>> fetchAllRecommended() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/all-recommended'),
-        headers: {"Accept": "application/json"},
-      );
-
-      if (response.statusCode == 200) {
-        final prefs = await SharedPreferences.getInstance();
-
-        await prefs.setString('all_recommended_cache', response.body);
-        return allrecommendedModelFromJson(response.body);
-      } else {
-        throw Exception('Failed to load recommended: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception(e.toString());
-    }
-  }
   // ==================update profile=================
 
   Future<Map<String, dynamic>> updateProfile({
@@ -444,9 +639,10 @@ class ApiService {
       body: jsonEncode({"product_id": productId, "quantity": quantity}),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception("Update failed");
+    if (response.statusCode == 200) {
+      throw Exception("Cart updated successfully");
     }
+    throw Exception("Update failed");
   }
 
   Future<MyCartModel> getCart() async {
@@ -555,8 +751,8 @@ class ApiService {
 
   // ==========================profile================
   Future<MyProfileModel> fetchMyProfile() async {
-    // ✅ Get token
     final prefs = await SharedPreferences.getInstance();
+
     final token = prefs.getString("token");
 
     final response = await http.get(
@@ -565,10 +761,11 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
+      await prefs.setString('my_profile_cache', response.body);
       return myProfileModelFromJson(response.body);
-    } else {
-      throw Exception('Failed to load profile: ${response.body}');
     }
+
+    throw Exception('Failed to load profile');
   }
 
   // ===========================order================================

@@ -1,4 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:mart_frontend/providers/ProductDetailProvider.dart';
+import 'package:mart_frontend/providers/banner_provider.dart';
+import 'package:mart_frontend/providers/best_seller_provider.dart';
+import 'package:mart_frontend/providers/brands_provider.dart';
+import 'package:mart_frontend/providers/category_provider.dart';
+import 'package:mart_frontend/providers/new_arrival_provider.dart';
+import 'package:mart_frontend/providers/profile_provider.dart';
+import 'package:mart_frontend/providers/recommend_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 import 'providers/cart_provider.dart';
@@ -10,7 +18,17 @@ import 'translations/app_translations.dart';
 void main() {
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => CartProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => BannerProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => BestSellerProvider()),
+        ChangeNotifierProvider(create: (_) => NewArrivalsProvider()),
+        ChangeNotifierProvider(create: (_) => BrandsProvider()),
+        ChangeNotifierProvider(create: (_) => RecommendProvider()),
+        ChangeNotifierProvider(create: (_) => ProductDetailProvider()),
+      ],
       child: MyApp(),
     ),
   );
@@ -28,36 +46,82 @@ void main() {
 // ─────────────────────────────────────────────
 //
 
+// class MyApp extends StatelessWidget {
+//   MyApp({super.key});
+
+//   final ThemeController controller = Get.put(ThemeController());
+//   final languageController = Get.put(LanguageController());
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Obx(
+//       () => GetMaterialApp(
+//         translations: AppTranslations(),
+//         locale: Locale(languageController.language.value),
+//         fallbackLocale: const Locale('en'),
+//         debugShowCheckedModeBanner: false,
+
+//         // 🌞 Light Theme
+//         theme: lightTheme,
+
+//         // 🌙 Dark Theme
+//         darkTheme: darkTheme,
+
+//         // 🔥 Dynamic Theme
+//         themeMode: controller.isDark.value ? ThemeMode.dark : ThemeMode.light,
+
+//         home: SplashScreen(),
+//       ),
+//     );
+//   }
+// }
+
 class MyApp extends StatelessWidget {
   MyApp({super.key});
 
   final ThemeController controller = Get.put(ThemeController());
   final languageController = Get.put(LanguageController());
 
+  String getFontFamily(String lang) {
+    switch (lang) {
+      case 'km':
+        return 'NotoSansKhmer';
+
+      case 'zh':
+        return 'NotoSansSC';
+
+      default:
+        return 'NotoSans';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => GetMaterialApp(
+    return Obx(() {
+      final lang = languageController.language.value;
+      final fontFamily = getFontFamily(lang);
+
+      return GetMaterialApp(
         translations: AppTranslations(),
-        locale: Locale(languageController.language.value),
+        locale: Locale(lang),
         fallbackLocale: const Locale('en'),
         debugShowCheckedModeBanner: false,
 
-        // 🌞 Light Theme
-        theme: lightTheme,
+        theme: lightTheme.copyWith(
+          textTheme: lightTheme.textTheme.apply(fontFamily: fontFamily),
+        ),
 
-        // 🌙 Dark Theme
-        darkTheme: darkTheme,
+        darkTheme: darkTheme.copyWith(
+          textTheme: darkTheme.textTheme.apply(fontFamily: fontFamily),
+        ),
 
-        // 🔥 Dynamic Theme
         themeMode: controller.isDark.value ? ThemeMode.dark : ThemeMode.light,
 
         home: SplashScreen(),
-      ),
-    );
+      );
+    });
   }
 }
-
 //
 // ─────────────────────────────────────────────
 // LIGHT THEME
@@ -102,7 +166,6 @@ final ThemeData lightTheme = ThemeData(
 final ThemeData darkTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
-
   scaffoldBackgroundColor: const Color(0xFF0E0E0E),
 
   colorScheme: const ColorScheme.dark(

@@ -33,7 +33,8 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _screens = const [
       HomeScreen(),
-      CategoriesScreen(),
+      // CategoriesScreen(),
+      CategoryBrandScreen(),
       OrdersScreen(),
       ProfileScreen(),
     ];

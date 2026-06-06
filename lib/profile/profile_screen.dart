@@ -1517,7 +1517,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   Widget build(BuildContext context) {
     final c = context;
     return Scaffold(
-      backgroundColor: c.bg,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           // ── SliverAppBar ──────────────────────────────────────

@@ -1,6 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../checkoput/checkout_screen.dart';
+import '../../checkout/checkout_screen.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/api_service.dart';
 import '../../widgets/skeleton_loader.dart';
@@ -14,7 +15,6 @@ class CartBottomSheet extends StatefulWidget {
 }
 
 class _CartBottomSheetState extends State<CartBottomSheet> {
-  // Tracks which items are being updated to show loading state
   final Set<int> _updatingItems = {};
 
   Future<void> _updateQty(
@@ -36,7 +36,6 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
         await context.read<CartProvider>().fetchCart();
       }
     } catch (_) {
-      // silently ignore — cart will retain previous state
     } finally {
       if (mounted) setState(() => _updatingItems.remove(productId));
     }
@@ -125,18 +124,32 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                       child: Row(
                         children: [
                           // Product image
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              item.images.isNotEmpty ? item.images.first : '',
-                              width: s * 0.16,
-                              height: s * 0.16,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                width: s * 0.16,
-                                height: s * 0.16,
-                                color: colors.surface2,
-                                child: Icon(
+                          Container(
+                            width: s * 0.16,
+                            height: s * 0.16,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Padding(
+                              padding: EdgeInsets.all(s * 0.015),
+                              child: CachedNetworkImage(
+                                imageUrl: item.images.isNotEmpty
+                                    ? item.images.first
+                                    : '',
+                                fit: BoxFit.contain,
+                                placeholder: (_, __) => Center(
+                                  child: SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: colors.accent,
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (_, __, ___) => Icon(
                                   Icons.image_not_supported_outlined,
                                   color: colors.text3,
                                   size: s * 0.07,
@@ -246,7 +259,7 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
+                      backgroundColor: colors.accent,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -257,11 +270,12 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Go to Cart (\$${cart.totalPrice.toStringAsFixed(2)})',
+                          'Checkout Now (\$${cart.totalPrice.toStringAsFixed(2)})',
                           style: TextStyle(
                             fontSize: s * 0.042,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.2,
+                            color: Colors.white,
                           ),
                         ),
                         SizedBox(width: s * 0.025),

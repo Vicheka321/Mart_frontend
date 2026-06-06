@@ -45,6 +45,7 @@ dependencies:
   geolocator: ^14.0.2
   hugeicons: ^0.0.7
   url_launcher: ^6.2.0
+  cached_network_image: ^3.4.1
 
 
 dev_dependencies:
@@ -67,18 +68,18 @@ flutter:
   assets:
 
     - lib/icons/
-  # fonts:
-  #   - family: NotoSans
-  #     fonts:
-  #       - asset: llb/fonts/NotoSans-Regular.ttf
+  fonts:
+    - family: NotoSans
+      fonts:
+        - asset: lib/fonts/NotoSans-Regular.ttf
 
-  #   - family: NotoSansKhmer
-  #     fonts:
-  #       - asset: lib/fonts/NotoSansKhmer-Regular.ttf
+    - family: NotoSansKhmer
+      fonts:
+        - asset: lib/fonts/NotoSansKhmer-Regular.ttf
 
-  #   - family: NotoSansSC
-  #     fonts:
-  #       - asset: lib/fonts/NotoSansSC-Regular.otf
+    - family: NotoSansSC
+      fonts:
+        - asset: lib/fonts/NotoSansSC-Regular.otf
 
 
 
