@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:mart_frontend/models/address_model.dart';
 import 'package:mart_frontend/models/brands_with_products.dart';
 import 'package:mart_frontend/models/categories_with_products_model.dart';
 
@@ -388,9 +389,42 @@ class ApiService {
     throw Exception(data['message'] ?? 'Login failed');
   }
 
-  Future<Map<String, dynamic>> forgetPassword({required String login}) async {
+  Future<Map<String, dynamic>> verifyOtp({
+    required String login,
+    required String otp,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/verify-otp"),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({"login": login, "otp": otp}),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        // save token after verify success
+        if (data["token"] != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString("token", data["token"]);
+        }
+        print(data["token"]);
+
+        return data;
+      }
+
+      throw Exception(data["message"] ?? "Invalid OTP");
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<Map<String, dynamic>> forgotPassword({required String login}) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/forget-password'),
+      Uri.parse('$baseUrl/forgot-password'),
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -412,7 +446,7 @@ class ApiService {
     required String otp,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/verify-reset-password'),
+      Uri.parse('$baseUrl/verify-reset-otp'),
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -448,8 +482,11 @@ class ApiService {
     );
 
     final data = jsonDecode(response.body);
-
     if (response.statusCode == 200) {
+      if (data["token"] != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("token", data["token"]);
+      }
       return data;
     }
 
@@ -475,8 +512,6 @@ class ApiService {
     throw Exception(data['message'] ?? 'Failed to resend OTP');
   }
 
-
-
   Future<Map<String, dynamic>> sendEmailOtp({required String email}) async {
     try {
       final response = await http.post(
@@ -500,92 +535,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> verifyEmailOtp({
-    required String email,
-    required String otp,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse("$baseUrl/verify-otp"),
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode({"email": email, "otp": otp}),
-      );
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        // save token after verify success
-        if (data["token"] != null) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString("token", data["token"]);
-        }
-        print(data["token"]);
-
-        return data;
-      }
-
-      throw Exception(data["message"] ?? "Invalid OTP");
-    } catch (e) {
-      throw Exception(e.toString());
-    }
-  }
-
-  // ==================update profile=================
-
-  Future<Map<String, dynamic>> updateProfile({
-    required String firstName,
-    required String lastName,
-    File? avatar,
-  }) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-
-      if (token == null) {
-        throw Exception("Unauthorized");
-      }
-
-      var request = http.MultipartRequest(
-        "POST",
-        Uri.parse("$baseUrl/update-profile"),
-      );
-
-      request.headers["Authorization"] = "Bearer $token";
-      request.headers["Accept"] = "application/json";
-
-      request.fields["first_name"] = firstName;
-      request.fields["last_name"] = lastName;
-
-      if (avatar != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            "avatar",
-            avatar.path,
-            contentType: MediaType('image', 'jpeg'),
-          ),
-        );
-      }
-
-      final streamedResponse = await request.send();
-
-      final response = await http.Response.fromStream(streamedResponse);
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        return data;
-      }
-
-      throw Exception(data["message"] ?? "Profile update failed");
-    } catch (e) {
-      throw Exception(e.toString());
-    }
-  }
-
-  // =================== add to cart=================
+  // =================== orders=================
   Future<void> addToCart({
     required int productId,
     required int quantity,
@@ -607,8 +557,6 @@ class ApiService {
         },
         body: jsonEncode({"product_id": productId, "quantity": quantity}),
       );
-
-      print(response.body);
 
       final data = jsonDecode(response.body);
 
@@ -750,6 +698,7 @@ class ApiService {
   }
 
   // ==========================profile================
+
   Future<MyProfileModel> fetchMyProfile() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -768,10 +717,179 @@ class ApiService {
     throw Exception('Failed to load profile');
   }
 
+  Future<Map<String, dynamic>> updateProfile({
+    required String fullName,
+    File? avatar,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception("Unauthorized");
+      }
+
+      var request = http.MultipartRequest(
+        "POST",
+        Uri.parse("$baseUrl/update-profile"),
+      );
+
+      request.headers["Authorization"] = "Bearer $token";
+      request.headers["Accept"] = "application/json";
+
+      request.fields["full_name"] = fullName;
+
+      if (avatar != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            "avatar",
+            avatar.path,
+            contentType: MediaType('image', 'jpeg'),
+          ),
+        );
+      }
+
+      final streamedResponse = await request.send();
+
+      final response = await http.Response.fromStream(streamedResponse);
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return data;
+      }
+
+      throw Exception(data["message"] ?? "Profile update failed");
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<Map<String, dynamic>> updatePhone({String? phone}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception("Unauthorized");
+      }
+
+      var request = http.MultipartRequest(
+        "POST",
+        Uri.parse("$baseUrl/update-profile"),
+      );
+
+      request.headers["Authorization"] = "Bearer $token";
+      request.headers["Accept"] = "application/json";
+
+      request.fields["phone"] = phone!;
+
+      final streamedResponse = await request.send();
+
+      final response = await http.Response.fromStream(streamedResponse);
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return data;
+      }
+
+      throw Exception(data["message"] ?? "Profile update failed");
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<List<AddressModel>> myAddresses() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.get(
+      Uri.parse("$baseUrl/my-addresses"),
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return List<AddressModel>.from(
+        data["data"].map((x) => AddressModel.fromJson(x)),
+      );
+    }
+
+    throw Exception(data["message"] ?? "Failed to load addresses");
+  }
+
+  Future<Map<String, dynamic>> updateAddress({
+    required int id,
+    required String fullName,
+    required String address,
+    required double lat,
+    required double lng,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.put(
+      Uri.parse("$baseUrl/address/$id"),
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
+      body: {
+        "full_name": fullName,
+        "address": address,
+        "lat": lat.toString(),
+        "lng": lng.toString(),
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data["message"] ?? "Failed to update address");
+  }
+
+  Future<Map<String, dynamic>> deleteAddress(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.delete(
+      Uri.parse("$baseUrl/address/$id"),
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data["message"] ?? "Failed to delete address");
+  }
+
+  Future<Map<String, dynamic>> setDefaultAddress(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/address/$id/default"),
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data["message"] ?? "Failed to set default address");
+  }
+
   // ===========================order================================
 
   Future<Map<String, dynamic>> storeAddress({
-    required String phone,
+    required String fullName,
     required String address,
     required double lat,
     required double lng,
@@ -785,7 +903,7 @@ class ApiService {
       headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
 
       body: {
-        "phone": phone,
+        "full_name": fullName,
         "address": address,
         "lat": lat.toString(),
         "lng": lng.toString(),
@@ -801,21 +919,44 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> applyCoupon({required String couponCode}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/coupons/apply"),
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
+      body: {"code": couponCode},
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data["message"] ?? "Failed to apply coupon");
+  }
+
   Future<Map<String, dynamic>> placeOrder({
-    required int addressId,
+    required String deliveryAddress,
+    required double lat,
+    required double lng,
     required String paymentMethod,
+    String? code,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
 
     final response = await http.post(
       Uri.parse("$baseUrl/order"),
-
       headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
-
       body: {
-        "address_id": addressId.toString(),
+        "delivery_address": deliveryAddress,
+        "lat": lat.toString(),
+        "lng": lng.toString(),
         "payment_method": paymentMethod,
+        "code": code ?? "",
       },
     );
 
@@ -823,9 +964,11 @@ class ApiService {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       return data;
-    } else {
-      throw Exception(data["message"] ?? "Failed to place order");
     }
+
+    throw Exception(
+      data["message"] ?? data["error"] ?? "Failed to place order",
+    );
   }
 
   Future<Map<String, dynamic>> generateQR(int orderId) async {

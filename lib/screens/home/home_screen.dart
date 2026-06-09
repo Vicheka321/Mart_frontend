@@ -606,7 +606,7 @@ Widget _buildStickyHeader(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "${'hi'.tr} ${user.lastName}",
+                                "${'hi'.tr} ${user.fullName}",
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -1376,13 +1376,8 @@ class _ProductCardState extends State<_ProductCard> {
                       child: CachedNetworkImage(
                         imageUrl: imageUrl,
                         fit: BoxFit.contain,
-                        placeholder: (_, __) => Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            
-                          ),
-                        ),
+                        placeholder: (_, __) =>
+                            Center(child: SizedBox(width: 20, height: 20)),
                         errorWidget: (_, __, ___) =>
                             const Icon(Icons.image_outlined),
                       ),
@@ -1720,13 +1715,8 @@ Widget _buildRecommendedRow({
                       ),
                     );
                   },
-                  placeholder: (_, __) => const Center(
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      
-                    ),
-                  ),
+                  placeholder: (_, __) =>
+                      const Center(child: SizedBox(width: 20, height: 20)),
                   errorWidget: (_, __, ___) =>
                       Icon(Icons.image_outlined, color: colors.text3),
                 ),

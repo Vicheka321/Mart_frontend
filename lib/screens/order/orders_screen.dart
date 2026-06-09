@@ -3921,7 +3921,7 @@ class _OrdersScreenState extends State<OrdersScreen>
         body: _isLoading
             ? _buildSkeletons(colors)
             : _error != null
-            ? _buildError(colors)
+            ? _empty(context,colors)
             : TabBarView(
                 controller: _tabController,
                 physics: const NeverScrollableScrollPhysics(),
@@ -4019,59 +4019,69 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
   }
 
-  // ── Error state ──────────────────────────────────────────────
-
-  Widget _buildError(AppColors c) {
+  Widget _empty(BuildContext context, AppColors colors) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.wifi_off_rounded, size: 56, color: c.text3),
-            const SizedBox(height: 16),
-            Text(
-              'Failed to load orders',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: c.text1,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              color: colors.surface2,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.inbox_outlined, size: 44, color: colors.text3),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'No orders here',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: colors.text1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'You haven\'t placed any orders\nin this category yet.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: colors.text3, height: 1.5),
+          ),
+          const SizedBox(height: 28),
+          GestureDetector(
+            onTap: () => MainScreen.switchToHome(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+              decoration: BoxDecoration(
+                color: colors.accent,
+                borderRadius: BorderRadius.circular(16),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _error ?? '',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: c.text3),
-            ),
-            const SizedBox(height: 24),
-            GestureDetector(
-              onTap: _loadOrders,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 14,
-                ),
-                decoration: BoxDecoration(
-                  color: c.accent,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  'retry'.tr,
-                  style: TextStyle(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.shopping_bag_outlined,
                     color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    size: 18,
                   ),
-                ),
+                  SizedBox(width: 8),
+                  Text(
+                    'go_shopping'.tr,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-
   // ── Navigation ───────────────────────────────────────────────
 
   void _openDetail(Order order) {

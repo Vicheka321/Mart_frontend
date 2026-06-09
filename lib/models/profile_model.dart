@@ -12,8 +12,7 @@ String myProfileModelToJson(MyProfileModel data) => json.encode(data.toJson());
 
 class MyProfileModel {
   int id;
-  String firstName;
-  String lastName;
+  String fullName;
   String email;
   String phone;
   String avatar;
@@ -21,8 +20,7 @@ class MyProfileModel {
 
   MyProfileModel({
     required this.id,
-    required this.firstName,
-    required this.lastName,
+    required this.fullName,
     required this.email,
     required this.phone,
     required this.avatar,
@@ -30,12 +28,11 @@ class MyProfileModel {
   });
 
   /// Full name helper
-  String get name => '$firstName $lastName'.trim();
+  // String get name => '$fullName';
 
   factory MyProfileModel.fromJson(Map<String, dynamic> json) => MyProfileModel(
     id: json["id"],
-    firstName: json["first_name"] ?? '',
-    lastName: json["last_name"] ?? '',
+    fullName: json["full_name"] ?? '',
     email: json["email"] ?? '',
     phone: json["phone"] ?? '',
     avatar: json["avatar"] ?? '',
@@ -44,8 +41,7 @@ class MyProfileModel {
 
   Map<String, dynamic> toJson() => {
     "id": id,
-    "first_name": firstName,
-    "last_name": lastName,
+    "full_name": fullName,
     "email": email,
     "phone": phone,
     "avatar": avatar,

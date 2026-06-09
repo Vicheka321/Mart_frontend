@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:mart_frontend/auth/register_screen.dart';
+import 'package:mart_frontend/auth/verify_reset_otp_screen.dart';
+import 'package:mart_frontend/providers/profile_provider.dart';
+import 'package:mart_frontend/screens/home/home_screen.dart';
+import 'package:mart_frontend/screens/main/main_screen.dart';
+import 'package:mart_frontend/services/api_service.dart';
+import 'package:provider/provider.dart';
 import '../screens/theme/app_theme.dart';
 
 // ─────────────────────────────────────────────
@@ -50,10 +58,50 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> _handleLogin() async {
+    FocusScope.of(context).unfocus();
+
+    if (_emailCtrl.text.trim().isEmpty) {
+      Get.snackbar('Error', 'Please enter email or phone');
+      return;
+    }
+
+    if (_passCtrl.text.isEmpty) {
+      Get.snackbar('Error', 'Please enter password');
+      return;
+    }
+
     HapticFeedback.mediumImpact();
+
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) setState(() => _isLoading = false);
+
+    try {
+      await ApiService().login(
+        login: _emailCtrl.text.trim(),
+        password: _passCtrl.text,
+      );
+
+      if (!mounted) return;
+
+      Get.snackbar('Success', 'Login successful');
+
+      if (!mounted) return;
+
+      Navigator.pop(context);
+
+      Future.microtask(() {
+        MainScreen.switchToHome(context);
+      });
+      await context.read<ProfileProvider>().fetchProfile();
+    } catch (e) {
+      Get.snackbar(
+        'Login Failed',
+        e.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -228,24 +276,30 @@ class _LoginScreenState extends State<LoginScreen>
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {},
-                style: TextButton.styleFrom(
-                  foregroundColor: colors.accent,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 8,
-                  ),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
+                onPressed: () async {
+                  if (_emailCtrl.text.trim().isEmpty) {
+                    Get.snackbar('Error', 'Please enter email or phone first');
+                    return;
+                  }
+
+                  try {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            VerifyResetOtpScreen(login: _emailCtrl.text.trim()),
+                      ),
+                    );
+                  } catch (e) {
+                    Get.snackbar('Error', e.toString());
+                  }
+                },
                 child: const Text(
                   'Forgot Password?',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
-
-            const SizedBox(height: 6),
-
             // ── Login button ──
             _AuthButton(
               label: 'Login',

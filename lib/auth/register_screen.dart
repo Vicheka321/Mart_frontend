@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get_navigation/src/routes/transitions_type.dart';
+import 'package:mart_frontend/auth/verify_otp_screen.dart';
+import 'package:mart_frontend/services/api_service.dart';
 
 import '../screens/theme/app_theme.dart';
 
@@ -90,10 +95,42 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 
   Future<void> _handleSignUp() async {
+    FocusScope.of(context).unfocus();
+
+    // if (!_formKey.currentState!.validate()) {
+    //   return;
+    // }
+
     HapticFeedback.mediumImpact();
+
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) setState(() => _isLoading = false);
+
+    try {
+      final result = await ApiService().register(
+        fullName: _nameCtrl.text.trim(),
+        login: _emailCtrl.text.trim(),
+        password: _passCtrl.text,
+        confirmPassword: _confirmCtrl.text,
+      );
+
+      if (!mounted) return;
+
+      Get.snackbar('Success', result['message'] ?? 'OTP sent successfully');
+
+      Get.to(
+        () => VerifyOtpScreen(login: _emailCtrl.text.trim()),
+        transition: Transition.rightToLeft,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Register Failed',
+        e.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -137,12 +174,12 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  // const SizedBox(height: 12),
 
                   // Header text + icon
                   _buildHeaderText(),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 10),
 
                   // Floating card
                   FadeTransition(
@@ -152,7 +189,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                       child: _buildCard(colors),
                     ),
                   ),
-                  const SizedBox(height: 22),
+                  // const SizedBox(height: 22),
                 ],
               ),
             ),

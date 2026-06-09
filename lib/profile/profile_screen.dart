@@ -1369,6 +1369,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mart_frontend/profile/address_screen.dart';
+import 'package:mart_frontend/profile/address_screen.dart';
+import 'package:mart_frontend/screens/main/coming_soon_screen.dart';
 import 'package:mart_frontend/screens/main/main_screen.dart';
 import 'package:mart_frontend/screens/product/product_detail_screen.dart';
 import 'package:mart_frontend/services/address_history_service.dart';
@@ -1524,37 +1527,40 @@ class _ProfileScreenState extends State<ProfileScreen>
           SliverAppBar(
             expandedHeight: 0,
             pinned: true,
-            backgroundColor: c.bg,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            surfaceTintColor: Colors.transparent,
             elevation: 0,
-            title: Text(
-              'my_profile'.tr,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: c.text1,
-                letterSpacing: -0.3,
+            title: Center(
+              child: Text(
+                'my_profile'.tr,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: c.text1,
+                  letterSpacing: -0.3,
+                ),
               ),
             ),
-            actions: [
-              _IconBtn(
-                icon: Icons.edit_outlined,
-                onTap: () {
-                  if (_profile != null) {
-                    _showEditProfile(context, _profile!);
-                  }
-                },
-              ),
-              const SizedBox(width: 8),
-              _IconBtn(icon: Icons.qr_code_rounded, onTap: () {}),
-              const SizedBox(width: 16),
-            ],
+            // actions: [
+            //   _IconBtn(
+            //     icon: Icons.edit_outlined,
+            //     onTap: () {
+            //       if (_profile != null) {
+            //         _showEditProfile(context, _profile!);
+            //       }
+            //     },
+            //   ),
+            //   const SizedBox(width: 8),
+            //   _IconBtn(icon: Icons.qr_code_rounded, onTap: () {}),
+            //   const SizedBox(width: 16),
+            // ],
           ),
 
           SliverToBoxAdapter(
             child: _isLoading
                 ? _buildLoadingSkeleton(c)
                 : _error != null
-                ? _buildErrorState(c)
+                ? _buildLoadingSkeleton(c)
                 : _buildContent(c),
           ),
         ],
@@ -1640,47 +1646,37 @@ class _ProfileScreenState extends State<ProfileScreen>
         _MenuGroup(
           items: [
             _MenuItem(
-              icon: HugeIcons.strokeRoundedFileFavourite,
-              iconBg: Colors.transparent,
-              iconColor: const Color.fromARGB(255, 179, 24, 6),
-              title: 'wishlist'.tr,
-              subtitle: '$_wishlistCount ${'saved_items'.tr}',
-              customIconWidget: Image.asset(
-                'lib/icons/favourite.png',
-                width: 28,
-                height: 28,
-                fit: BoxFit.contain,
-                color: Color.fromARGB(255, 179, 24, 6),
-              ),
-              onTap: () => _navigate(context, _WishlistPage()),
+              icon: Icons.shopping_bag_outlined,
+              iconBg: const Color(0xFFDBEAFE),
+              iconColor: const Color(0xFF3B82F6),
+              title: 'My Orders',
+              subtitle: 'total orders',
+              onTap: () => _navigate(context, MainScreen()),
             ),
             _MenuItem(
-              icon: HugeIcons.strokeRoundedLocation01,
-              iconBg: Colors.transparent,
-              iconColor: const Color.fromARGB(255, 197, 57, 57),
-              title: 'addresses'.tr,
-              subtitle: '$_addressCount ${'saved_addresses'.tr}',
-              customIconWidget: Image.asset(
-                'lib/icons/Pin.png',
-                width: 50,
-                height: 50,
-                fit: BoxFit.contain,
-              ),
-              onTap: () => _navigate(context, _AddressPage()),
+              icon: Icons.favorite_border_rounded,
+              iconBg: const Color(0xFFFFE4E6),
+              iconColor: const Color(0xFFF43F5E),
+              title: 'Wishlist',
+              subtitle: 'favorite items',
+              onTap: () => _navigate(context, ComingSoonScreen()),
+            ),
+
+            _MenuItem(
+              icon: Icons.location_on_outlined,
+              iconBg: const Color(0xFFD1FAE5),
+              iconColor: const Color(0xFF10B981),
+              title: 'Addresses',
+              subtitle: 'saved addresses',
+              onTap: () => _navigate(context, MyAddressesScreen()),
             ),
             _MenuItem(
-              icon: HugeIcons.strokeRoundedCreditCard,
-              iconBg: Colors.transparent,
+              icon: Icons.credit_card_rounded,
+              iconBg: const Color(0xFFFEF3C7),
               iconColor: const Color(0xFFF59E0B),
-              title: 'payment_methods'.tr,
-              subtitle: 'visa_cash_delivery'.tr,
-              customIconWidget: Image.asset(
-                'lib/icons/payment.png',
-                width: 38,
-                height: 38,
-                fit: BoxFit.contain,
-              ),
-              onTap: () => _navigate(context, _PaymentPage()),
+              title: 'Payment Methods',
+              subtitle: 'Visa, Cash on delivery',
+              onTap: () => _navigate(context, ComingSoonScreen()),
             ),
           ],
         ),
@@ -1695,22 +1691,19 @@ class _ProfileScreenState extends State<ProfileScreen>
               icon: themeController.isDark.value
                   ? Icons.dark_mode_rounded
                   : Icons.light_mode_rounded,
-              iconBg: Colors.transparent,
+
+              iconBg: themeController.isDark.value
+                  ? const Color(0xFF2A2340)
+                  : const Color(0xFFFEF3C7),
+
               iconColor: themeController.isDark.value
                   ? const Color(0xFF8B7CF6)
                   : const Color(0xFFF59E0B),
-              title: 'dark_mode'.tr,
-              subtitle: themeController.isDark.value
-                  ? 'enabled'.tr
-                  : 'disabled'.tr,
-              customIconWidget: Image.asset(
-                themeController.isDark.value
-                    ? 'lib/icons/Dark.png'
-                    : 'lib/icons/light.png',
-                width: themeController.isDark.value ? 43 : 28,
-                height: themeController.isDark.value ? 43 : 28,
-                fit: BoxFit.contain,
-              ),
+
+              title: 'Dark Mode',
+
+              subtitle: themeController.isDark.value ? 'Enabled' : 'Disabled',
+
               customTrailing: Obx(
                 () => Switch.adaptive(
                   value: themeController.isDark.value,
@@ -1721,6 +1714,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   },
                 ),
               ),
+
               onTap: null,
             ),
             // _MenuItem(
@@ -1747,17 +1741,13 @@ class _ProfileScreenState extends State<ProfileScreen>
             // ),
             _MenuItem(
               icon: Icons.language_rounded,
-              iconBg: Colors.transparent,
+              iconBg: const Color(0xFFDBEAFE),
               iconColor: const Color(0xFF3B82F6),
+
               title: 'language'.tr,
+
               subtitle: langController.language.value.toUpperCase(),
-              customIconWidget: Image.asset(
-                'lib/icons/language.png',
-                width: 28,
-                height: 28,
-                fit: BoxFit.contain,
-                color: context.isDark ? const Color(0xFF888888) : null,
-              ),
+
               onTap: () => _showLanguagePicker(context),
             ),
           ],
@@ -1769,48 +1759,42 @@ class _ProfileScreenState extends State<ProfileScreen>
         _SectionLabel(label: 'security'.tr),
         _MenuGroup(
           items: [
-            // _MenuItem(
-            //   icon: Icons.lock_outline_rounded,
-            //   iconBg: const Color(0xFFEDE9FE),
-            //   iconColor: const Color(0xFF8B5CF6),
-            //   title: 'Change Password',
-            //   subtitle: 'Last changed 30 days ago',
-            //   onTap: () => _navigate(context, _ChangePasswordPage()),
-            // ),
-            // _MenuItem(
-            //   icon: Icons.verified_user_outlined,
-            //   iconBg: _twoFAEnabled
-            //       ? const Color(0xFFD1FAE5)
-            //       : const Color(0xFFF3F4F6),
-            //   iconColor: _twoFAEnabled
-            //       ? const Color(0xFF10B981)
-            //       : const Color(0xFF9CA3AF),
-            //   title: '2-Factor Authentication',
-            //   subtitle: _twoFAEnabled ? '✓ Enabled' : 'Tap to enable',
-            //   customTrailing: Switch.adaptive(
-            //     value: _twoFAEnabled,
-            //     activeColor: const Color(0xFF10B981),
-            //     onChanged: (v) {
-            //       setState(() => _twoFAEnabled = v);
-            //       HapticFeedback.mediumImpact();
-            //       if (v) _show2FASnack(context);
-            //     },
-            //   ),
-            //   onTap: null,
-            // ),
+            _MenuItem(
+              icon: Icons.lock_outline_rounded,
+              iconBg: const Color(0xFFEDE9FE),
+              iconColor: const Color(0xFF8B5CF6),
+              title: 'Change Password',
+              subtitle: 'change your password',
+              onTap: () => _navigate(context, ComingSoonScreen()),
+            ),
+            _MenuItem(
+              icon: Icons.verified_user_outlined,
+              iconBg: _twoFAEnabled
+                  ? const Color(0xFFD1FAE5)
+                  : const Color(0xFFF3F4F6),
+              iconColor: _twoFAEnabled
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFF9CA3AF),
+              title: '2-Factor Authentication',
+              subtitle: _twoFAEnabled ? '✓ Enabled' : 'Tap to enable',
+              customTrailing: Switch.adaptive(
+                value: _twoFAEnabled,
+                activeColor: const Color(0xFF10B981),
+                onChanged: (v) {
+                  setState(() => _twoFAEnabled = v);
+                  HapticFeedback.mediumImpact();
+                  if (v) _show2FASnack(context);
+                },
+              ),
+              onTap: null,
+            ),
             _MenuItem(
               icon: Icons.shield_outlined,
-              iconBg: Colors.transparent,
+              iconBg: const Color(0xFFFEF3C7),
               iconColor: const Color(0xFFF59E0B),
-              title: 'privacy_settings'.tr,
-              subtitle: 'data_permissions'.tr,
-              customIconWidget: Image.asset(
-                'lib/icons/Privacy_security.png',
-                width: 38,
-                height: 38,
-                fit: BoxFit.contain,
-              ),
-              onTap: () {},
+              title: 'Privacy Settings',
+              subtitle: 'Data & permissions',
+              onTap: () => _navigate(context, ComingSoonScreen()),
             ),
           ],
         ),
@@ -1822,127 +1806,60 @@ class _ProfileScreenState extends State<ProfileScreen>
         _MenuGroup(
           items: [
             _MenuItem(
-              icon: Icons.quiz_outlined,
-              iconBg: Colors.transparent,
+              icon: Icons.help_outline_rounded,
+              iconBg: const Color(0xFFDBEAFE),
               iconColor: const Color(0xFF3B82F6),
-              title: 'FAQs',
-              subtitle: 'Common questions',
-              customIconWidget: Builder(
-                builder: (context) => Image.asset(
-                  'lib/icons/FQA.png',
-                  width: 28,
-                  height: 28,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              onTap: () => _navigate(context, const FaqScreen()),
+              title: 'Help Center',
+              subtitle: 'FAQ & support',
+              onTap: () => _navigate(context, ComingSoonScreen()),
             ),
             _MenuItem(
               icon: Icons.chat_bubble_outline_rounded,
-              iconBg: Colors.transparent,
+              iconBg: const Color(0xFFD1FAE5),
               iconColor: const Color(0xFF10B981),
-              title: 'contact_us'.tr,
-              subtitle: 'chat, phone'.tr,
-              customIconWidget: Builder(
-                builder: (context) => Image.asset(
-                  'lib/icons/Contact_Us.png',
-                  width: 28,
-                  height: 28,
-                  fit: BoxFit.contain,
-                  color: context.isDark ? const Color(0xFF888888) : null,
-                ),
-              ),
-              onTap: () => _navigate(context, const ContactUsScreen()),
-            ),
-            _MenuItem(
-              icon: Icons.people_outline_rounded,
-              iconBg: Colors.transparent,
-              iconColor: const Color(0xFF8B5CF6),
-              title: 'Tell a friend',
-              subtitle: 'Share with friends',
-              customIconWidget: Image.asset(
-                'lib/icons/share.png',
-                width: 28,
-                height: 28,
-                fit: BoxFit.contain,
-                color: context.isDark ? const Color(0xFF888888) : null,
-              ),
-              onTap: () => _navigate(context, const TellAFriendScreen()),
-            ),
-            _MenuItem(
-              icon: Icons.alternate_email_rounded,
-              iconBg: Colors.transparent,
-              iconColor: const Color(0xFFEC4899),
-              title: 'Social Media',
-              subtitle: 'Follow us',
-              customIconWidget: Image.asset(
-                'lib/icons/socail.png',
-                width: 28,
-                height: 28,
-                fit: BoxFit.contain,
-                color: context.isDark ? const Color(0xFF888888) : null,
-              ),
-              onTap: () => _navigate(context, const SocialMediaScreen()),
-            ),
-            _MenuItem(
-              icon: Icons.info_outline_rounded,
-              iconBg: Colors.transparent,
-              iconColor: const Color(0xFF3B82F6),
-              title: 'About us',
-              subtitle: 'Learn more',
-              customIconWidget: Image.asset(
-                'lib/icons/about_us.png',
-                width: 28,
-                height: 28,
-                fit: BoxFit.contain,
-                color: context.isDark ? const Color(0xFF888888) : null,
-              ),
-              onTap: () => _navigate(context, const AboutUsScreen()),
-            ),
-            _MenuItem(
-              icon: Icons.description_outlined,
-              iconBg: Colors.transparent,
-              iconColor: const Color(0xFF10B981),
-              title: 'Terms and Conditions',
-              subtitle: 'Our policies',
-              customIconWidget: Image.asset(
-                'lib/icons/term.png',
-                width: 28,
-                height: 28,
-                fit: BoxFit.contain,
-                color: context.isDark ? const Color(0xFF888888) : null,
-              ),
-              onTap: () => _navigate(context, const TermsScreen()),
-            ),
-            _MenuItem(
-              icon: Icons.lock_outline_rounded,
-              iconBg: Colors.transparent,
-              iconColor: const Color(0xFFF59E0B),
-              title: 'Privacy Policy',
-              subtitle: 'Data & privacy',
-              customIconWidget: Image.asset(
-                'lib/icons/policy.png',
-                width: 28,
-                height: 28,
-                fit: BoxFit.contain,
-                color: context.isDark ? const Color(0xFF888888) : null,
-              ),
-              onTap: () => _navigate(context, const PrivacyPolicyScreen()),
+              title: 'Contact Us',
+              subtitle: 'Chat, email, phone',
+              onTap: () => _navigate(context, ComingSoonScreen()),
             ),
             _MenuItem(
               icon: Icons.star_outline_rounded,
-              iconBg: Colors.transparent,
+              iconBg: const Color(0xFFFEF3C7),
               iconColor: const Color(0xFFF59E0B),
-              title: 'rate_app'.tr,
-              subtitle: 'share_feedback'.tr,
-              customIconWidget: Image.asset(
-                'lib/icons/rating.png',
-                width: 38,
-                height: 38,
-                fit: BoxFit.contain,
-                color: Color(0xFFD4AF37),
-              ),
-              onTap: () => _navigate(context, const RateAppScreen()),
+              title: 'Rate the App',
+              subtitle: 'Share your feedback',
+              onTap: () => _navigate(context, ComingSoonScreen()),
+            ),
+            _MenuItem(
+              icon: Icons.public_rounded,
+              iconBg: const Color(0xFFEEF2FF),
+              iconColor: const Color(0xFF6366F1),
+              title: 'Social Media',
+              subtitle: 'Follow us',
+              onTap: () => _navigate(context, ComingSoonScreen()),
+            ),
+            _MenuItem(
+              icon: Icons.storefront_rounded,
+              iconBg: const Color(0xFFDBEAFE),
+              iconColor: const Color(0xFF2563EB),
+              title: 'About Us',
+              subtitle: 'Learn more',
+              onTap: () => _navigate(context, ComingSoonScreen()),
+            ),
+            _MenuItem(
+              icon: Icons.policy_rounded,
+              iconBg: const Color(0xFFD1FAE5),
+              iconColor: const Color(0xFF10B981),
+              title: 'Terms and Conditions',
+              subtitle: 'Our policies',
+              onTap: () => _navigate(context, ComingSoonScreen()),
+            ),
+            _MenuItem(
+              icon: Icons.shield_outlined,
+              iconBg: const Color(0xFFFEF3C7),
+              iconColor: const Color(0xFFF59E0B),
+              title: 'Privacy Policy',
+              subtitle: 'Data & privacy',
+              onTap: () => _navigate(context, ComingSoonScreen()),
             ),
           ],
         ),
@@ -1957,7 +1874,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           'Version 2.4.1 · Build 201',
           style: TextStyle(fontSize: 11, color: context.text2),
         ),
-        SizedBox(height: 120 + MediaQuery.of(context).padding.bottom),
+        SizedBox(height: 10 + MediaQuery.of(context).padding.bottom),
       ],
     );
   }
@@ -2014,72 +1931,84 @@ class _ProfileScreenState extends State<ProfileScreen>
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: context.card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'logout_question'.tr,
-          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-        ),
-        content: Text(
-          'logout_message'.tr,
-          style: TextStyle(fontSize: 14, color: context.text2),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'cancel'.tr,
-              style: TextStyle(
-                color: context.text2,
-                fontWeight: FontWeight.w600,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.all(24),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEE2E2),
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: const Icon(
+                Icons.logout_rounded,
+                color: Color(0xFFEF4444),
+                size: 36,
               ),
             ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              if (!context.mounted) return;
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (_) => Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: context.card,
-                      borderRadius: BorderRadius.circular(18),
+
+            const SizedBox(height: 20),
+
+            Text(
+              'logout_question'.tr,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: context.text1,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              'logout_message'.tr,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: context.text2, fontSize: 14),
+            ),
+
+            const SizedBox(height: 24),
+
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text('cancel'.tr),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(context);
+
+                      await logout();
+
+                      if (!context.mounted) return;
+
+                      Get.offAll(() => const MainScreen());
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF4444),
                     ),
-                    child: const SkeletonBox(
-                      width: 88,
-                      height: 12,
-                      borderRadius: BorderRadius.all(Radius.circular(6)),
+                    child: Text(
+                      'logout'.tr,
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                 ),
-              );
-              await logout();
-              await Future.delayed(const Duration(milliseconds: 700));
-              if (!context.mounted) return;
-              Navigator.pop(context);
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const MainScreen()),
-                (route) => false,
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              ],
             ),
-            child: Text(
-              'logout'.tr,
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -2194,9 +2123,9 @@ class _ProfileHeader extends StatelessWidget {
                               profile.avatar.toString(),
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) =>
-                                  _avatarFallback(profile.name),
+                                  _avatarFallback(profile.fullName),
                             )
-                          : _avatarFallback(profile.name),
+                          : _avatarFallback(profile.fullName),
                     ),
                   ),
                   Positioned(
@@ -2223,7 +2152,7 @@ class _ProfileHeader extends StatelessWidget {
                       children: [
                         Flexible(
                           child: Text(
-                            profile.name,
+                            profile.fullName,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
@@ -2583,7 +2512,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   @override
   void initState() {
     super.initState();
-    _nameCtrl = TextEditingController(text: widget.profile.name);
+    _nameCtrl = TextEditingController(text: widget.profile.fullName);
     _emailCtrl = TextEditingController(text: widget.profile.email);
     _phoneCtrl = TextEditingController(
       text: widget.profile.phone?.toString() ?? '',
@@ -2919,7 +2848,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   }
 
   Widget _fallbackText() {
-    final name = widget.profile.name;
+    final name = widget.profile.fullName;
     return Center(
       child: Text(
         name.isNotEmpty ? name[0].toUpperCase() : 'U',

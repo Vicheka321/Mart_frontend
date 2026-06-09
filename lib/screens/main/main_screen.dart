@@ -51,14 +51,14 @@ class _MainScreenState extends State<MainScreen> {
         currentIndex: _currentIndex,
         onTap: (index) async {
           // If Orders or Profile tab → require login
-          if (index == 2 || index == 3) {
-            final isLoggedIn = await ApiService().isLoggedIn();
+          // if (index == 2 || index == 3) {
+          //   final isLoggedIn = await ApiService().isLoggedIn();
 
-            if (!isLoggedIn) {
-              showAuthBottomSheet(context); // same as home screen
-              return;
-            }
-          }
+          //   if (!isLoggedIn) {
+          //     showAuthBottomSheet(context); // same as home screen
+          //     return;
+          //   }
+          // }
 
           setState(() {
             _currentIndex = index;

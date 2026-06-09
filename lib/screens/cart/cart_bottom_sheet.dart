@@ -255,7 +255,9 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                       Navigator.pop(context);
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => CheckoutScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => CheckoutScreen(items: []),
+                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(

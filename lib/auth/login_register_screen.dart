@@ -276,7 +276,7 @@ class _LoginTabState extends State<_LoginTab> {
     try {
       setState(() => loading = true);
 
-      await ApiService().verifyEmailOtp(email: emailCtrl.text.trim(), otp: otp);
+      await ApiService().verifyOtp(login: emailCtrl.text.trim(), otp: otp);
 
       if (!mounted) return;
 

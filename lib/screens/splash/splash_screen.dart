@@ -379,7 +379,7 @@ class _SplashScreenState extends State<SplashScreen>
           }
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => LanguageOnboardingScreen()),
+            MaterialPageRoute(builder: (_) => OnboardingFlow()),
           );
         } else {
           final loggedIn = await ApiService().isLoggedIn();
