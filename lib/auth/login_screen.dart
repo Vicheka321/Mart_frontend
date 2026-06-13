@@ -91,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen>
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    // HapticFeedback.mediumImpact();
 
     setState(() => _isLoading = true);
 
@@ -775,7 +775,7 @@ class _AuthButtonState extends State<_AuthButton>
     return GestureDetector(
       onTapDown: (_) {
         _ctrl.forward();
-        HapticFeedback.lightImpact();
+        // HapticFeedback.lightImpact();
       },
       onTapUp: (_) => _ctrl.reverse(),
       onTapCancel: () => _ctrl.reverse(),
@@ -880,7 +880,7 @@ class _SocialButtonState extends State<_SocialButton>
     return GestureDetector(
       onTapDown: (_) {
         _ctrl.forward();
-        HapticFeedback.selectionClick();
+        // HapticFeedback.selectionClick();
       },
       onTapUp: (_) => _ctrl.reverse(),
       onTapCancel: () => _ctrl.reverse(),

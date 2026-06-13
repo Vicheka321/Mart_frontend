@@ -170,7 +170,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    // HapticFeedback.mediumImpact();
     setState(() {
       _isLoading = true;
       _errorMsg = null;
@@ -206,7 +206,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
         MaterialPageRoute(builder: (_) => MainScreen()),
       );
     } catch (e) {
-      HapticFeedback.vibrate();
+      // HapticFeedback.vibrate();
       if (!mounted) return;
       setState(() {
         _errorMsg = e.toString().replaceFirst('Exception: ', '');
@@ -470,7 +470,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
         _canResend
             ? GestureDetector(
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  // HapticFeedback.selectionClick();
                   ApiService().resendOtp(login: widget.login);
                   _startCountdown();
                 },
@@ -666,7 +666,7 @@ class _VerifyButtonState extends State<_VerifyButton>
     return GestureDetector(
       onTapDown: (_) {
         _ctrl.forward();
-        HapticFeedback.lightImpact();
+        // HapticFeedback.lightImpact();
       },
       onTapUp: (_) => _ctrl.reverse(),
       onTapCancel: () => _ctrl.reverse(),

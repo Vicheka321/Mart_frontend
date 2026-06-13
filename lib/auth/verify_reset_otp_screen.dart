@@ -154,7 +154,7 @@ class _VerifyResetOtpScreenState extends State<VerifyResetOtpScreen>
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    // HapticFeedback.mediumImpact();
     setState(() {
       _isLoading = true;
       _errorMsg = null;
@@ -170,7 +170,7 @@ class _VerifyResetOtpScreenState extends State<VerifyResetOtpScreen>
       if (!mounted) return;
 
       // ── Success ──
-      HapticFeedback.heavyImpact();
+      // HapticFeedback.heavyImpact();
       Get.snackbar(
         'Success',
         'Verify successful',
@@ -189,7 +189,7 @@ class _VerifyResetOtpScreenState extends State<VerifyResetOtpScreen>
 
       Get.off(() => ResetPasswordScreen(resetToken: resetToken));
     } catch (e) {
-      HapticFeedback.vibrate();
+      // HapticFeedback.vibrate();
       if (!mounted) return;
       setState(() {
         _errorMsg = e.toString().replaceFirst('Exception: ', '');
@@ -468,7 +468,7 @@ class _VerifyResetOtpScreenState extends State<VerifyResetOtpScreen>
         _canResend
             ? GestureDetector(
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  // HapticFeedback.selectionClick();
                   ApiService().resendOtp(login: widget.login);
                   _startCountdown();
                 },
@@ -664,7 +664,7 @@ class _VerifyButtonState extends State<_VerifyButton>
     return GestureDetector(
       onTapDown: (_) {
         _ctrl.forward();
-        HapticFeedback.lightImpact();
+        // HapticFeedback.lightImpact();
       },
       onTapUp: (_) => _ctrl.reverse(),
       onTapCancel: () => _ctrl.reverse(),

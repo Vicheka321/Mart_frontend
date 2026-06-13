@@ -18,7 +18,6 @@ import 'package:mart_frontend/screens/category/categories_screen.dart'
 import 'package:mart_frontend/screens/search/search_screen.dart';
 import 'package:mart_frontend/screens/theme/app_theme.dart';
 import 'package:mart_frontend/screens/category/product_by_category.dart';
-import '../../auth/login_register_screen.dart';
 import '../../models/banners_model.dart';
 import '../../models/categories_model.dart';
 import '../../models/products_model.dart';

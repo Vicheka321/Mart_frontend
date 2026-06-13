@@ -1770,7 +1770,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                   activeColor: const Color(0xFF8B7CF6),
                   onChanged: (v) {
                     themeController.toggleTheme(v);
-                    HapticFeedback.selectionClick();
+                    // HapticFeedback.selectionClick();
+
                   },
                 ),
               ),
@@ -1842,7 +1843,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 activeColor: const Color(0xFF10B981),
                 onChanged: (v) {
                   setState(() => _twoFAEnabled = v);
-                  HapticFeedback.mediumImpact();
+                  // HapticFeedback.mediumImpact();
                   if (v) _show2FASnack(context);
                 },
               ),
@@ -1945,7 +1946,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   // ── Helpers ───────────────────────────────────────────────────
 
   Future<void> _navigate(BuildContext context, Widget page) async {
-    HapticFeedback.selectionClick();
+    // HapticFeedback.selectionClick();
     await Navigator.push(context, MaterialPageRoute(builder: (_) => page));
     if (mounted) _loadLocalCounts();
   }
@@ -2472,7 +2473,7 @@ class _LogoutButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.mediumImpact();
+        // HapticFeedback.mediumImpact();
         onTap();
       },
       child: Container(

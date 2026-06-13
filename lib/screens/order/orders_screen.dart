@@ -3909,7 +3909,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   }
 
   Future<void> _buyAgain(Order order) async {
-    HapticFeedback.mediumImpact();
+    // HapticFeedback.mediumImpact();
 
     Navigator.push(
       context,
@@ -4115,7 +4115,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   }
 
   void _showReorderSnack(Order order) {
-    HapticFeedback.mediumImpact();
+    // HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${order.items.length} item(s) added to cart!'),
@@ -4301,7 +4301,7 @@ class _OrderCardState extends State<_OrderCard>
   }
 
   void _toggle() {
-    HapticFeedback.selectionClick();
+    // HapticFeedback.selectionClick();
     setState(() => _expanded = !_expanded);
     _expanded ? _ctrl.forward() : _ctrl.reverse();
   }
@@ -5528,7 +5528,7 @@ class _DetailActions extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () {
-                HapticFeedback.mediumImpact();
+                // HapticFeedback.mediumImpact();
                 Navigator.pop(context);
               },
               icon: const Icon(Icons.refresh_rounded, size: 18),

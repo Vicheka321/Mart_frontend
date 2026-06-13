@@ -71,7 +71,7 @@ class _OnboardingFlowState extends State<OnboardingFlow>
   }
 
   Future<void> _finish() async {
-    HapticFeedback.mediumImpact();
+    // HapticFeedback.mediumImpact();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('onboarding_done', true);
     Get.offAll(

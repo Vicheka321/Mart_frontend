@@ -4350,7 +4350,7 @@ class _BrandProductTileState extends State<_BrandProductTile>
   void _onTapDown(TapDownDetails _) => _scaleCtrl.forward();
   void _onTapCancel() => _scaleCtrl.reverse();
   void _onTap() {
-    HapticFeedback.selectionClick();
+    // HapticFeedback.selectionClick();
     _scaleCtrl.reverse();
     Navigator.push(
       context,
