@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:mart_frontend/providers/ProductDetailProvider.dart';
 import 'package:mart_frontend/providers/banner_provider.dart';
 import 'package:mart_frontend/providers/best_seller_provider.dart';
+import 'package:mart_frontend/providers/brands_products_provider.dart';
 import 'package:mart_frontend/providers/brands_provider.dart';
+import 'package:mart_frontend/providers/category__products_provider.dart';
 import 'package:mart_frontend/providers/category_provider.dart';
 import 'package:mart_frontend/providers/new_arrival_provider.dart';
 import 'package:mart_frontend/providers/profile_provider.dart';
@@ -15,7 +17,10 @@ import 'screens/theme/theme_controller.dart';
 import 'controllers/language_controller.dart';
 import 'translations/app_translations.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  Get.put(ThemeController());
+  Get.put(LanguageController());
   runApp(
     MultiProvider(
       providers: [
@@ -28,6 +33,9 @@ void main() {
         ChangeNotifierProvider(create: (_) => BrandsProvider()),
         ChangeNotifierProvider(create: (_) => RecommendProvider()),
         ChangeNotifierProvider(create: (_) => ProductDetailProvider()),
+        ChangeNotifierProvider(create: (_) => CategoriesWithProductsProvider()),
+        ChangeNotifierProvider(create: (_) => BrandsWithProductsProvider())
+
       ],
       child: MyApp(),
     ),
@@ -79,8 +87,8 @@ void main() {
 class MyApp extends StatelessWidget {
   MyApp({super.key});
 
-  final ThemeController controller = Get.put(ThemeController());
-  final languageController = Get.put(LanguageController());
+  final ThemeController controller = Get.find<ThemeController>();
+  final LanguageController languageController = Get.find<LanguageController>();
 
   String getFontFamily(String lang) {
     switch (lang) {

@@ -3310,12 +3310,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:get/get.dart';
 import 'package:mart_frontend/models/brands_with_products.dart' as brand_model;
 import 'package:mart_frontend/models/categories_with_products_model.dart'
     as cat_model;
+import 'package:mart_frontend/providers/brands_products_provider.dart';
+import 'package:mart_frontend/providers/category__products_provider.dart';
 import 'package:mart_frontend/screens/product/product_detail_screen.dart';
 import 'package:mart_frontend/screens/search/search_screen.dart';
 import 'package:mart_frontend/screens/theme/app_theme.dart';
+import 'package:provider/provider.dart';
 import '../../services/api_service.dart';
 
 const double _kSidebarWidth = 96;
@@ -3341,22 +3345,24 @@ class CategoryBrandScreen extends StatefulWidget {
 class _CategoryBrandScreenState extends State<CategoryBrandScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final ApiService _api = ApiService();
+  // final ApiService _api = ApiService();
 
-  bool _loadingCats = true;
-  bool _loadingBrands = true;
-  bool _errorCats = false;
-  bool _errorBrands = false;
+  // bool _loadingCats = true;
+  // bool _loadingBrands = true;
+  // bool _errorCats = false;
+  // bool _errorBrands = false;
 
-  List<cat_model.CategoriesWithProductsModel> _categories = [];
-  List<brand_model.BrandsWithProductsModel> _brands = [];
+  // List<cat_model.CategoriesWithProductsModel> _categories = [];
+  // List<brand_model.BrandsWithProductsModel> _brands = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadCategories();
-    _loadBrands();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CategoriesWithProductsProvider>().init();
+      context.read<BrandsWithProductsProvider>().init();
+    });
   }
 
   @override
@@ -3365,48 +3371,47 @@ class _CategoryBrandScreenState extends State<CategoryBrandScreen>
     super.dispose();
   }
 
-  Future<void> _loadCategories() async {
-    setState(() {
-      _loadingCats = true;
-      _errorCats = false;
-    });
-    try {
-      final data = await _api.fetchCategoriesWithProducts();
-      if (!mounted) return;
-      setState(() {
-        _categories = data;
-        _loadingCats = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _loadingCats = false;
-        _errorCats = true;
-      });
-    }
-    
-  }
+  // Future<void> _loadCategories() async {
+  //   setState(() {
+  //     _loadingCats = true;
+  //     _errorCats = false;
+  //   });
+  //   try {
+  //     final data = await _api.fetchCategoriesWithProducts();
+  //     if (!mounted) return;
+  //     setState(() {
+  //       _categories = data;
+  //       _loadingCats = false;
+  //     });
+  //   } catch (_) {
+  //     if (!mounted) return;
+  //     setState(() {
+  //       _loadingCats = false;
+  //       _errorCats = true;
+  //     });
+  //   }
+  // }
 
-  Future<void> _loadBrands() async {
-    setState(() {
-      _loadingBrands = true;
-      _errorBrands = false;
-    });
-    try {
-      final data = await _api.fetchBrandsWithProducts();
-      if (!mounted) return;
-      setState(() {
-        _brands = data;
-        _loadingBrands = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _loadingBrands = false;
-        _errorBrands = true;
-      });
-    }
-  }
+  // Future<void> _loadBrands() async {
+  //   setState(() {
+  //     _loadingBrands = true;
+  //     _errorBrands = false;
+  //   });
+  //   try {
+  //     final data = await _api.fetchBrandsWithProducts();
+  //     if (!mounted) return;
+  //     setState(() {
+  //       _brands = data;
+  //       _loadingBrands = false;
+  //     });
+  //   } catch (_) {
+  //     if (!mounted) return;
+  //     setState(() {
+  //       _loadingBrands = false;
+  //       _errorBrands = true;
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -3421,20 +3426,24 @@ class _CategoryBrandScreenState extends State<CategoryBrandScreen>
               controller: _tabController,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _loadingCats
-                    ? const _SkeletonSplitView()
-                    : _errorCats
-                    ? _ErrorState(onRetry: _loadCategories)
-                    : _categories.isEmpty
-                    ? const _EmptyState(message: 'No categories found')
-                    : _CategoriesTab(categories: _categories),
-                _loadingBrands
-                    ? const _BrandSkeleton()
-                    : _errorBrands
-                    ? _ErrorState(onRetry: _loadBrands)
-                    : _brands.isEmpty
-                    ? const _EmptyState(message: 'No brands found')
-                    : _BrandsTab(brands: _brands),
+                Consumer<CategoriesWithProductsProvider>(
+                  builder: (_, provider, __) {
+                    if (provider.categories.isEmpty) {
+                      return const _SkeletonSplitView();
+                    }
+
+                    return _CategoriesTab(categories: provider.categories);
+                  },
+                ),
+                Consumer<BrandsWithProductsProvider>(
+                  builder: (_, provider, __) {
+                    if (provider.brands.isEmpty) {
+                      return const _BrandSkeleton();
+                    }
+
+                    return _BrandsTab(brands: provider.brands);
+                  },
+                ),
               ],
             ),
           ),
@@ -3470,7 +3479,7 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       centerTitle: true,
       title: Text(
-        'Category',
+        'category'.tr,
         style: TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.w600,
@@ -3527,9 +3536,9 @@ class _TabBar extends StatelessWidget {
           fontSize: 14,
           fontWeight: FontWeight.w400,
         ),
-        tabs: const [
-          Tab(text: 'Products'),
-          Tab(text: 'Brand'),
+        tabs: [
+          Tab(text: 'products'.tr),
+          Tab(text: 'brand'.tr),
         ],
       ),
     );
@@ -3670,7 +3679,8 @@ mixin _ScrollSyncMixin<T extends StatefulWidget> on State<T> {
   // ── SIDEBAR TAP: smooth scroll to section ───────────────────
   void onSidebarTap(int index) {
     if (index == activeNotifier.value) return;
-    HapticFeedback.lightImpact();
+    // HapticFeedback.lightImpact();
+    
 
     // Update notifier immediately for instant visual feedback
     activeNotifier.value = index;
@@ -3936,7 +3946,7 @@ class _ProductTileState extends State<_ProductTile>
   late AnimationController _scaleCtrl;
   late Animation<double> _scaleAnim;
 
-  bool get _inStock => widget.product.status && widget.product.quantity > 0;
+  bool get _inStock => widget.product.quantity > 0;
   double get _price => double.tryParse(widget.product.salePrice) ?? 0;
 
   @override
@@ -3963,7 +3973,7 @@ class _ProductTileState extends State<_ProductTile>
   void _onTapDown(TapDownDetails _) => _scaleCtrl.forward();
   void _onTapCancel() => _scaleCtrl.reverse();
   void _onTap() {
-    HapticFeedback.lightImpact();
+    // HapticFeedback.selectionClick();
     _scaleCtrl.reverse();
     Navigator.push(
       context,
@@ -3982,7 +3992,7 @@ class _ProductTileState extends State<_ProductTile>
         scale: _scaleAnim,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          margin: const EdgeInsets.all(12),
+          margin: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             border: Border(top: BorderSide(color: c.border, width: 0.5)),
           ),
@@ -4340,7 +4350,7 @@ class _BrandProductTileState extends State<_BrandProductTile>
   void _onTapDown(TapDownDetails _) => _scaleCtrl.forward();
   void _onTapCancel() => _scaleCtrl.reverse();
   void _onTap() {
-    HapticFeedback.lightImpact();
+    HapticFeedback.selectionClick();
     _scaleCtrl.reverse();
     Navigator.push(
       context,
@@ -4359,7 +4369,7 @@ class _BrandProductTileState extends State<_BrandProductTile>
         scale: _scaleAnim,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          margin: const EdgeInsets.all(12),
+          margin: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             border: Border(top: BorderSide(color: c.border, width: 0.5)),
           ),

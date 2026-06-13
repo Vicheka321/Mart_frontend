@@ -879,7 +879,14 @@ class CheckoutController extends ChangeNotifier {
   bool get loadingAddresses => _loadingAddresses;
 
   // ── Computed ───────────────────────────────
-  double get subtotal => _cart?.totalPrice ?? 0;
+  double get subtotal {
+    if (_cart != null) {
+      return _cart!.totalPrice;
+    }
+
+    return items.fold(0.0, (sum, item) => sum + item.totalPrice);
+  }
+
   double get discount => _coupon?.discount ?? 0;
   // double get total =>
   //     (subtotal + deliveryFee - discount).clamp(0, double.infinity);
@@ -1002,6 +1009,8 @@ class CheckoutController extends ChangeNotifier {
     required void Function(String msg) onError,
   }) async {
     try {
+      _placingOrder = true;
+      notifyListeners();
       final res = await ApiService().placeOrder(
         deliveryAddress: address.address,
         lat: address.lat,
@@ -1039,6 +1048,9 @@ class CheckoutController extends ChangeNotifier {
       }
     } catch (e) {
       onError(e.toString().replaceAll("Exception: ", ""));
+    } finally {
+      _placingOrder = false;
+      notifyListeners();
     }
   }
 }
@@ -1049,7 +1061,9 @@ class CheckoutController extends ChangeNotifier {
 
 class CheckoutScreen extends StatefulWidget {
   final List<OrderItem> items;
-  const CheckoutScreen({super.key, required this.items});
+  final bool fromCart;
+
+  const CheckoutScreen({super.key, required this.items, this.fromCart = true});
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -1070,7 +1084,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   void initState() {
     super.initState();
+
     _ctrl = CheckoutController(items: widget.items);
+
+    if (widget.fromCart) {
+      _ctrl.loadCartSummary();
+    }
     _loadProfile();
     _ctrl.loadAddresses().then((_) {
       final defaultAddress = _ctrl.savedAddresses
@@ -1084,7 +1103,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         });
       }
     });
-    _ctrl.loadCartSummary();
   }
 
   @override
@@ -1713,15 +1731,86 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     ),
   );
 
-  // ── Order summary ──────────────────────────
-
   Widget _buildOrderSummary(AppColors colors) {
+    // BUY AGAIN
+    if (!widget.fromCart) {
+      return _Card(
+        colors: colors,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _Label(
+              label: 'Order Summary (${widget.items.length} items)',
+              colors: colors,
+            ),
+            const SizedBox(height: 12),
+
+            ...widget.items.map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        item.imageUrl,
+                        width: 55,
+                        height: 55,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(Icons.image),
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: colors.text1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Qty: ${item.quantity}',
+                            style: TextStyle(fontSize: 12, color: colors.text3),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Text(
+                      '\$${item.totalPrice.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: colors.text1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // CART FLOW
     final cart = _ctrl.cart;
 
     if (cart == null) {
       return _Card(
         colors: colors,
-        child: const Center(child: CircularProgressIndicator()),
+        child: const Padding(
+          padding: EdgeInsets.all(24),
+          child: Center(child: CircularProgressIndicator()),
+        ),
       );
     }
 
@@ -1790,35 +1879,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             ),
           ),
-
-          // Padding(
-          //   padding: const EdgeInsets.only(top: 12),
-          //   child: _DashedLine(color: colors.border),
-          // ),
-
-          // const SizedBox(height: 12),
-
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //   children: [
-          //     Text(
-          //       'Subtotal',
-          //       style: TextStyle(
-          //         fontSize: 13,
-          //         color: colors.text2,
-          //         fontWeight: FontWeight.w600,
-          //       ),
-          //     ),
-          //     Text(
-          //       '\$${cart.totalPrice.toStringAsFixed(2)}',
-          //       style: TextStyle(
-          //         fontSize: 15,
-          //         fontWeight: FontWeight.w800,
-          //         color: colors.text1,
-          //       ),
-          //     ),
-          //   ],
-          // ),
         ],
       ),
     );

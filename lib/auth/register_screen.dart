@@ -97,6 +97,29 @@ class _RegisterScreenState extends State<RegisterScreen>
   Future<void> _handleSignUp() async {
     FocusScope.of(context).unfocus();
 
+    if (_nameCtrl.text.trim().isEmpty) {
+      _showDialog(title: 'Error', message: 'Please enter your full name');
+      return;
+    }
+
+    if (_emailCtrl.text.trim().isEmpty) {
+      _showDialog(title: 'Error', message: 'Please enter email or phone');
+      return;
+    }
+
+    if (_passCtrl.text.length < 8) {
+      _showDialog(
+        title: 'Error',
+        message: 'Password must be at least 8 characters',
+      );
+      return;
+    }
+
+    if (_passCtrl.text != _confirmCtrl.text) {
+      _showDialog(title: 'Error', message: 'Passwords do not match');
+      return;
+    }
+
     // if (!_formKey.currentState!.validate()) {
     //   return;
     // }
@@ -115,22 +138,35 @@ class _RegisterScreenState extends State<RegisterScreen>
 
       if (!mounted) return;
 
-      Get.snackbar('Success', result['message'] ?? 'OTP sent successfully');
+      // Get.snackbar('Success', result['message'] ?? 'OTP sent successfully');
 
       Get.to(
         () => VerifyOtpScreen(login: _emailCtrl.text.trim()),
         transition: Transition.rightToLeft,
       );
     } catch (e) {
-      Get.snackbar(
-        'Register Failed',
-        e.toString().replaceFirst('Exception: ', ''),
+      _showDialog(
+        title: 'Registration Failed',
+        message: e.toString().replaceFirst('Exception: ', ''),
       );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  void _showDialog({required String title, required String message}) {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          FilledButton(onPressed: () => Get.back(), child: const Text('OK')),
+        ],
+      ),
+    );
   }
 
   @override

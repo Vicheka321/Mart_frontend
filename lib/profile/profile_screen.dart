@@ -1369,14 +1369,18 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mart_frontend/auth/login_screen.dart';
 import 'package:mart_frontend/profile/address_screen.dart';
 import 'package:mart_frontend/profile/address_screen.dart';
+import 'package:mart_frontend/profile/edit_profile_screen.dart';
+import 'package:mart_frontend/providers/profile_provider.dart';
 import 'package:mart_frontend/screens/main/coming_soon_screen.dart';
 import 'package:mart_frontend/screens/main/main_screen.dart';
 import 'package:mart_frontend/screens/product/product_detail_screen.dart';
 import 'package:mart_frontend/services/address_history_service.dart';
 import 'package:mart_frontend/services/api_service.dart';
 import 'package:mart_frontend/services/wishlist_service.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
 import '../controllers/language_controller.dart';
@@ -1428,13 +1432,14 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
   bool _notificationsOn = true;
+  bool _isLoggedIn = false;
   final themeController = Get.find<ThemeController>();
   final langController = Get.find<LanguageController>();
   final _profileService = ApiService();
 
   bool _twoFAEnabled = false;
-  MyProfileModel? _profile;
-  bool _isLoading = true;
+  // MyProfileModel? _profile;
+  bool _isLoading = false;
   String? _error;
   int _wishlistCount = 0;
   int _addressCount = 0;
@@ -1458,6 +1463,16 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   void initState() {
     super.initState();
+    _checkLoginStatus();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   final provider = context.read<ProfileProvider>();
+
+    //   setState(() {
+    //     _profile = provider.profile;
+    //     _isLoading = false;
+    //   });
+    // });
+
     _headerAnim = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -1468,7 +1483,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _headerAnim, curve: Curves.easeOutCubic));
     _headerAnim.forward();
-    _loadProfile();
+    // _loadProfile();
     _loadLocalCounts();
   }
 
@@ -1478,25 +1493,34 @@ class _ProfileScreenState extends State<ProfileScreen>
     super.dispose();
   }
 
-  // ── Load profile from API ─────────────────────────────────────
-  Future<void> _loadProfile() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-      final profile = await _profileService.fetchMyProfile();
-      setState(() {
-        _profile = profile;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    setState(() {
+      _isLoggedIn = token != null && token.isNotEmpty;
+    });
   }
+
+  // ── Load profile from API ─────────────────────────────────────
+  // Future<void> _loadProfile() async {
+  //   try {
+  //     setState(() {
+  //       _isLoading = true;
+  //       _error = null;
+  //     });
+  //     final profile = await _profileService.fetchMyProfile();
+  //     setState(() {
+  //       _profile = profile;
+  //       _isLoading = false;
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       _error = e.toString();
+  //       _isLoading = false;
+  //     });
+  //   }
+  // }
 
   Future<void> _loadLocalCounts() async {
     final counts = await Future.wait<int>([
@@ -1514,6 +1538,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove("token");
+    await prefs.remove("my_profile_cache");
+    context.read<ProfileProvider>().clear();
   }
 
   @override
@@ -1585,46 +1611,46 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   // ── Error state ───────────────────────────────────────────────
-  Widget _buildErrorState(BuildContext c) {
-    return Padding(
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.cloud_off_rounded, size: 56, color: c.text2),
-          const SizedBox(height: 16),
-          Text(
-            'failed_to_load_profile'.tr,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: c.text1,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _error ?? '',
-            style: TextStyle(fontSize: 12, color: c.text2),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _loadProfile,
-            icon: const Icon(Icons.refresh_rounded, size: 16),
-            label: Text('retry'.tr),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: c.accent,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildErrorState(BuildContext c) {
+  //   return Padding(
+  //     padding: const EdgeInsets.all(40),
+  //     child: Column(
+  //       mainAxisAlignment: MainAxisAlignment.center,
+  //       children: [
+  //         Icon(Icons.cloud_off_rounded, size: 56, color: c.text2),
+  //         const SizedBox(height: 16),
+  //         Text(
+  //           'failed_to_load_profile'.tr,
+  //           style: TextStyle(
+  //             fontSize: 16,
+  //             fontWeight: FontWeight.w700,
+  //             color: c.text1,
+  //           ),
+  //         ),
+  //         const SizedBox(height: 8),
+  //         Text(
+  //           _error ?? '',
+  //           style: TextStyle(fontSize: 12, color: c.text2),
+  //           textAlign: TextAlign.center,
+  //         ),
+  //         const SizedBox(height: 24),
+  //         ElevatedButton.icon(
+  //           onPressed: _loadProfile,
+  //           icon: const Icon(Icons.refresh_rounded, size: 16),
+  //           label: Text('retry'.tr),
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: c.accent,
+  //             foregroundColor: Colors.white,
+  //             elevation: 0,
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(12),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // ── Main content ──────────────────────────────────────────────
   Widget _buildContent(BuildContext c) {
@@ -1635,7 +1661,41 @@ class _ProfileScreenState extends State<ProfileScreen>
           opacity: _headerFade,
           child: SlideTransition(
             position: _headerSlide,
-            child: _ProfileHeader(profile: _profile!, stats: _stats),
+            child: Consumer<ProfileProvider>(
+              builder: (context, provider, child) {
+                if (provider.profile == null) {
+                  return const SizedBox();
+                }
+
+                return _ProfileHeader(
+                  profile: provider.profile!,
+                  stats: _stats,
+                  onTap: () async {
+                    // Not logged in
+                    if (provider.profile!.id == 0) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      );
+                      return;
+                    }
+
+                    // Logged in
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            EditProfileScreen(profile: provider.profile!),
+                      ),
+                    );
+
+                    if (result == true) {
+                      await context.read<ProfileProvider>().fetchProfile();
+                    }
+                  },
+                );
+              },
+            ),
           ),
         ),
 
@@ -1647,7 +1707,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           items: [
             _MenuItem(
               icon: Icons.shopping_bag_outlined,
-              iconBg: const Color(0xFFDBEAFE),
+              iconBg: c.bg,
               iconColor: const Color(0xFF3B82F6),
               title: 'My Orders',
               subtitle: 'total orders',
@@ -1655,7 +1715,9 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             _MenuItem(
               icon: Icons.favorite_border_rounded,
-              iconBg: const Color(0xFFFFE4E6),
+              // iconBg: const Color(0xFFFFE4E6),
+              // iconColor: const Color(0xFFF43F5E),
+              iconBg: c.bg,
               iconColor: const Color(0xFFF43F5E),
               title: 'Wishlist',
               subtitle: 'favorite items',
@@ -1664,7 +1726,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
             _MenuItem(
               icon: Icons.location_on_outlined,
-              iconBg: const Color(0xFFD1FAE5),
+              iconBg: c.bg,
               iconColor: const Color(0xFF10B981),
               title: 'Addresses',
               subtitle: 'saved addresses',
@@ -1672,7 +1734,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             _MenuItem(
               icon: Icons.credit_card_rounded,
-              iconBg: const Color(0xFFFEF3C7),
+              iconBg: c.bg,
               iconColor: const Color(0xFFF59E0B),
               title: 'Payment Methods',
               subtitle: 'Visa, Cash on delivery',
@@ -1689,16 +1751,14 @@ class _ProfileScreenState extends State<ProfileScreen>
           items: [
             _MenuItem(
               icon: themeController.isDark.value
-                  ? Icons.dark_mode_rounded
-                  : Icons.light_mode_rounded,
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
 
               iconBg: themeController.isDark.value
                   ? const Color(0xFF2A2340)
-                  : const Color(0xFFFEF3C7),
+                  : c.bg,
 
-              iconColor: themeController.isDark.value
-                  ? const Color(0xFF8B7CF6)
-                  : const Color(0xFFF59E0B),
+              iconColor: themeController.isDark.value ? Colors.white : c.text1,
 
               title: 'Dark Mode',
 
@@ -1741,7 +1801,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             // ),
             _MenuItem(
               icon: Icons.language_rounded,
-              iconBg: const Color(0xFFDBEAFE),
+              iconBg: c.bg,
               iconColor: const Color(0xFF3B82F6),
 
               title: 'language'.tr,
@@ -1761,7 +1821,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           items: [
             _MenuItem(
               icon: Icons.lock_outline_rounded,
-              iconBg: const Color(0xFFEDE9FE),
+              iconBg: c.bg,
               iconColor: const Color(0xFF8B5CF6),
               title: 'Change Password',
               subtitle: 'change your password',
@@ -1790,7 +1850,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             _MenuItem(
               icon: Icons.shield_outlined,
-              iconBg: const Color(0xFFFEF3C7),
+              iconBg: c.bg,
               iconColor: const Color(0xFFF59E0B),
               title: 'Privacy Settings',
               subtitle: 'Data & permissions',
@@ -1807,7 +1867,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           items: [
             _MenuItem(
               icon: Icons.help_outline_rounded,
-              iconBg: const Color(0xFFDBEAFE),
+              iconBg: c.bg,
               iconColor: const Color(0xFF3B82F6),
               title: 'Help Center',
               subtitle: 'FAQ & support',
@@ -1815,7 +1875,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             _MenuItem(
               icon: Icons.chat_bubble_outline_rounded,
-              iconBg: const Color(0xFFD1FAE5),
+              iconBg: c.bg,
               iconColor: const Color(0xFF10B981),
               title: 'Contact Us',
               subtitle: 'Chat, email, phone',
@@ -1823,7 +1883,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             _MenuItem(
               icon: Icons.star_outline_rounded,
-              iconBg: const Color(0xFFFEF3C7),
+              iconBg: c.bg,
               iconColor: const Color(0xFFF59E0B),
               title: 'Rate the App',
               subtitle: 'Share your feedback',
@@ -1831,7 +1891,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             _MenuItem(
               icon: Icons.public_rounded,
-              iconBg: const Color(0xFFEEF2FF),
+              iconBg: c.bg,
               iconColor: const Color(0xFF6366F1),
               title: 'Social Media',
               subtitle: 'Follow us',
@@ -1839,7 +1899,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             _MenuItem(
               icon: Icons.storefront_rounded,
-              iconBg: const Color(0xFFDBEAFE),
+              iconBg: c.bg,
               iconColor: const Color(0xFF2563EB),
               title: 'About Us',
               subtitle: 'Learn more',
@@ -1847,7 +1907,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             _MenuItem(
               icon: Icons.policy_rounded,
-              iconBg: const Color(0xFFD1FAE5),
+              iconBg: c.bg,
               iconColor: const Color(0xFF10B981),
               title: 'Terms and Conditions',
               subtitle: 'Our policies',
@@ -1855,7 +1915,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             _MenuItem(
               icon: Icons.shield_outlined,
-              iconBg: const Color(0xFFFEF3C7),
+              iconBg: c.bg,
               iconColor: const Color(0xFFF59E0B),
               title: 'Privacy Policy',
               subtitle: 'Data & privacy',
@@ -1867,7 +1927,10 @@ class _ProfileScreenState extends State<ProfileScreen>
         const SizedBox(height: 20),
 
         // 6. Logout
-        _LogoutButton(onTap: () => _showLogoutDialog(context)),
+        // _LogoutButton(onTap: () => _showLogoutDialog(context)),
+        _isLoggedIn
+            ? _LogoutButton(onTap: () => _showLogoutDialog(context))
+            : SizedBox(height: 1),
 
         const SizedBox(height: 12),
         Text(
@@ -1887,19 +1950,19 @@ class _ProfileScreenState extends State<ProfileScreen>
     if (mounted) _loadLocalCounts();
   }
 
-  void _showEditProfile(BuildContext context, MyProfileModel profile) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _EditProfileSheet(
-        profile: profile,
-        onSaved: (updatedProfile) {
-          setState(() => _profile = updatedProfile);
-        },
-      ),
-    );
-  }
+  // void _showEditProfile(BuildContext context, MyProfileModel profile) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.transparent,
+  //     builder: (_) => _EditProfileSheet(
+  //       profile: profile,
+  //       onSaved: (updatedProfile) {
+  //         setState(() => _profile = updatedProfile);
+  //       },
+  //     ),
+  //   );
+  // }
 
   void _showLanguagePicker(BuildContext context) {
     showModalBottomSheet(
@@ -1992,9 +2055,11 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                       await logout();
 
-                      if (!context.mounted) return;
-
-                      Get.offAll(() => const MainScreen());
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MainScreen()),
+                        (_) => false,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFEF4444),
@@ -2070,192 +2135,151 @@ class _SkeletonBoxState extends State<_SkeletonBox>
 // ═══════════════════════════════════════════════════════════════
 // PROFILE HEADER  (uses real API data)
 // ═══════════════════════════════════════════════════════════════
-
 class _ProfileHeader extends StatelessWidget {
   final MyProfileModel profile;
   final List<Map<String, dynamic>> stats;
-  const _ProfileHeader({required this.profile, required this.stats});
+  final VoidCallback onTap;
+
+  const _ProfileHeader({
+    required this.profile,
+    required this.stats,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final c = context;
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(c.isDark ? 0.3 : 0.06),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Stack(
-                children: [
-                  Container(
-                    width: 76,
-                    height: 76,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF8B5CF6).withOpacity(0.35),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: profile.avatar != null
-                          ? Image.network(
-                              profile.avatar.toString(),
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  _avatarFallback(profile.fullName),
-                            )
-                          : _avatarFallback(profile.fullName),
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      width: 22,
-                      height: 22,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: c.card, width: 2.5),
-                      ),
-                    ),
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(c.isDark ? 0.3 : 0.06),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF8B5CF6).withOpacity(0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              child: ClipOval(
+                child: profile.id == 0
+                    ? const Icon(Icons.person, color: Colors.white, size: 34)
+                    : (profile.avatar != null)
+                    ? Image.network(
+                        profile.avatar.toString(),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            _avatarFallback(profile.fullName),
+                      )
+                    : _avatarFallback(profile.fullName),
+              ),
+            ),
+
+            const SizedBox(width: 16),
+
+            Expanded(
+              child: profile.id == 0
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Flexible(
-                          child: Text(
-                            profile.fullName,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: c.text1,
-                              letterSpacing: -0.3,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        Text(
+                          'Log in or Sign up',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: c.text1,
+                            letterSpacing: -0.3,
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 7,
-                            vertical: 2,
+                        const SizedBox(height: 4),
+                        Text(
+                          'Start shopping and track your orders',
+                          style: TextStyle(fontSize: 12, color: c.text2),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          profile.fullName,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: c.text1,
+                            letterSpacing: -0.3,
                           ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF3C7),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            'VIP',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFFF59E0B),
-                            ),
-                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          profile.email,
+                          style: TextStyle(fontSize: 12, color: c.text2),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          profile.phone?.toString() ?? 'No phone',
+                          style: TextStyle(fontSize: 12, color: c.text2),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      profile.email,
-                      style: TextStyle(fontSize: 12, color: c.text2),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      profile.phone?.toString() ?? 'no_phone_added'.tr,
-                      style: TextStyle(fontSize: 12, color: c.text2),
-                    ),
-                  ],
-                ),
+            ),
+
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: c.isDark ? Colors.white10 : Colors.grey.shade100,
+                shape: BoxShape.circle,
               ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Divider(height: 1, color: c.border),
-          const SizedBox(height: 16),
-          Row(
-            children: stats.asMap().entries.map((e) {
-              final s = e.value;
-              return Expanded(
-                child: Column(
-                  children: [
-                    s['image'] != null
-                        ? Image.asset(
-                            s['image'] as String,
-                            width: 28,
-                            height: 28,
-                            fit: BoxFit.contain,
-                          )
-                        : Icon(
-                            s['icon'] as IconData,
-                            size: 20,
-                            color: c.accent,
-                          ),
-                    const SizedBox(height: 4),
-                    Text(
-                      s['value'] as String,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: c.text1,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      s['label'] as String,
-                      style: TextStyle(fontSize: 10, color: c.text2),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ],
+              child: Icon(Icons.chevron_right, size: 20, color: c.text2),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _avatarFallback(String name) => Center(
-    child: Text(
-      name.isNotEmpty ? name[0].toUpperCase() : 'U',
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 28,
-        fontWeight: FontWeight.w800,
+  static Widget _avatarFallback(String name) {
+    return Center(
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : 'U',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 28,
+          fontWeight: FontWeight.w800,
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
-
 // ═══════════════════════════════════════════════════════════════
 // MENU COMPONENTS
 // ═══════════════════════════════════════════════════════════════

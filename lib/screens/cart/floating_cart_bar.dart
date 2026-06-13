@@ -194,7 +194,6 @@
 //   }
 // }
 
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -222,7 +221,23 @@ class FloatingCartBar extends StatelessWidget {
       left: s * 0.04,
       right: s * 0.04,
       child: GestureDetector(
-        onTap: () {
+        // onTap: () {
+        //   showModalBottomSheet(
+        //     context: context,
+        //     isScrollControlled: true,
+        //     backgroundColor: Colors.transparent,
+        //     builder: (_) => const CartBottomSheet(),
+        //   );
+        // },
+        onTap: () async {
+          final provider = context.read<CartProvider>();
+
+          if (provider.cart == null) {
+            await provider.fetchCart();
+          }
+
+          if (!context.mounted) return;
+
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,

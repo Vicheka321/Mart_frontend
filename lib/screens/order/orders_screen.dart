@@ -3750,6 +3750,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_utils/src/extensions/internacionalization.dart';
+import 'package:mart_frontend/checkout/checkout_screen.dart';
 import '../../models/my_orders_model.dart';
 import '../../services/api_service.dart';
 import '../main/main_screen.dart';
@@ -3846,11 +3847,11 @@ class _OrdersScreenState extends State<OrdersScreen>
   String? _error;
 
   static const _tabDefs = [
-    {'label': 'all'},
-    {'label': 'pending'},
-    {'label': 'processing'},
-    {'label': 'completed'},
-    {'label': 'cancelled'},
+    {'label': 'all', 'filter': null},
+    {'label': 'pending', 'filter': 'pending'},
+    {'label': 'processing', 'filter': 'processing'},
+    {'label': 'completed', 'filter': 'completed'},
+    {'label': 'cancelled', 'filter': 'cancelled'},
   ];
 
   @override
@@ -3907,6 +3908,28 @@ class _OrdersScreenState extends State<OrdersScreen>
     }).toList();
   }
 
+  Future<void> _buyAgain(Order order) async {
+    HapticFeedback.mediumImpact();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CheckoutScreen(
+          fromCart: false,
+          items: order.items.map((item) {
+            return OrderItem(
+              id: item.productId.toString(),
+              name: item.name,
+              imageUrl: item.image,
+              unitPrice: double.parse(item.finalPrice),
+              quantity: item.qty,
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -3921,7 +3944,7 @@ class _OrdersScreenState extends State<OrdersScreen>
         body: _isLoading
             ? _buildSkeletons(colors)
             : _error != null
-            ? _empty(context,colors)
+            ? _empty(context, colors)
             : TabBarView(
                 controller: _tabController,
                 physics: const NeverScrollableScrollPhysics(),
@@ -3931,7 +3954,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                     colors: colors,
                     onRefresh: () => _loadOrders(refresh: true),
                     onTap: (o) => _openDetail(o),
-                    onReorder: (o) => _showReorderSnack(o),
+                    onReorder: (o) => _buyAgain(o),
                   );
                 }).toList(),
               ),
@@ -4565,7 +4588,7 @@ class _OrderCardState extends State<_OrderCard>
                   child: Row(
                     children: [
                       Text(
-                        _expanded ? 'Show less' : 'Show all items',
+                        _expanded ? 'show_less'.tr : 'show_all_items'.tr,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,

@@ -14,6 +14,17 @@ class AppTranslations extends Translations {
       'orders': 'Orders',
       'profile': 'Profile',
       'search': 'Search',
+      'recent_searches': 'Recent Searches',
+      'clear' : 'Clear',
+      'trending_now' : 'Trending Now',
+      'browse_categories' : 'Browse Categories',
+      'category' : 'Category',
+      'products' : 'Products',
+      'brand' : 'Brand',
+      'show_all_items' : 'Show all items',
+
+
+
 
       'search_hint': 'Search products, brands, categories...',
       'search_home_hint': 'Find what you love today',
@@ -45,7 +56,6 @@ class AppTranslations extends Translations {
       'something_went_wrong': 'Something went wrong',
       'failed_to_load_product': 'Failed to load product',
       'please_try_again': 'Please try again',
-      'show_less': 'Show less',
       'read_more': 'Read More',
       'checkout': 'Checkout',
       'details': 'Details',
@@ -138,7 +148,6 @@ class AppTranslations extends Translations {
       'delivered': 'Delivered',
       'current_status': 'Current Status',
       'waiting': 'Waiting...',
-
     },
     'km': {
       'hi': 'សួស្តី',
@@ -153,6 +162,16 @@ class AppTranslations extends Translations {
       'search': 'ស្វែងរក',
       'search_hint': 'ស្វែងរកផលិតផល ម៉ាក ឬប្រភេទ...',
       'search_home_hint': 'ស្វែងរកអ្វីដែលអ្នកចូលចិត្តថ្ងៃនេះ',
+      'recent_searches': 'ស្វែងរកថ្មីៗ',
+      'clear' : 'សម្អាត',
+      'trending_now' : 'ថ្មីៗ',
+      'browse_categories' : 'រកមើលប្រភេទ',
+      'category' : 'ផ្សេង',
+      'products' : 'ផលិតផល',
+      'brand' : 'ម៉ាក',
+      'show_all_items' :  'បង្ហាញទាំងអស់',
+
+
       'could_not_load_products': 'មិនអាចទាញយកផលិតផលបានទេ',
       'pull_to_try_again': 'អូសចុះក្រោមដើម្បីសាកល្បងម្តងទៀត។',
       'no_products_found': 'រកមិនឃើញផលិតផលទេ',
@@ -287,6 +306,16 @@ class AppTranslations extends Translations {
       'search': '搜索',
       'search_products': '搜索商品',
       'search_hint': '搜索商品、品牌、分类...',
+      'recent_searches': '最近的搜尋',
+      'clear' : '清除',
+      'trending_now' : '現在流行',
+      'browse_categories' : '瀏覽類別',
+      'category' : '類別',
+      'products' : '產品',
+      'brand' : '品牌',
+      'show_all_items':'顯示所有項目',
+
+
       'search_home_hint': '寻找你今天喜欢的商品',
       'could_not_load_products': '无法加载商品',
       'pull_to_try_again': '下拉重试。',

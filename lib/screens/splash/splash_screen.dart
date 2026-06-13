@@ -473,7 +473,7 @@ class _SplashScreenState extends State<SplashScreen>
 
           for (final product in newArrivalProvider.products.take(3)) {
             if (product.images.isNotEmpty) {
-              await precacheImage(
+               await precacheImage(
                 CachedNetworkImageProvider(product.images.first),
                 context,
               );
@@ -482,7 +482,7 @@ class _SplashScreenState extends State<SplashScreen>
 
           for (final product in recommendProvider.recommended.take(2)) {
             if (product.images.isNotEmpty) {
-              await precacheImage(
+              precacheImage(
                 CachedNetworkImageProvider(product.images.first),
                 context,
               );

@@ -99,6 +99,8 @@ class Item {
     image: json["image"]?.toString() ?? '',
   );
 
+  get productId => null;
+
   Map<String, dynamic> toJson() => {
     "name": name,
     "qty": qty,
