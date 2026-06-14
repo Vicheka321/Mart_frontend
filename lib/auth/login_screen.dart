@@ -323,7 +323,29 @@ class _LoginScreenState extends State<LoginScreen>
               child: TextButton(
                 onPressed: () async {
                   if (_emailCtrl.text.trim().isEmpty) {
-                    Get.snackbar('Error', 'Please enter email or phone first');
+                    Get.dialog(
+                      AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        title: const Row(
+                          children: [
+                            Icon(Icons.error_outline, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Error'),
+                          ],
+                        ),
+                        content: const Text(
+                          'Please enter email or phone first',
+                        ),
+                        actions: [
+                          FilledButton(
+                            onPressed: () => Get.back(),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
                     return;
                   }
 
@@ -368,8 +390,12 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             const SizedBox(height: 12),
             _SocialButton(
-              label: 'Continue with Apple',
-              icon: Icon(Icons.apple_rounded, size: 22, color: colors.text1),
+              label: 'Continue with Facebook',
+              icon: Icon(
+                Icons.facebook_outlined,
+                size: 22,
+                color: colors.accent,
+              ),
               colors: colors,
               onTap: () {},
             ),

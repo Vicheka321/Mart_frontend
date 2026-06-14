@@ -1416,6 +1416,7 @@ extension ThemeX on BuildContext {
       isDark ? const Color(0xFF8B7CF6) : const Color(0xFF111111);
   Color get accentBg =>
       isDark ? const Color(0xFF2A2340) : const Color(0xFFF3F3F3);
+  Color get bgicon => isDark ? Color(0xFF2A2340) : const Color(0xFFF6F5F3);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1707,8 +1708,8 @@ class _ProfileScreenState extends State<ProfileScreen>
           items: [
             _MenuItem(
               icon: Icons.shopping_bag_outlined,
-              iconBg: c.bg,
-              iconColor: const Color(0xFF3B82F6),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'My Orders',
               subtitle: 'total orders',
               onTap: () => _navigate(context, MainScreen()),
@@ -1717,8 +1718,8 @@ class _ProfileScreenState extends State<ProfileScreen>
               icon: Icons.favorite_border_rounded,
               // iconBg: const Color(0xFFFFE4E6),
               // iconColor: const Color(0xFFF43F5E),
-              iconBg: c.bg,
-              iconColor: const Color(0xFFF43F5E),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'Wishlist',
               subtitle: 'favorite items',
               onTap: () => _navigate(context, ComingSoonScreen()),
@@ -1726,16 +1727,16 @@ class _ProfileScreenState extends State<ProfileScreen>
 
             _MenuItem(
               icon: Icons.location_on_outlined,
-              iconBg: c.bg,
-              iconColor: const Color(0xFF10B981),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'Addresses',
               subtitle: 'saved addresses',
               onTap: () => _navigate(context, MyAddressesScreen()),
             ),
             _MenuItem(
               icon: Icons.credit_card_rounded,
-              iconBg: c.bg,
-              iconColor: const Color(0xFFF59E0B),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'Payment Methods',
               subtitle: 'Visa, Cash on delivery',
               onTap: () => _navigate(context, ComingSoonScreen()),
@@ -1771,7 +1772,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                   onChanged: (v) {
                     themeController.toggleTheme(v);
                     // HapticFeedback.selectionClick();
-
                   },
                 ),
               ),
@@ -1802,8 +1802,8 @@ class _ProfileScreenState extends State<ProfileScreen>
             // ),
             _MenuItem(
               icon: Icons.language_rounded,
-              iconBg: c.bg,
-              iconColor: const Color(0xFF3B82F6),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
 
               title: 'language'.tr,
 
@@ -1822,8 +1822,8 @@ class _ProfileScreenState extends State<ProfileScreen>
           items: [
             _MenuItem(
               icon: Icons.lock_outline_rounded,
-              iconBg: c.bg,
-              iconColor: const Color(0xFF8B5CF6),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'Change Password',
               subtitle: 'change your password',
               onTap: () => _navigate(context, ComingSoonScreen()),
@@ -1831,16 +1831,16 @@ class _ProfileScreenState extends State<ProfileScreen>
             _MenuItem(
               icon: Icons.verified_user_outlined,
               iconBg: _twoFAEnabled
-                  ? const Color(0xFFD1FAE5)
-                  : const Color(0xFFF3F4F6),
+                  ? const Color(0xFF2A2340)
+                  : const Color(0xFF2A2340),
               iconColor: _twoFAEnabled
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFF9CA3AF),
+                  ? const Color(0xFFF6F5F3)
+                  : const Color(0xFFF6F5F3),
               title: '2-Factor Authentication',
               subtitle: _twoFAEnabled ? '✓ Enabled' : 'Tap to enable',
               customTrailing: Switch.adaptive(
                 value: _twoFAEnabled,
-                activeColor: const Color(0xFF10B981),
+                activeColor: const Color(0xFF8B7CF6),
                 onChanged: (v) {
                   setState(() => _twoFAEnabled = v);
                   // HapticFeedback.mediumImpact();
@@ -1851,8 +1851,8 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             _MenuItem(
               icon: Icons.shield_outlined,
-              iconBg: c.bg,
-              iconColor: const Color(0xFFF59E0B),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'Privacy Settings',
               subtitle: 'Data & permissions',
               onTap: () => _navigate(context, ComingSoonScreen()),
@@ -1868,56 +1868,56 @@ class _ProfileScreenState extends State<ProfileScreen>
           items: [
             _MenuItem(
               icon: Icons.help_outline_rounded,
-              iconBg: c.bg,
-              iconColor: const Color(0xFF3B82F6),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'Help Center',
               subtitle: 'FAQ & support',
               onTap: () => _navigate(context, ComingSoonScreen()),
             ),
             _MenuItem(
               icon: Icons.chat_bubble_outline_rounded,
-              iconBg: c.bg,
-              iconColor: const Color(0xFF10B981),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'Contact Us',
               subtitle: 'Chat, email, phone',
               onTap: () => _navigate(context, ComingSoonScreen()),
             ),
             _MenuItem(
               icon: Icons.star_outline_rounded,
-              iconBg: c.bg,
-              iconColor: const Color(0xFFF59E0B),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'Rate the App',
               subtitle: 'Share your feedback',
               onTap: () => _navigate(context, ComingSoonScreen()),
             ),
             _MenuItem(
               icon: Icons.public_rounded,
-              iconBg: c.bg,
-              iconColor: const Color(0xFF6366F1),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'Social Media',
               subtitle: 'Follow us',
               onTap: () => _navigate(context, ComingSoonScreen()),
             ),
             _MenuItem(
               icon: Icons.storefront_rounded,
-              iconBg: c.bg,
-              iconColor: const Color(0xFF2563EB),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'About Us',
               subtitle: 'Learn more',
               onTap: () => _navigate(context, ComingSoonScreen()),
             ),
             _MenuItem(
               icon: Icons.policy_rounded,
-              iconBg: c.bg,
-              iconColor: const Color(0xFF10B981),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'Terms and Conditions',
               subtitle: 'Our policies',
               onTap: () => _navigate(context, ComingSoonScreen()),
             ),
             _MenuItem(
               icon: Icons.shield_outlined,
-              iconBg: c.bg,
-              iconColor: const Color(0xFFF59E0B),
+              iconBg: c.bgicon,
+              iconColor: c.text1,
               title: 'Privacy Policy',
               subtitle: 'Data & privacy',
               onTap: () => _navigate(context, ComingSoonScreen()),

@@ -1420,7 +1420,6 @@ class _ProductCardState extends State<_ProductCard> {
     final price = double.parse(widget.product.finalPrice.toString());
     final cartProvider = context.read<CartProvider>();
 
-    // 1) UI + floating bar update ភ្លាមៗ
     setState(() => _qty = newQty);
     cartProvider.updateOptimisticQty(diff: diff, price: price);
 
@@ -1430,7 +1429,6 @@ class _ProductCardState extends State<_ProductCard> {
       cartProvider.updateLocalQty(productId: widget.product.id, qty: newQty);
     }
 
-    // 2) Debounce API call — រង់ចាំ 400ms ក្រោយចុចចុងក្រោយ
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () async {
       try {
@@ -1550,11 +1548,23 @@ class _ProductCardState extends State<_ProductCard> {
                   Positioned(
                     top: _T.sp8,
                     left: _T.sp8,
-                    child: _Badge(
-                      label:
-                          '-${double.parse(widget.product.discount!.replaceAll('%', '')).toInt()}%',
-                      bgColor: widget.colors.flashText,
-                      textColor: Colors.white,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEAF7EA),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '-${double.parse(widget.product.discount!.replaceAll('%', '')).toInt()}%',
+                        style: const TextStyle(
+                          color: Color(0xFF4CAF50),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
 
@@ -1597,17 +1607,31 @@ class _ProductCardState extends State<_ProductCard> {
                   ),
 
                   const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        '\$${widget.product.finalPrice}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: _T
+                            .priceLg(widget.colors.text1)
+                            .copyWith(
+                              fontSize: priceSize,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      const SizedBox(width: 8),
 
-                  Text(
-                    '\$${widget.product.finalPrice}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: _T
-                        .priceLg(widget.colors.text1)
-                        .copyWith(
-                          fontSize: priceSize,
-                          fontWeight: FontWeight.w700,
+                      if (widget.product.discount != null)
+                        Text(
+                          '\$${widget.product.salePrice}',
+                          style: TextStyle(
+                            fontSize: priceSize - 2,
+                            color: Colors.grey.shade500,
+                            decoration: TextDecoration.lineThrough,
+                          ),
                         ),
+                    ],
                   ),
                 ],
               ),
