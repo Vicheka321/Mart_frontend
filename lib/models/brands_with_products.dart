@@ -53,10 +53,10 @@ class Product {
     int id;
     int categoriesId;
     int brandId;
-    String productCode;
+    String? productCode;
     String name;
     String description;
-    Unit unit;
+    Unit? unit;
     String costPrice;
     String salePrice;
     int quantity;
@@ -69,10 +69,10 @@ class Product {
         required this.id,
         required this.categoriesId,
         required this.brandId,
-        required this.productCode,
+        this.productCode,
         required this.name,
         required this.description,
-        required this.unit,
+        this.unit,
         required this.costPrice,
         required this.salePrice,
         required this.quantity,
@@ -89,7 +89,7 @@ class Product {
         productCode: json["product_code"],
         name: json["name"],
         description: json["description"],
-        unit: unitValues.map[json["unit"]]!,
+        unit: json["unit"] == null ? null : unitValues.map[json["unit"]],
         costPrice: json["cost_price"],
         salePrice: json["sale_price"],
         quantity: json["quantity"],

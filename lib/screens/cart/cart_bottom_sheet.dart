@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:mart_frontend/models/products_model.dart';
 import 'package:provider/provider.dart';
 import '../../checkout/checkout_screen.dart';
 import '../../providers/cart_provider.dart';
@@ -8,7 +9,9 @@ import '../../widgets/skeleton_loader.dart';
 import '../theme/app_theme.dart';
 
 class CartBottomSheet extends StatefulWidget {
-  const CartBottomSheet({super.key});
+
+  const CartBottomSheet({super.key, });
+  
 
   @override
   State<CartBottomSheet> createState() => _CartBottomSheetState();
@@ -48,7 +51,7 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
     final s = MediaQuery.of(context).size.shortestSide;
 
     if (cart == null || cart.items.isEmpty) {
-      return _EmptyCart(colors: colors, s: s);
+      return const SizedBox.shrink();
     }
 
     return DraggableScrollableSheet(
@@ -256,7 +259,7 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => CheckoutScreen(items: []),
+                          builder: (_) => CheckoutScreen(items: [], fromCart: true),
                         ),
                       );
                     },

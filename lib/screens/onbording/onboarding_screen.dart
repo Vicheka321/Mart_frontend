@@ -1,202 +1,22 @@
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'package:mart_frontend/screens/main/main_screen.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-
-// class LanguageOnboardingScreen extends StatelessWidget {
-//   LanguageOnboardingScreen({super.key});
-
-//   final selectedLang = 'en'.obs;
-
-//   final languages = [
-//     {'name': 'English', 'code': 'en', 'flag': '🇺🇸'},
-//     {'name': 'ភាសាខ្មែរ', 'code': 'km', 'flag': '🇰🇭'},
-//     {'name': '中文', 'code': 'zh', 'flag': '🇨🇳'},
-//   ];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: Container(
-//         width: double.infinity,
-
-//         decoration: const BoxDecoration(
-//           gradient: LinearGradient(
-//             colors: [Color(0xFF8B7CF6), Color(0xFF6D5DF6)],
-//             begin: Alignment.topCenter,
-//             end: Alignment.bottomCenter,
-//           ),
-//         ),
-
-//         child: SafeArea(
-//           child: Column(
-//             children: [
-//               const SizedBox(height: 40),
-
-//               const Icon(Icons.shopping_bag, size: 80, color: Colors.white),
-
-//               const SizedBox(height: 20),
-
-//               const Text(
-//                 "Welcome to Mart",
-//                 style: TextStyle(
-//                   fontSize: 26,
-//                   fontWeight: FontWeight.bold,
-//                   color: Colors.white,
-//                 ),
-//               ),
-
-//               const SizedBox(height: 8),
-
-//               const Text(
-//                 "Shop smarter, faster, easier",
-//                 style: TextStyle(color: Colors.white70),
-//               ),
-
-//               const SizedBox(height: 40),
-
-//               Expanded(
-//                 child: Container(
-//                   padding: const EdgeInsets.all(20),
-//                   decoration: const BoxDecoration(
-//                     color: Colors.white,
-//                     borderRadius: BorderRadius.vertical(
-//                       top: Radius.circular(30),
-//                     ),
-//                   ),
-
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       const Text(
-//                         "🌍 Select Language",
-//                         style: TextStyle(
-//                           fontSize: 18,
-//                           fontWeight: FontWeight.bold,
-//                         ),
-//                       ),
-
-//                       const SizedBox(height: 20),
-
-//                       Obx(
-//                         () => Column(
-//                           children: languages.map((lang) {
-//                             final isSelected =
-//                                 selectedLang.value == lang['code'];
-
-//                             return GestureDetector(
-//                               onTap: () {
-//                                 selectedLang.value = lang['code']!;
-//                               },
-//                               child: Container(
-//                                 margin: const EdgeInsets.only(bottom: 12),
-//                                 padding: const EdgeInsets.all(16),
-//                                 decoration: BoxDecoration(
-//                                   borderRadius: BorderRadius.circular(16),
-//                                   border: Border.all(
-//                                     color: isSelected
-//                                         ? const Color(0xFF8B7CF6)
-//                                         : Colors.grey.shade300,
-//                                     width: isSelected ? 2 : 1,
-//                                   ),
-//                                 ),
-//                                 child: Row(
-//                                   children: [
-//                                     Text(
-//                                       lang['flag']!,
-//                                       style: const TextStyle(fontSize: 24),
-//                                     ),
-//                                     const SizedBox(width: 12),
-//                                     Text(
-//                                       lang['name']!,
-//                                       style: TextStyle(
-//                                         fontSize: 16,
-//                                         fontWeight: isSelected
-//                                             ? FontWeight.bold
-//                                             : FontWeight.normal,
-//                                       ),
-//                                     ),
-//                                     const Spacer(),
-//                                     if (isSelected)
-//                                       const Icon(
-//                                         Icons.check_circle,
-//                                         color: Color(0xFF8B7CF6),
-//                                       ),
-//                                   ],
-//                                 ),
-//                               ),
-//                             );
-//                           }).toList(),
-//                         ),
-//                       ),
-
-//                       const Spacer(),
-
-//                       SizedBox(
-//                         width: double.infinity,
-//                         child: ElevatedButton(
-//                           onPressed: () async {
-//                             final prefs = await SharedPreferences.getInstance();
-
-//                             await prefs.setString(
-//                               'language',
-//                               selectedLang.value,
-//                             );
-//                             await prefs.setBool('first_time', false);
-
-//                             Get.offAll(() => const MainScreen());
-//                           },
-//                           style: ElevatedButton.styleFrom(
-//                             backgroundColor: const Color(0xFF8B7CF6),
-//                             padding: const EdgeInsets.symmetric(vertical: 16),
-//                             shape: RoundedRectangleBorder(
-//                               borderRadius: BorderRadius.circular(14),
-//                             ),
-//                           ),
-//                           child: const Text(
-//                             "Continue",
-//                             style: TextStyle(
-//                               fontSize: 16,
-//                               fontWeight: FontWeight.bold,
-//                             ),
-//                           ),
-//                         ),
-//                       ),
-
-//                       const SizedBox(height: 10),
-
-//                       const Center(
-//                         child: Text(
-//                           "You can change language later",
-//                           style: TextStyle(fontSize: 12, color: Colors.grey),
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mart_frontend/controllers/language_controller.dart';
 import 'package:mart_frontend/screens/main/main_screen.dart';
+import 'package:mart_frontend/screens/theme/app_theme.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
-// ── Replace with your actual imports ──
-// import 'package:mart_frontend/screens/main/main_screen.dart';
+extension _C on BuildContext {
+  AppColors get c => colors;
+}
 
 // ─────────────────────────────────────────────
-// ONBOARDING ENTRY POINT
-// Manages page flow: Language → About Mart (3 slides) → Done
+// ENTRY POINT
+// Flow: Slide 0 → 1 → 2 → Language → MainScreen
 // ─────────────────────────────────────────────
-
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({super.key});
 
@@ -204,879 +24,541 @@ class OnboardingFlow extends StatefulWidget {
   State<OnboardingFlow> createState() => _OnboardingFlowState();
 }
 
-class _OnboardingFlowState extends State<OnboardingFlow> {
+class _OnboardingFlowState extends State<OnboardingFlow>
+    with TickerProviderStateMixin {
   final _pageCtrl = PageController();
-  int _page = 0; // 0 = language, 1-3 = about slides
+  int _page = 0;
+  static const int _total = 4;
 
-  static const int _totalPages = 4;
+  // Background orb animation
+  late final AnimationController _orbCtrl;
+  late final Animation<double> _orbAnim;
 
-  void _next() {
-    HapticFeedback.lightImpact();
-    if (_page < _totalPages - 1) {
-      _pageCtrl.nextPage(
-        duration: const Duration(milliseconds: 420),
-        curve: Curves.easeInOutCubic,
-      );
-    }
+  @override
+  void initState() {
+    super.initState();
+    _orbCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat(reverse: true);
+    _orbAnim = CurvedAnimation(parent: _orbCtrl, curve: Curves.easeInOut);
   }
 
   @override
   void dispose() {
     _pageCtrl.dispose();
+    _orbCtrl.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: PageView(
-        controller: _pageCtrl,
-        physics: const NeverScrollableScrollPhysics(),
-        onPageChanged: (i) => setState(() => _page = i),
-        children: [
-          // ── Page 0: Language ──────────────────────
+  void _next() {
+    // HapticFeedback.lightImpact();
+    if (_page < _total - 1) {
+      _pageCtrl.nextPage(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOutCubic,
+      );
+    }
+  }
 
-          // ── Pages 1-3: About Mart slides ──────────
-          _AboutSlide(
-            pageIndex: 0,
-            currentPage: _page - 1,
-            onNext: _next,
-            onSkip: _finish,
-          ),
-          _AboutSlide(
-            pageIndex: 1,
-            currentPage: _page - 1,
-            onNext: _next,
-            onSkip: _finish,
-          ),
-          _AboutSlide(
-            pageIndex: 2,
-            currentPage: _page - 1,
-            onNext: _finish,
-            onSkip: _finish,
-            isLast: true,
-          ),
-
-          LanguageOnboardingScreen(onContinue: _next),
-        ],
-      ),
+  void _skipToLanguage() {
+    // HapticFeedback.lightImpact();
+    _pageCtrl.animateToPage(
+      3,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOutCubic,
     );
   }
 
   Future<void> _finish() async {
-    HapticFeedback.heavyImpact();
+    // HapticFeedback.mediumImpact();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('onboarding_done', true);
-    Get.offAll(() => const MainScreen());
-  }
-}
-
-// ─────────────────────────────────────────────
-// LANGUAGE SCREEN (redesigned, same logic)
-// ─────────────────────────────────────────────
-
-class LanguageOnboardingScreen extends StatefulWidget {
-  final VoidCallback?
-  onContinue; // null = standalone mode (saves & goes to main)
-
-  const LanguageOnboardingScreen({super.key, this.onContinue});
-
-  @override
-  State<LanguageOnboardingScreen> createState() =>
-      _LanguageOnboardingScreenState();
-}
-
-class _LanguageOnboardingScreenState extends State<LanguageOnboardingScreen>
-    with SingleTickerProviderStateMixin {
-  String _selected = 'en';
-  late final AnimationController _animCtrl;
-  late final Animation<double> _fadeAnim;
-  late final Animation<Offset> _slideAnim;
-
-  static const _languages = [
-    {'name': 'English', 'code': 'en', 'flag': '🇺🇸', 'sub': 'United States'},
-    {'name': 'ភាសាខ្មែរ', 'code': 'km', 'flag': '🇰🇭', 'sub': 'Cambodia'},
-    {'name': '中文', 'code': 'zh', 'flag': '🇨🇳', 'sub': 'China'},
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _animCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
+    Get.offAll(
+      () => const MainScreen(),
+      transition: Transition.fadeIn,
+      duration: const Duration(milliseconds: 400),
     );
-    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
-    _animCtrl.forward();
   }
 
-  @override
-  void dispose() {
-    _animCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleContinue() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('language', _selected);
-    await prefs.setBool('first_time', false);
-
-    if (widget.onContinue != null) {
-      widget.onContinue!();
-    } else {
-      Get.offAll(() => const MainScreen());
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    final c = context.c;
     return Scaffold(
+      backgroundColor: c.background,
       body: Stack(
         children: [
-          // ── Background gradient ──
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF1D4ED8),
-                  Color(0xFF2563EB),
-                  Color(0xFF60A5FA),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+          // ── Animated background orbs ──
+          AnimatedBuilder(
+            animation: _orbAnim,
+            builder: (_, __) => _BackgroundOrbs(
+              progress: _orbAnim.value,
+              page: _page,
+              accent: c.accent,
+              accentLight: c.accentLight,
+              isDark: Theme.of(context).brightness == Brightness.dark,
             ),
           ),
 
-          // ── Decorative circles ──
-          ..._buildDecoCircles(),
-
-          SafeArea(
-            child: Column(
-              children: [
-                // ── Top hero area ──
-                Expanded(
-                  flex: 4,
-                  child: FadeTransition(
-                    opacity: _fadeAnim,
-                    child: _buildHero(),
-                  ),
-                ),
-
-                // ── Bottom card ──
-                Expanded(
-                  flex: 6,
-                  child: FadeTransition(
-                    opacity: _fadeAnim,
-                    child: SlideTransition(
-                      position: _slideAnim,
-                      child: _buildCard(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          // ── Page content ──
+          PageView(
+            controller: _pageCtrl,
+            physics: const NeverScrollableScrollPhysics(),
+            onPageChanged: (i) => setState(() => _page = i),
+            children: [
+              _FeatureSlide(
+                key: const ValueKey(0),
+                pageIndex: 0,
+                onNext: _next,
+                onSkip: _skipToLanguage,
+              ),
+              _FeatureSlide(
+                key: const ValueKey(1),
+                pageIndex: 1,
+                onNext: _next,
+                onSkip: _skipToLanguage,
+              ),
+              _FeatureSlide(
+                key: const ValueKey(2),
+                pageIndex: 2,
+                onNext: _next,
+                onSkip: _skipToLanguage,
+                isLast: true,
+              ),
+              LanguageOnboardingScreen(onContinue: _finish),
+            ],
           ),
         ],
-      ),
-    );
-  }
-
-  List<Widget> _buildDecoCircles() {
-    return [
-      Positioned(
-        top: -60,
-        right: -40,
-        child: Container(
-          width: 200,
-          height: 200,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.06),
-          ),
-        ),
-      ),
-      Positioned(
-        top: 80,
-        left: -60,
-        child: Container(
-          width: 160,
-          height: 160,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.05),
-          ),
-        ),
-      ),
-    ];
-  }
-
-  Widget _buildHero() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Logo badge
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.elasticOut,
-            builder: (_, v, child) => Transform.scale(scale: v, child: child),
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.18),
-                borderRadius: BorderRadius.circular(26),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.35),
-                  width: 1.5,
-                ),
-              ),
-              child: const Icon(
-                Icons.shopping_bag_rounded,
-                size: 42,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'Welcome to\nMart',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.8,
-              height: 1.15,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Shop smarter, faster, easier',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.75),
-              fontSize: 15,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FB),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(32),
-          topRight: Radius.circular(32),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 30,
-            offset: const Offset(0, -8),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 30, 24, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Label ──
-            Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDBEAFE),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.language_rounded,
-                    color: Color(0xFF2563EB),
-                    size: 18,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Text(
-                  'Choose your language',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 6),
-            const Padding(
-              padding: EdgeInsets.only(left: 42),
-              child: Text(
-                'You can change this later in settings',
-                style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
-              ),
-            ),
-
-            const SizedBox(height: 22),
-
-            // ── Language tiles ──
-            ..._languages.map(
-              (lang) => _LanguageTile(
-                flag: lang['flag']!,
-                name: lang['name']!,
-                subtitle: lang['sub']!,
-                code: lang['code']!,
-                isSelected: _selected == lang['code'],
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  setState(() => _selected = lang['code']!);
-                },
-              ),
-            ),
-
-            const Spacer(),
-
-            // ── Continue button ──
-            _GradientButton(
-              label: 'Continue',
-              icon: Icons.arrow_forward_rounded,
-              onTap: _handleContinue,
-            ),
-
-            const SizedBox(height: 16),
-          ],
-        ),
       ),
     );
   }
 }
 
-class _LanguageTile extends StatelessWidget {
-  final String flag, name, subtitle, code;
-  final bool isSelected;
-  final VoidCallback onTap;
+// ─────────────────────────────────────────────
+// ANIMATED BACKGROUND ORBS
+// ─────────────────────────────────────────────
+class _BackgroundOrbs extends StatelessWidget {
+  final double progress;
+  final int page;
+  final Color accent;
+  final Color accentLight;
+  final bool isDark;
 
-  const _LanguageTile({
-    required this.flag,
-    required this.name,
-    required this.subtitle,
-    required this.code,
-    required this.isSelected,
-    required this.onTap,
+  const _BackgroundOrbs({
+    required this.progress,
+    required this.page,
+    required this.accent,
+    required this.accentLight,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFDBEAFE) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF2563EB)
-                : const Color(0xFFE5E7EB),
-            width: isSelected ? 1.8 : 1.2,
+    final size = MediaQuery.of(context).size;
+    final t = progress;
+    return Stack(
+      children: [
+        // Top-right large orb
+        Positioned(
+          top: -60 + (t * 40),
+          right: -80 + (t * 30),
+          child: Container(
+            width: 320,
+            height: 320,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: accent.withOpacity(isDark ? 0.18 : 0.09),
+            ),
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF2563EB).withOpacity(0.12),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
         ),
-        child: Row(
-          children: [
-            // Flag
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.white.withOpacity(0.7)
-                    : const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(flag, style: const TextStyle(fontSize: 24)),
-              ),
+        // Middle-left orb
+        Positioned(
+          top: size.height * 0.28 - (t * 20),
+          left: -100 + (t * 20),
+          child: Container(
+            width: 240,
+            height: 240,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: accent.withOpacity(isDark ? 0.1 : 0.05),
             ),
-            const SizedBox(width: 14),
-
-            // Text
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                      color: const Color(0xFF111827),
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isSelected
-                          ? const Color(0xFF2563EB)
-                          : const Color(0xFF9CA3AF),
-                      fontWeight: isSelected
-                          ? FontWeight.w500
-                          : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Check
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: isSelected
-                  ? Container(
-                      key: const ValueKey('check'),
-                      width: 26,
-                      height: 26,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF2563EB),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.check_rounded,
-                        color: Colors.white,
-                        size: 15,
-                      ),
-                    )
-                  : Container(
-                      key: const ValueKey('empty'),
-                      width: 26,
-                      height: 26,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFFE5E7EB),
-                          width: 1.5,
-                        ),
-                      ),
-                    ),
-            ),
-          ],
+          ),
         ),
-      ),
+        // Bottom-right small orb
+        Positioned(
+          bottom: size.height * 0.1 + (t * 30),
+          right: 20 - (t * 20),
+          child: Container(
+            width: 140,
+            height: 140,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: accentLight.withOpacity(isDark ? 0.15 : 0.4),
+            ),
+          ),
+        ),
+        // Tiny accent dot
+        Positioned(
+          top: size.height * 0.55 + (t * 15),
+          left: size.width * 0.6,
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: accent.withOpacity(isDark ? 0.12 : 0.07),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
 // ─────────────────────────────────────────────
-// ABOUT MART SLIDES
+// FEATURE SLIDE
 // ─────────────────────────────────────────────
-
-class _AboutSlide extends StatefulWidget {
-  final int pageIndex; // 0, 1, 2
-  final int currentPage; // which page is currently active (for dots)
+class _FeatureSlide extends StatefulWidget {
+  final int pageIndex;
   final VoidCallback onNext;
   final VoidCallback onSkip;
   final bool isLast;
 
-  const _AboutSlide({
+  const _FeatureSlide({
+    super.key,
     required this.pageIndex,
-    required this.currentPage,
     required this.onNext,
     required this.onSkip,
     this.isLast = false,
   });
 
   @override
-  State<_AboutSlide> createState() => _AboutSlideState();
+  State<_FeatureSlide> createState() => _FeatureSlideState();
 }
 
-class _AboutSlideState extends State<_AboutSlide>
+class _FeatureSlideState extends State<_FeatureSlide>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _animCtrl;
-  late final Animation<double> _fadeAnim;
-  late final Animation<Offset> _slideAnim;
-  late final Animation<double> _scaleAnim;
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _contentSlide;
+  late final Animation<double> _iconScale;
+  late final Animation<double> _iconRotate;
 
   static const _slides = [
     _SlideData(
-      gradient: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
       icon: Icons.local_shipping_rounded,
       badge: 'FAST DELIVERY',
-      badgeColor: Color(0xFF60A5FA),
       title: 'Lightning-fast\nDelivery',
       subtitle:
-          'Get your orders delivered to your doorstep in record time. Track every step in real-time.',
+          'Orders delivered to your doorstep in record time. Track every step live.',
       features: [
-        _Feature(Icons.bolt_rounded, 'Same-day delivery available'),
+        _Feature(Icons.bolt_rounded, 'Same-day delivery'),
         _Feature(Icons.location_on_rounded, 'Live order tracking'),
-        _Feature(Icons.shield_rounded, 'Safe & secure packaging'),
+        _Feature(Icons.shield_rounded, 'Secure packaging'),
       ],
-      illustrationIcon: Icons.local_shipping_rounded,
     ),
     _SlideData(
-      gradient: [Color(0xFF7C3AED), Color(0xFFA855F7)],
-      icon: Icons.percent_rounded,
+      icon: Icons.local_offer_rounded,
       badge: 'BEST DEALS',
-      badgeColor: Color(0xFFC084FC),
       title: 'Unbeatable\nDeals Daily',
       subtitle:
-          'Flash sales, exclusive coupons, and loyalty rewards — save more every time you shop.',
+          'Flash sales, exclusive coupons, and loyalty rewards every single day.',
       features: [
         _Feature(Icons.flash_on_rounded, 'Daily flash sales'),
-        _Feature(Icons.card_giftcard_rounded, 'Loyalty rewards points'),
-        _Feature(Icons.local_offer_rounded, 'Exclusive member coupons'),
+        _Feature(Icons.card_giftcard_rounded, 'Loyalty rewards'),
+        _Feature(Icons.percent_rounded, 'Member coupons'),
       ],
-      illustrationIcon: Icons.percent_rounded,
     ),
     _SlideData(
-      gradient: [Color(0xFF059669), Color(0xFF10B981)],
       icon: Icons.storefront_rounded,
       badge: 'MILLIONS OF ITEMS',
-      badgeColor: Color(0xFF34D399),
       title: 'Everything\nin One Place',
       subtitle:
-          'From electronics to fashion, groceries to gadgets — Mart has it all, always in stock.',
+          'Groceries, gadgets, fashion and more — always in stock, always fresh.',
       features: [
-        _Feature(Icons.category_rounded, '50+ product categories'),
-        _Feature(Icons.star_rounded, 'Verified quality products'),
-        _Feature(Icons.headset_mic_rounded, '24/7 customer support'),
+        _Feature(Icons.category_rounded, '50+ categories'),
+        _Feature(Icons.star_rounded, 'Verified products'),
+        _Feature(Icons.headset_mic_rounded, '24/7 support'),
       ],
-      illustrationIcon: Icons.storefront_rounded,
     ),
   ];
 
   @override
   void initState() {
     super.initState();
-    _animCtrl = AnimationController(
+    _ctrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 650),
+      duration: const Duration(milliseconds: 700),
     );
-    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0.06, 0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
-    _scaleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _fade = CurvedAnimation(
+      parent: _ctrl,
+      curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
+    );
+    _contentSlide =
+        Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _ctrl,
+            curve: const Interval(0.1, 0.9, curve: Curves.easeOutCubic),
+          ),
+        );
+    _iconScale = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
-        parent: _animCtrl,
-        curve: const Interval(0.0, 0.7, curve: Curves.elasticOut),
+        parent: _ctrl,
+        curve: const Interval(0.0, 0.65, curve: Curves.elasticOut),
       ),
     );
-    _animCtrl.forward();
+    _iconRotate = Tween<double>(begin: -0.1, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: const Interval(0.0, 0.65, curve: Curves.easeOut),
+      ),
+    );
+    _ctrl.forward();
   }
 
   @override
   void dispose() {
-    _animCtrl.dispose();
+    _ctrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final c = context.c;
     final slide = _slides[widget.pageIndex];
     final size = MediaQuery.of(context).size;
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          // ── Gradient background ──
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: slide.gradient,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-          ),
-
-          // ── Background decoration ──
-          ..._buildBgDeco(slide),
-
-          SafeArea(
-            child: Column(
-              children: [
-                // ── Top bar: Skip + Dots ──
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                  child: Row(
-                    children: [
-                      // Progress dots
-                      Row(
-                        children: List.generate(3, (i) {
-                          final active = i == widget.pageIndex;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.only(right: 6),
-                            width: active ? 24 : 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              color: active
-                                  ? Colors.white
-                                  : Colors.white.withOpacity(0.35),
-                              borderRadius: BorderRadius.circular(99),
-                            ),
-                          );
-                        }),
-                      ),
-                      const Spacer(),
-                      if (!widget.isLast)
-                        GestureDetector(
-                          onTap: widget.onSkip,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 7,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.18),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              'Skip',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-
-                // ── Illustration ──
-                Expanded(
-                  flex: 5,
-                  child: Center(
-                    child: ScaleTransition(
-                      scale: _scaleAnim,
-                      child: _IllustrationArea(slide: slide),
-                    ),
-                  ),
-                ),
-
-                // ── Bottom card ──
-                Expanded(
-                  flex: 6,
-                  child: FadeTransition(
-                    opacity: _fadeAnim,
-                    child: SlideTransition(
-                      position: _slideAnim,
-                      child: _buildBottomCard(slide),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _buildBgDeco(_SlideData slide) {
-    return [
-      Positioned(
-        top: -80,
-        right: -60,
-        child: Container(
-          width: 260,
-          height: 260,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.06),
-          ),
-        ),
-      ),
-      Positioned(
-        bottom: MediaQuery.of(context).size.height * 0.35,
-        left: -80,
-        child: Container(
-          width: 200,
-          height: 200,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.05),
-          ),
-        ),
-      ),
-    ];
-  }
-
-  Widget _buildBottomCard(_SlideData slide) {
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(32),
-          topRight: Radius.circular(32),
-        ),
-      ),
+    return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(28, 28, 28, 0),
+        padding: const EdgeInsets.symmetric(horizontal: 28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: slide.badgeColor.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                slide.badge,
-                style: TextStyle(
-                  color: slide.gradient.first,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.8,
+            const SizedBox(height: 20),
+
+            // ── Top bar: dots + skip ──
+            _buildTopBar(c),
+
+            SizedBox(height: size.height * 0.05),
+
+            // ── Illustration ──
+            Center(
+              child: AnimatedBuilder(
+                animation: _ctrl,
+                builder: (_, __) => Transform.scale(
+                  scale: _iconScale.value,
+                  child: Transform.rotate(
+                    angle: _iconRotate.value,
+                    child: _IconIllustration(
+                      icon: slide.icon,
+                      accent: c.accent,
+                      accentLight: c.accentLight,
+                      isDark: Theme.of(context).brightness == Brightness.dark,
+                    ),
+                  ),
                 ),
               ),
             ),
 
-            const SizedBox(height: 12),
+            SizedBox(height: size.height * 0.045),
 
-            // Title
-            Text(
-              slide.title,
-              style: const TextStyle(
-                color: Color(0xFF111827),
-                fontSize: 28,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.6,
-                height: 1.15,
+            // ── Content ──
+            Expanded(
+              child: FadeTransition(
+                opacity: _fade,
+                child: SlideTransition(
+                  position: _contentSlide,
+                  child: _buildContent(c, slide),
+                ),
               ),
             ),
 
-            const SizedBox(height: 10),
+            // ── Bottom actions ──
+            FadeTransition(opacity: _fade, child: _buildActions(c, slide)),
 
-            // Subtitle
-            Text(
-              slide.subtitle,
-              style: const TextStyle(
-                color: Color(0xFF6B7280),
-                fontSize: 14,
-                height: 1.55,
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Feature list
-            ...slide.features.map(
-              (f) => _FeatureRow(feature: f, accentColor: slide.gradient.first),
-            ),
-
-            const Spacer(),
-
-            // CTA button
-            _GradientButton(
-              label: widget.isLast ? 'Get Started' : 'Next',
-              icon: widget.isLast
-                  ? Icons.shopping_bag_rounded
-                  : Icons.arrow_forward_rounded,
-              onTap: widget.onNext,
-              gradientColors: slide.gradient,
-            ),
-
-            const SizedBox(height: 16),
+            const SizedBox(height: 28),
           ],
         ),
       ),
     );
   }
-}
 
-class _IllustrationArea extends StatelessWidget {
-  final _SlideData slide;
-  const _IllustrationArea({required this.slide});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+  Widget _buildTopBar(AppColors c) {
+    return Row(
       children: [
-        // Outer ring
+        // Logo mark
         Container(
-          width: 150,
-          height: 150,
+          width: 36,
+          height: 36,
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.1),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1.5,
-            ),
+            color: c.accent,
+            borderRadius: BorderRadius.circular(10),
           ),
-          child: Center(
-            // Inner badge
-            child: Container(
-              width: 110,
-              height: 110,
+          child: const Icon(
+            Icons.shopping_bag_rounded,
+            color: Colors.white,
+            size: 18,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          'Mart',
+          style: TextStyle(
+            color: c.text1,
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.4,
+          ),
+        ),
+        const Spacer(),
+        // Progress dots
+        Row(
+          children: List.generate(3, (i) {
+            final active = i == widget.pageIndex;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 350),
+              curve: Curves.easeInOutCubic,
+              margin: const EdgeInsets.only(left: 5),
+              width: active ? 20 : 6,
+              height: 6,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.18),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
-                  width: 1.5,
-                ),
+                color: active ? c.accent : c.border,
+                borderRadius: BorderRadius.circular(99),
               ),
-              child: Icon(
-                slide.illustrationIcon,
-                size: 54,
-                color: Colors.white,
+            );
+          }),
+        ),
+        const SizedBox(width: 16),
+        GestureDetector(
+          onTap: widget.onSkip,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: c.surface2,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: c.border, width: 1),
+            ),
+            child: Text(
+              widget.isLast ? 'Language' : 'Skip',
+              style: TextStyle(
+                color: c.text2,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 20),
-        // Floating stat pills
+      ],
+    );
+  }
+
+  Widget _buildContent(AppColors c, _SlideData slide) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: c.accentLight,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            slide.badge,
+            style: TextStyle(
+              color: c.accent,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Title
+        Text(
+          slide.title,
+          style: TextStyle(
+            color: c.text1,
+            fontSize: 34,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -1.0,
+            height: 1.1,
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Subtitle
+        Text(
+          slide.subtitle,
+          style: TextStyle(
+            color: c.text2,
+            fontSize: 15,
+            height: 1.55,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Features
+        ...slide.features.asMap().entries.map((e) {
+          return TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: Duration(milliseconds: 400 + e.key * 80),
+            curve: Curves.easeOutCubic,
+            builder: (_, v, child) => Opacity(
+              opacity: v,
+              child: Transform.translate(
+                offset: Offset(0, 12 * (1 - v)),
+                child: child,
+              ),
+            ),
+            child: _FeatureChip(feature: e.value, colors: c),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildActions(AppColors c, _SlideData slide) {
+    return Column(
+      children: [
+        const SizedBox(height: 8),
         Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            _StatPill(label: '2M+', sub: 'Products'),
+            // Back / page indicator
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: c.surface2,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: c.border, width: 1),
+              ),
+              child: Center(
+                child: Text(
+                  '${widget.pageIndex + 1}/3',
+                  style: TextStyle(
+                    color: c.text2,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(width: 12),
-            _StatPill(label: '98%', sub: 'Satisfaction'),
-            const SizedBox(width: 12),
-            _StatPill(label: '50+', sub: 'Categories'),
+            // Next button
+            Expanded(
+              child: _NextButton(
+                label: widget.isLast ? 'Choose Language' : 'Continue',
+                icon: widget.isLast
+                    ? Icons.language_rounded
+                    : Icons.arrow_forward_rounded,
+                accentColor: c.accent,
+                onTap: widget.onNext,
+              ),
+            ),
           ],
         ),
       ],
@@ -1084,73 +566,176 @@ class _IllustrationArea extends StatelessWidget {
   }
 }
 
-class _StatPill extends StatelessWidget {
-  final String label;
-  final String sub;
-  const _StatPill({required this.label, required this.sub});
+// ─────────────────────────────────────────────
+// ICON ILLUSTRATION
+// ─────────────────────────────────────────────
+class _IconIllustration extends StatefulWidget {
+  final IconData icon;
+  final Color accent;
+  final Color accentLight;
+  final bool isDark;
+
+  const _IconIllustration({
+    required this.icon,
+    required this.accent,
+    required this.accentLight,
+    required this.isDark,
+  });
+
+  @override
+  State<_IconIllustration> createState() => _IconIllustrationState();
+}
+
+class _IconIllustrationState extends State<_IconIllustration>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _floatCtrl;
+  late final Animation<double> _float;
+
+  @override
+  void initState() {
+    super.initState();
+    _floatCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2800),
+    )..repeat(reverse: true);
+    _float = Tween<double>(
+      begin: -6.0,
+      end: 6.0,
+    ).animate(CurvedAnimation(parent: _floatCtrl, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _floatCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-      ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-            ),
+    return AnimatedBuilder(
+      animation: _float,
+      builder: (_, __) => Transform.translate(
+        offset: Offset(0, _float.value),
+        child: SizedBox(
+          width: 200,
+          height: 200,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Outermost ring
+              Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: widget.accent.withOpacity(widget.isDark ? 0.06 : 0.04),
+                  border: Border.all(
+                    color: widget.accent.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
+              ),
+              // Middle ring
+              Container(
+                width: 155,
+                height: 155,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: widget.accent.withOpacity(widget.isDark ? 0.1 : 0.06),
+                  border: Border.all(
+                    color: widget.accent.withOpacity(0.15),
+                    width: 1,
+                  ),
+                ),
+              ),
+              // Inner circle (solid)
+              Container(
+                width: 108,
+                height: 108,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: widget.accent,
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.accent.withOpacity(0.35),
+                      blurRadius: 28,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Icon(widget.icon, color: Colors.white, size: 48),
+              ),
+              // Small decorative dots
+              ..._buildOrbitDots(),
+            ],
           ),
-          Text(
-            sub,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.75),
-              fontSize: 10,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
+
+  List<Widget> _buildOrbitDots() {
+    final positions = [
+      const Offset(16, 30),
+      const Offset(170, 50),
+      const Offset(22, 155),
+      const Offset(162, 148),
+    ];
+    final sizes = [10.0, 8.0, 6.0, 10.0];
+    return positions.asMap().entries.map((e) {
+      return Positioned(
+        left: e.value.dx,
+        top: e.value.dy,
+        child: Container(
+          width: sizes[e.key],
+          height: sizes[e.key],
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: widget.accentLight.withOpacity(widget.isDark ? 0.6 : 1.0),
+            border: Border.all(color: widget.accent.withOpacity(0.3), width: 1),
+          ),
+        ),
+      );
+    }).toList();
+  }
 }
 
-class _FeatureRow extends StatelessWidget {
+// ─────────────────────────────────────────────
+// FEATURE CHIP (horizontal pill style)
+// ─────────────────────────────────────────────
+class _FeatureChip extends StatelessWidget {
   final _Feature feature;
-  final Color accentColor;
+  final AppColors colors;
 
-  const _FeatureRow({required this.feature, required this.accentColor});
+  const _FeatureChip({required this.feature, required this.colors});
 
   @override
   Widget build(BuildContext context) {
+    final c = colors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
           Container(
-            width: 32,
-            height: 32,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+              color: c.accentLight,
+              borderRadius: BorderRadius.circular(11),
             ),
-            child: Icon(feature.icon, color: accentColor, size: 17),
+            child: Icon(feature.icon, color: c.accent, size: 17),
           ),
           const SizedBox(width: 12),
           Text(
             feature.label,
-            style: const TextStyle(
-              color: Color(0xFF374151),
-              fontSize: 13,
+            style: TextStyle(
+              color: c.text1,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
           ),
+          const Spacer(),
+          Icon(Icons.check_circle_rounded, color: c.accent, size: 16),
         ],
       ),
     );
@@ -1158,27 +743,26 @@ class _FeatureRow extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// GRADIENT BUTTON (shared)
+// NEXT BUTTON with ripple + scale
 // ─────────────────────────────────────────────
-
-class _GradientButton extends StatefulWidget {
+class _NextButton extends StatefulWidget {
   final String label;
   final IconData icon;
+  final Color accentColor;
   final VoidCallback onTap;
-  final List<Color>? gradientColors;
 
-  const _GradientButton({
+  const _NextButton({
     required this.label,
     required this.icon,
+    required this.accentColor,
     required this.onTap,
-    this.gradientColors,
   });
 
   @override
-  State<_GradientButton> createState() => _GradientButtonState();
+  State<_NextButton> createState() => _NextButtonState();
 }
 
-class _GradientButtonState extends State<_GradientButton>
+class _NextButtonState extends State<_NextButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _scale;
@@ -1188,12 +772,12 @@ class _GradientButtonState extends State<_GradientButton>
     super.initState();
     _ctrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 90),
+      duration: const Duration(milliseconds: 80),
       reverseDuration: const Duration(milliseconds: 180),
     );
     _scale = Tween(
       begin: 1.0,
-      end: 0.97,
+      end: 0.96,
     ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
   }
 
@@ -1205,35 +789,28 @@ class _GradientButtonState extends State<_GradientButton>
 
   @override
   Widget build(BuildContext context) {
-    final colors =
-        widget.gradientColors ??
-        [const Color(0xFF2563EB), const Color(0xFF60A5FA)];
-
     return GestureDetector(
       onTapDown: (_) {
         _ctrl.forward();
-        HapticFeedback.lightImpact();
+        // HapticFeedback.lightImpact();
       },
-      onTapUp: (_) => _ctrl.reverse(),
+      onTapUp: (_) {
+        _ctrl.reverse();
+        widget.onTap();
+      },
       onTapCancel: () => _ctrl.reverse(),
-      onTap: widget.onTap,
       child: ScaleTransition(
         scale: _scale,
         child: Container(
-          width: double.infinity,
-          height: 56,
+          height: 52,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: colors,
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-            borderRadius: BorderRadius.circular(18),
+            color: widget.accentColor,
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: colors.first.withOpacity(0.38),
-                blurRadius: 18,
-                offset: const Offset(0, 7),
+                color: widget.accentColor.withOpacity(0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -1244,13 +821,13 @@ class _GradientButtonState extends State<_GradientButton>
                 widget.label,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  letterSpacing: 0.2,
+                  letterSpacing: 0.1,
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(widget.icon, color: Colors.white, size: 20),
+              Icon(widget.icon, color: Colors.white, size: 18),
             ],
           ),
         ),
@@ -1260,34 +837,367 @@ class _GradientButtonState extends State<_GradientButton>
 }
 
 // ─────────────────────────────────────────────
-// DATA MODELS (immutable config)
+// LANGUAGE SCREEN
 // ─────────────────────────────────────────────
+class LanguageOnboardingScreen extends StatefulWidget {
+  final VoidCallback? onContinue;
+  const LanguageOnboardingScreen({super.key, this.onContinue});
 
+  @override
+  State<LanguageOnboardingScreen> createState() =>
+      _LanguageOnboardingScreenState();
+}
+
+class _LanguageOnboardingScreenState extends State<LanguageOnboardingScreen>
+    with SingleTickerProviderStateMixin {
+  String _selected = 'en';
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  static const _languages = [
+    _LangData(name: 'English', code: 'en', flag: '🇺🇸', sub: 'United States'),
+    _LangData(name: 'ភាសាខ្មែរ', code: 'km', flag: '🇰🇭', sub: 'Cambodia'),
+    _LangData(name: '中文', code: 'zh', flag: '🇨🇳', sub: 'China'),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.06),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleContinue() async {
+    // HapticFeedback.mediumImpact();
+
+    Get.find<LanguageController>().changeLanguage(_selected);
+
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool('first_time', false);
+
+    if (widget.onContinue != null) {
+      widget.onContinue!();
+    } else {
+      Get.offAll(() => const MainScreen());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: FadeTransition(
+          opacity: _fade,
+          child: SlideTransition(
+            position: _slide,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+
+                // ── Logo row ──
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: c.accent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.shopping_bag_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Mart',
+                      style: TextStyle(
+                        color: c.text1,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 40),
+
+                // ── Headline ──
+                Text(
+                  'Almost\nthere.',
+                  style: TextStyle(
+                    color: c.text1,
+                    fontSize: 42,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -1.5,
+                    height: 1.05,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Pick your preferred language to get started.',
+                  style: TextStyle(color: c.text2, fontSize: 15, height: 1.5),
+                ),
+
+                const SizedBox(height: 36),
+
+                // ── Language tiles ──
+                ..._languages.asMap().entries.map((e) {
+                  return TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: Duration(milliseconds: 350 + e.key * 80),
+                    curve: Curves.easeOutCubic,
+                    builder: (_, v, child) => Opacity(
+                      opacity: v,
+                      child: Transform.translate(
+                        offset: Offset(0, 16 * (1 - v)),
+                        child: child,
+                      ),
+                    ),
+                    child: _LanguageTile(
+                      data: e.value,
+                      isSelected: _selected == e.value.code,
+                      colors: c,
+                      onTap: () {
+                        // HapticFeedback.selectionClick();
+
+                        setState(() {
+                          _selected = e.value.code;
+                        });
+
+                        Get.find<LanguageController>().changeLanguage(
+                          e.value.code,
+                        );
+                      },
+                    ),
+                  );
+                }),
+
+                const Spacer(),
+
+                // ── Info line ──
+                Row(
+                  children: [
+                    Icon(Icons.info_outline_rounded, size: 14, color: c.text3),
+                    const SizedBox(width: 6),
+                    Text(
+                      'You can change language anytime in Settings',
+                      style: TextStyle(fontSize: 12, color: c.text3),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // ── Continue button ──
+                _NextButton(
+                  label: 'Start Shopping',
+                  icon: Icons.shopping_bag_rounded,
+                  accentColor: c.accent,
+                  onTap: _handleContinue,
+                ),
+
+                const SizedBox(height: 28),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// LANGUAGE TILE
+// ─────────────────────────────────────────────
+class _LanguageTile extends StatelessWidget {
+  final _LangData data;
+  final bool isSelected;
+  final AppColors colors;
+  final VoidCallback onTap;
+
+  const _LanguageTile({
+    required this.data,
+    required this.isSelected,
+    required this.colors,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = colors;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 230),
+        curve: Curves.easeOutCubic,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
+        decoration: BoxDecoration(
+          color: isSelected ? c.accentLight : c.cardBg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? c.accent : c.border,
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? c.accent.withOpacity(0.12)
+                  : Colors.black.withOpacity(0.03),
+              blurRadius: isSelected ? 16 : 6,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Flag
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 230),
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.white.withOpacity(0.7) : c.surface2,
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: Center(
+                child: Text(data.flag, style: const TextStyle(fontSize: 26)),
+              ),
+            ),
+            const SizedBox(width: 14),
+
+            // Labels
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    data.name,
+                    style: TextStyle(
+                      color: c.text1,
+                      fontSize: 15,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    data.sub,
+                    style: TextStyle(
+                      color: isSelected ? c.accent : c.text3,
+                      fontSize: 12,
+                      fontWeight: isSelected
+                          ? FontWeight.w500
+                          : FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Check
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              transitionBuilder: (child, anim) =>
+                  ScaleTransition(scale: anim, child: child),
+              child: isSelected
+                  ? Container(
+                      key: const ValueKey('on'),
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: c.accent,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: c.accent.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.check_rounded,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                    )
+                  : Container(
+                      key: const ValueKey('off'),
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: c.border, width: 1.5),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// DATA MODELS
+// ─────────────────────────────────────────────
 class _SlideData {
-  final List<Color> gradient;
   final IconData icon;
   final String badge;
-  final Color badgeColor;
   final String title;
   final String subtitle;
   final List<_Feature> features;
-  final IconData illustrationIcon;
 
   const _SlideData({
-    required this.gradient,
     required this.icon,
     required this.badge,
-    required this.badgeColor,
     required this.title,
     required this.subtitle,
     required this.features,
-    required this.illustrationIcon,
   });
 }
 
 class _Feature {
   final IconData icon;
   final String label;
-
   const _Feature(this.icon, this.label);
+}
+
+class _LangData {
+  final String name;
+  final String code;
+  final String flag;
+  final String sub;
+  const _LangData({
+    required this.name,
+    required this.code,
+    required this.flag,
+    required this.sub,
+  });
 }

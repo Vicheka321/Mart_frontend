@@ -2991,9 +2991,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mart_frontend/auth/login_screen.dart';
 import 'package:mart_frontend/providers/ProductDetailProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/api_service.dart';
 import '../../translations/catalog_translation.dart';
@@ -3662,7 +3664,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   }
 
   Future<void> _handleCart(dynamic p) async {
+    final loggedIn = await _checkLogin();
+
+    if (!loggedIn) return;
+
     setState(() => cartLoading = true);
+
     try {
       if (isInCart) {
         await ApiService().updateCart(
@@ -3675,29 +3682,62 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           quantity: qty,
         );
       }
+
       if (mounted) {
-        setState(() {
-          isInCart = true;
-          cartQty = qty;
-        });
         context.read<CartProvider>().fetchCart();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isInCart ? 'cart_updated'.tr : 'added_to_cart'.tr),
-            duration: const Duration(milliseconds: 900),
-          ),
-        );
+
+        Navigator.of(context).popUntil((route) => route.isFirst);
+
+        Future.delayed(const Duration(milliseconds: 300), () {
+          context.read<CartProvider>().fetchCart();
+        });
       }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('something_went_wrong'.tr)));
-      }
+    } catch (e) {
+      debugPrint(e.toString());
     } finally {
-      if (mounted) setState(() => cartLoading = false);
+      if (mounted) {
+        setState(() => cartLoading = false);
+      }
     }
   }
+
+  // Future<void> _handleCart(dynamic p) async {
+  //   setState(() => cartLoading = true);
+  //   try {
+  //     if (isInCart) {
+  //       await ApiService().updateCart(
+  //         productId: widget.productId,
+  //         quantity: qty,
+  //       );
+  //     } else {
+  //       await ApiService().addToCart(
+  //         productId: widget.productId,
+  //         quantity: qty,
+  //       );
+  //     }
+  //     if (mounted) {
+  //       setState(() {
+  //         isInCart = true;
+  //         cartQty = qty;
+  //       });
+  //       context.read<CartProvider>().fetchCart();
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text(isInCart ? 'cart_updated'.tr : 'added_to_cart'.tr),
+  //           duration: const Duration(milliseconds: 900),
+  //         ),
+  //       );
+  //     }
+  //   } catch (_) {
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(
+  //         context,
+  //       ).showSnackBar(SnackBar(content: Text('something_went_wrong'.tr)));
+  //     }
+  //   } finally {
+  //     if (mounted) setState(() => cartLoading = false);
+  //   }
+  // }
 
   Future<void> _loadFavorite() async {
     final saved = await WishlistService().isFavorite(widget.productId);
@@ -3705,9 +3745,37 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   }
 
   Future<void> _toggleFavourite() async {
+    final loggedIn = await _checkLogin();
+
+    if (!loggedIn) return;
+
     HapticFeedback.lightImpact();
+
     final saved = await WishlistService().toggle(widget.productId);
-    if (mounted) setState(() => isFavorite = saved);
+
+    if (mounted) {
+      setState(() => isFavorite = saved);
+    }
+
+    _fadeCtrl.forward(from: 0);
+  }
+
+  Future<bool> _checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null || token.isEmpty) {
+      if (!mounted) return false;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+
+      return false;
+    }
+
+    return true;
   }
 
   @override

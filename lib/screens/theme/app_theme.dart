@@ -8,7 +8,8 @@ class AppColors {
   final Color cardBg, border;
   final Color accent, accentLight;
   final Color flashBg, flashBorder, flashText, bginfo;
-  final Color textbg1,textbg2;
+  final Color textbg1, textbg2;
+  final Color bgicon;
 
   const AppColors({
     required this.background,
@@ -27,6 +28,7 @@ class AppColors {
     required this.bginfo,
     required this.textbg1,
     required this.textbg2,
+    required this.bgicon,
   });
 
   static const light = AppColors(
@@ -59,7 +61,10 @@ class AppColors {
 
     /// Info
     bginfo: Color(0xFFF1F5F9),
+
+    bgicon: const Color(0xFFF6F5F3),
   );
+
 
   /// ─────────────────────────────────────────────
   /// DARK THEME
@@ -94,6 +99,9 @@ class AppColors {
 
     /// Info
     bginfo: Color(0xFF1E293B),
+
+
+    bgicon: Color(0xFF2A2340),
   );
 }
 

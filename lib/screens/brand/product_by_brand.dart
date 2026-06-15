@@ -30,7 +30,7 @@ class _CategoryProductsScreenState extends State<BrandProductsScreen>
   @override
   void initState() {
     super.initState();
-    _brandFuture = ApiService().fetchPeoductsByBrand(widget.brandId);
+    _brandFuture = ApiService().fetchProductsByBrand(widget.brandId);
 
     _fadeController = AnimationController(
       vsync: this,

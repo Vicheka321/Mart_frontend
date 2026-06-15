@@ -18,7 +18,6 @@ import 'package:mart_frontend/screens/category/categories_screen.dart'
 import 'package:mart_frontend/screens/search/search_screen.dart';
 import 'package:mart_frontend/screens/theme/app_theme.dart';
 import 'package:mart_frontend/screens/category/product_by_category.dart';
-import '../../auth/login_register_screen.dart';
 import '../../models/banners_model.dart';
 import '../../models/categories_model.dart';
 import '../../models/products_model.dart';
@@ -52,13 +51,12 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<List<RecommendedModel>> _recommendedFuture;
 
   @override
-  @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      context.read<CartProvider>().fetchCart();
-      context.read<ProfileProvider>().fetchProfile();
+      await context.read<CartProvider>().fetchCart();
+      await context.read<ProfileProvider>().fetchProfile();
 
       final bannerProvider = context.read<BannerProvider>();
       final categoryProvider = context.read<CategoryProvider>();
@@ -67,28 +65,31 @@ class _HomeScreenState extends State<HomeScreen> {
       final brandsProvider = context.read<BrandsProvider>();
       final recommendProvider = context.read<RecommendProvider>();
       final detailProvider = context.read<ProductDetailProvider>();
-
-      Future.wait([
-        bannerProvider.fetchBanners(),
-        categoryProvider.fetchCategories(),
-        bestSellerProvider.fetchBestSellers(),
-        newArrivalProvider.fetchNewArrivals(),
-        brandsProvider.fetchBrands(),
-        recommendProvider.fetchRecommended(),
-      ]);
+      unawaited(
+        Future.wait([
+          bannerProvider.fetchBanners(),
+          categoryProvider.fetchCategories(),
+          bestSellerProvider.fetchBestSellers(),
+          newArrivalProvider.fetchNewArrivals(),
+          brandsProvider.fetchBrands(),
+          recommendProvider.fetchRecommended(),
+        ]),
+      );
 
       // preload product detail
-      await Future.wait([
-        ...bestSellerProvider.products
-            .take(10)
-            .map((e) => detailProvider.preload(e.id)),
-        ...newArrivalProvider.products
-            .take(10)
-            .map((e) => detailProvider.preload(e.id)),
-        ...recommendProvider.recommended
-            .take(10)
-            .map((e) => detailProvider.preload(e.id)),
-      ]);
+      unawaited(
+        Future.wait([
+          ...bestSellerProvider.products
+              .take(10)
+              .map((e) => detailProvider.preload(e.id)),
+          ...newArrivalProvider.products
+              .take(10)
+              .map((e) => detailProvider.preload(e.id)),
+          ...recommendProvider.recommended
+              .take(10)
+              .map((e) => detailProvider.preload(e.id)),
+        ]),
+      );
     });
   }
 
@@ -142,6 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   backgroundColor: colors.accent,
                   surfaceTintColor: Colors.transparent,
 
+                  // backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   expandedHeight: 0,
                   toolbarHeight: 0,
 
@@ -882,7 +884,7 @@ class _BannerSectionState extends State<_BannerSection> {
     return Column(
       children: [
         SizedBox(
-          height: 180,
+          height: 150,
           child: PageView.builder(
             controller: _pageController,
             itemCount: widget.banners.length,
@@ -1204,29 +1206,198 @@ class _ProductCard extends StatefulWidget {
   State<_ProductCard> createState() => _ProductCardState();
 }
 
+// class _ProductCardState extends State<_ProductCard> {
+//   int _qty = 0;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     WidgetsBinding.instance.addPostFrameCallback((_) {});
+//     _loadCartQty();
+//   }
+
+//   @override
+//   void didChangeDependencies() {
+//     super.didChangeDependencies();
+//     final cart = context.watch<CartProvider>().cart;
+
+//     if (cart != null) {
+//       final item = cart.items.where((e) => e.productId == widget.product.id);
+
+//       final newQty = item.isNotEmpty ? item.first.qty : 0;
+
+//       if (newQty != _qty) {
+//         WidgetsBinding.instance.addPostFrameCallback((_) {
+//           if (mounted) {
+//             setState(() => _qty = newQty);
+//           }
+//         });
+//       }
+//     }
+//   }
+
+//   Future<void> _loadCartQty() async {
+//     try {
+//       final qty = await ApiService().getCartQuantity(
+//         productId: widget.product.id,
+//       );
+//       if (mounted) setState(() => _qty = qty);
+//       context.read<CartProvider>().fetchCart();
+//     } catch (_) {}
+//   }
+
+//   Future<void> _setQty(int newQty) async {
+//     final prev = _qty;
+//     final diff = newQty - prev;
+
+//     setState(() => _qty = newQty);
+
+//     final cartProvider = context.read<CartProvider>();
+
+//     // optimistic update first
+//     cartProvider.updateOptimisticQty(
+//       diff: diff,
+//       price: double.parse(widget.product.finalPrice.toString()),
+//     );
+
+//     try {
+//       if (newQty <= 0) {
+//         await ApiService().removeCart(widget.product.id);
+
+//         cartProvider.removeLocalItem(widget.product.id);
+//       } else {
+//         await ApiService().updateCart(
+//           productId: widget.product.id,
+//           quantity: newQty,
+//         );
+//       }
+
+//       // sync with server
+//       await cartProvider.fetchCart();
+//     } catch (e) {
+//       // rollback optimistic
+//       cartProvider.updateOptimisticQty(
+//         diff: -diff,
+//         price: double.parse(widget.product.finalPrice.toString()),
+//       );
+
+//       if (mounted) {
+//         setState(() => _qty = prev);
+//       }
+//     }
+//   }
+
+//   // Future<void> _setQty(int newQty) async {
+//   //   final prev = _qty;
+
+//   //   final diff = newQty - prev;
+
+//   //   setState(() => _qty = newQty.clamp(0, 999));
+//   //   final cartProvider = context.read<CartProvider>();
+
+//   //   cartProvider.updateLocalQty(productId: widget.product.id, qty: newQty);
+
+//   //   if (diff != 0) {
+//   //     context.read<CartProvider>().updateOptimisticQty(
+//   //       diff: diff,
+//   //       price: double.parse(widget.product.finalPrice.toString()),
+//   //     );
+//   //   }
+
+//   //   try {
+//   //     if (newQty <= 0) {
+//   //       final cartProvider = context.read<CartProvider>();
+
+//   //       cartProvider.removeLocalItem(widget.product.id);
+
+//   //       unawaited(ApiService().removeCart(widget.product.id));
+
+//   //       return;
+//   //     } else {
+//   //       ApiService().updateCart(productId: widget.product.id, quantity: newQty);
+//   //     }
+//   //   } catch (_) {
+//   //     // rollback
+//   //     context.read<CartProvider>().updateOptimisticQty(
+//   //       diff: -diff,
+//   //       price: double.parse(widget.product.finalPrice.toString()),
+//   //     );
+
+//   //     if (mounted) {
+//   //       setState(() => _qty = prev);
+//   //     }
+//   //   }
+//   // }
+
+//   Future<void> _handleAddTap() async {
+//     final loggedIn = await ApiService().isLoggedIn();
+
+//     if (!loggedIn) {
+//       Navigator.push(
+//         context,
+//         MaterialPageRoute(builder: (_) => const LoginScreen()),
+//       );
+//       return;
+//     }
+
+//     final old = _qty;
+
+//     setState(() => _qty = 1);
+
+//     final cartProvider = context.read<CartProvider>();
+
+//     cartProvider.addOptimisticItem(
+//       productId: widget.product.id,
+//       quantity: 1,
+//       image: widget.product.images.first,
+//       price: double.parse(widget.product.finalPrice.toString()),
+//     );
+
+//     try {
+//       await ApiService().addToCart(productId: widget.product.id, quantity: 1);
+//     } catch (_) {
+//       cartProvider.clearOptimistic();
+
+//       if (mounted) {
+//         setState(() => _qty = old);
+//       }
+//     }
+//   }
 class _ProductCardState extends State<_ProductCard> {
   int _qty = 0;
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {});
     _loadCartQty();
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // final cart = context.watch<CartProvider>().cart;
-    // if (cart != null) {
-    //   final item = cart.items.where((e) => e.productId == widget.product.id);
-    //   final newQty = item.isNotEmpty ? item.first.qty : 0;
-    //   if (newQty != _qty) {
-    //     WidgetsBinding.instance.addPostFrameCallback((_) {
-    //       if (mounted) setState(() => _qty = newQty);
-    //     });
-    //   }
-    // }
+    final cart = context.watch<CartProvider>().cart;
+
+    if (cart != null) {
+      final item = cart.items.where((e) => e.productId == widget.product.id);
+      final newQty = item.isNotEmpty ? item.first.qty : 0;
+
+      // ❗ កុំ override ពេលមាន debounce timer កំពុង pending
+      // (មានន័យថា user ទើបតែចុច +/- ហើយ API មិនទាន់ឆ្លើយ)
+      if (_debounce?.isActive ?? false) return;
+
+      if (newQty != _qty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() => _qty = newQty);
+        });
+      }
+    }
   }
 
   Future<void> _loadCartQty() async {
@@ -1235,69 +1406,57 @@ class _ProductCardState extends State<_ProductCard> {
         productId: widget.product.id,
       );
       if (mounted) setState(() => _qty = qty);
-      context.read<CartProvider>().fetchCart();
     } catch (_) {}
   }
 
-  // Future<void> _setQty(int newQty) async {
-  //   final prev = _qty;
-  //   setState(() => _qty = newQty < 0 ? 0 : newQty);
-  //   try {
-  //     if (newQty <= 0) {
-  //       await ApiService().removeCart(widget.product.id);
-  //       if (mounted) setState(() => _qty = 0);
-  //       context.read<CartProvider>().fetchCart();
-  //     } else {
-  //       await ApiService().updateCart(
-  //         productId: widget.product.id,
-  //         quantity: newQty,
-  //       );
-  //       context.read<CartProvider>().fetchCart();
-  //     }
-  //   } catch (_) {
-  //     if (mounted) setState(() => _qty = prev);
-  //   }
-  // }
+  /// ── Stepper +/- (debounced API call) ──────────────────────
+  void _setQty(int newQty) {
+    if (newQty < 0) newQty = 0;
 
-  Future<void> _setQty(int newQty) async {
     final prev = _qty;
-
     final diff = newQty - prev;
+    if (diff == 0) return;
 
-    setState(() => _qty = newQty.clamp(0, 999));
+    final price = double.parse(widget.product.finalPrice.toString());
+    final cartProvider = context.read<CartProvider>();
 
-    if (diff != 0) {
-      context.read<CartProvider>().updateOptimisticQty(
-        diff: diff,
-        price: double.parse(widget.product.finalPrice.toString()),
-      );
+    setState(() => _qty = newQty);
+    cartProvider.updateOptimisticQty(diff: diff, price: price);
+
+    if (newQty == 0) {
+      cartProvider.removeLocalItem(widget.product.id);
+    } else {
+      cartProvider.updateLocalQty(productId: widget.product.id, qty: newQty);
     }
 
-    try {
-      if (newQty <= 0) {
-        final cartProvider = context.read<CartProvider>();
-
-        cartProvider.removeLocalItem(widget.product.id);
-
-        unawaited(ApiService().removeCart(widget.product.id));
-
-        return;
-      } else {
-        ApiService().updateCart(productId: widget.product.id, quantity: newQty);
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), () async {
+      try {
+        if (newQty <= 0) {
+          await ApiService().removeCart(widget.product.id);
+        } else {
+          await ApiService().updateCart(
+            productId: widget.product.id,
+            quantity: newQty,
+          );
+        }
+        // ✅ success → no need to refetch, local state already correct
+        cartProvider.clearOptimistic();
+      } catch (_) {
+        // ❌ fail → resync truth from server
+        if (mounted) {
+          await cartProvider.fetchCart();
+          final item = cartProvider.cart?.items.where(
+            (e) => e.productId == widget.product.id,
+          );
+          final serverQty = (item?.isNotEmpty ?? false) ? item!.first.qty : 0;
+          setState(() => _qty = serverQty);
+        }
       }
-    } catch (_) {
-      // rollback
-      context.read<CartProvider>().updateOptimisticQty(
-        diff: -diff,
-        price: double.parse(widget.product.finalPrice.toString()),
-      );
-
-      if (mounted) {
-        setState(() => _qty = prev);
-      }
-    }
+    });
   }
 
+  /// ── Add to cart (first tap) ───────────────────────────────
   Future<void> _handleAddTap() async {
     final loggedIn = await ApiService().isLoggedIn();
 
@@ -1310,30 +1469,29 @@ class _ProductCardState extends State<_ProductCard> {
     }
 
     final old = _qty;
-
     setState(() => _qty = 1);
 
     final cartProvider = context.read<CartProvider>();
+    final price = double.parse(widget.product.finalPrice.toString());
+    final image = widget.product.images.first;
 
+    // 1) UI + floating bar លោតភ្លាម
     cartProvider.addOptimisticItem(
       productId: widget.product.id,
       quantity: 1,
-      image: widget.product.images.first,
-      price: double.parse(widget.product.finalPrice.toString()),
+      image: image,
+      price: price,
     );
 
+    // 2) API background
     try {
       await ApiService().addToCart(productId: widget.product.id, quantity: 1);
-      Future.delayed(
-        const Duration(milliseconds: 300),
-        () => cartProvider.fetchCart(),
-      );
+      // ✅ success → sync once to get the real cart item (so +/- stepper works after)
+      if (mounted) await cartProvider.fetchCart();
     } catch (_) {
+      // ❌ fail → rollback
       cartProvider.clearOptimistic();
-
-      if (mounted) {
-        setState(() => _qty = old);
-      }
+      if (mounted) setState(() => _qty = old);
     }
   }
 
@@ -1390,11 +1548,23 @@ class _ProductCardState extends State<_ProductCard> {
                   Positioned(
                     top: _T.sp8,
                     left: _T.sp8,
-                    child: _Badge(
-                      label:
-                          '-${double.parse(widget.product.discount!.replaceAll('%', '')).toInt()}%',
-                      bgColor: widget.colors.flashText,
-                      textColor: Colors.white,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEAF7EA),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '-${double.parse(widget.product.discount!.replaceAll('%', '')).toInt()}%',
+                        style: const TextStyle(
+                          color: Color(0xFF4CAF50),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
 
@@ -1406,8 +1576,8 @@ class _ProductCardState extends State<_ProductCard> {
                     qty: _qty,
                     colors: widget.colors,
                     onAdd: _handleAddTap,
-                    onIncrement: () => _setQty(_qty + 1),
-                    onDecrement: () => _setQty(_qty - 1),
+                    onIncrement: () async => _setQty(_qty + 1),
+                    onDecrement: () async => _setQty(_qty - 1),
                   ),
                 ),
               ],
@@ -1437,17 +1607,31 @@ class _ProductCardState extends State<_ProductCard> {
                   ),
 
                   const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        '\$${widget.product.finalPrice}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: _T
+                            .priceLg(widget.colors.text1)
+                            .copyWith(
+                              fontSize: priceSize,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      const SizedBox(width: 8),
 
-                  Text(
-                    '\$${widget.product.finalPrice}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: _T
-                        .priceLg(widget.colors.text1)
-                        .copyWith(
-                          fontSize: priceSize,
-                          fontWeight: FontWeight.w700,
+                      if (widget.product.discount != null)
+                        Text(
+                          '\$${widget.product.salePrice}',
+                          style: TextStyle(
+                            fontSize: priceSize - 2,
+                            color: Colors.grey.shade500,
+                            decoration: TextDecoration.lineThrough,
+                          ),
                         ),
+                    ],
                   ),
                 ],
               ),
@@ -1669,7 +1853,7 @@ Widget _buildRecommendedRow({
 
       final screenWidth = MediaQuery.of(context).size.width;
 
-      final imageSize = (screenWidth * 0.30).clamp(110.0, 140.0);
+      final imageSize = (screenWidth * 0.25).clamp(110.0, 140.0);
 
       final titleSize = (screenWidth * 0.040).clamp(14.0, 16.0);
 
@@ -1687,9 +1871,9 @@ Widget _buildRecommendedRow({
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: _T.sp16),
+          padding: const EdgeInsets.symmetric(vertical: _T.sp10),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // ── Image ────────────────────────────
               Container(
@@ -1760,7 +1944,7 @@ Widget _buildRecommendedRow({
                             style: TextStyle(
                               fontSize: subTitleSize,
                               fontWeight: FontWeight.w500,
-                              color: colors.text3,
+                              color: colors.text2,
                             ),
                           ),
                         ),
@@ -1773,89 +1957,47 @@ Widget _buildRecommendedRow({
                       children: [
                         const SizedBox(width: 4),
                         Text(
-                          '\$${item.salePrice ?? item.finalPrice}',
+                          '\$${item.finalPrice ?? item.salePrice}',
                           style: TextStyle(
                             fontSize: priceSize,
-                            color: colors.accent,
-                            decoration: item.discount != null
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
-                            decorationColor: colors.accent,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                      ],
-                    ),
+                        const SizedBox(width: 8),
 
-                    const SizedBox(height: _T.sp10),
-
-                    if (item.discount != null)
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: _T.sp12,
-                              vertical: _T.sp6,
-                            ),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: colors.border,
-                                width: .8,
-                              ),
-                              borderRadius: BorderRadius.circular(_T.radiusSm),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: discountIconSize,
-                                  height: discountIconSize,
-                                  decoration: BoxDecoration(
-                                    color: Colors.green.shade600,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      '%',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w800,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                const SizedBox(width: _T.sp8),
-
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${item.discount} off',
-                                      style: TextStyle(
-                                        fontSize: subTitleSize,
-                                        fontWeight: FontWeight.w700,
-                                        color: colors.text1,
-                                      ),
-                                    ),
-
-                                    Text(
-                                      'Min. spend \$${item.finalPrice}',
-                                      style: TextStyle(
-                                        fontSize: (subTitleSize - 2).clamp(
-                                          9.0,
-                                          11.0,
-                                        ),
-                                        color: colors.text3,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                        if (item.discount != null)
+                          Text(
+                            '\$${item.salePrice}',
+                            style: TextStyle(
+                              fontSize: priceSize - 2,
+                              color: Colors.grey.shade500,
+                              decoration: TextDecoration.lineThrough,
                             ),
                           ),
-                        ],
-                      ),
+
+                        const SizedBox(width: 8),
+
+                        if (item.discount != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEAF7EA),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '-${item.discount}',
+                              style: const TextStyle(
+                                color: Color(0xFF4CAF50),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
               ),

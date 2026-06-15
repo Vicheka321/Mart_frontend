@@ -149,11 +149,28 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
   Future<void> _handleVerify() async {
     final otp = _otpValue;
     if (otp.length < _otpLength) {
-      setState(() => _errorMsg = 'Please enter all $otp digits');
+      Get.dialog(
+        AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.error_outline_rounded, color: Colors.red),
+              SizedBox(width: 8),
+              Text('Error'),
+            ],
+          ),
+          content: Text('Please enter all $_otpLength digits'),
+          actions: [
+            FilledButton(onPressed: () => Get.back(), child: const Text('OK')),
+          ],
+        ),
+      );
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    // HapticFeedback.mediumImpact();
     setState(() {
       _isLoading = true;
       _errorMsg = null;
@@ -165,30 +182,31 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
       if (!mounted) return;
 
       // ── Success ──
-      HapticFeedback.heavyImpact();
-      Get.snackbar(
-        'Success',
-        'Login successful',
-        backgroundColor: const Color(0xFF22C55E),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 14,
-        duration: const Duration(seconds: 2),
-        icon: const Icon(
-          Icons.check_circle_rounded,
-          color: Colors.white,
-          size: 22,
-        ),
-      );
+      // HapticFeedback.heavyImpact();
+      // Get.snackbar(
+      //   'Success',
+      //   'Login successful',
+      //   backgroundColor: const Color(0xFF22C55E),
+      //   colorText: Colors.white,
+      //   snackPosition: SnackPosition.TOP,
+      //   margin: const EdgeInsets.all(16),
+      //   borderRadius: 14,
+      //   duration: const Duration(seconds: 2),
+      //   icon: const Icon(
+      //     Icons.check_circle_rounded,
+      //     color: Colors.white,
+      //     size: 22,
+      //   ),
+      // );
 
-      Navigator.pushAndRemoveUntil(
+      await context.read<ProfileProvider>().fetchProfile();
+
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const MainScreen()),
-        (route) => false,
+        MaterialPageRoute(builder: (_) => MainScreen()),
       );
     } catch (e) {
-      HapticFeedback.vibrate();
+      // HapticFeedback.vibrate();
       if (!mounted) return;
       setState(() {
         _errorMsg = e.toString().replaceFirst('Exception: ', '');
@@ -452,7 +470,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
         _canResend
             ? GestureDetector(
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  // HapticFeedback.selectionClick();
                   ApiService().resendOtp(login: widget.login);
                   _startCountdown();
                 },
@@ -648,7 +666,7 @@ class _VerifyButtonState extends State<_VerifyButton>
     return GestureDetector(
       onTapDown: (_) {
         _ctrl.forward();
-        HapticFeedback.lightImpact();
+        // HapticFeedback.lightImpact();
       },
       onTapUp: (_) => _ctrl.reverse(),
       onTapCancel: () => _ctrl.reverse(),

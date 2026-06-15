@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get_utils/src/get_utils/get_utils.dart';
 import 'package:mart_frontend/auth/register_screen.dart';
 import 'package:mart_frontend/auth/verify_reset_otp_screen.dart';
 import 'package:mart_frontend/providers/profile_provider.dart';
@@ -60,17 +61,37 @@ class _LoginScreenState extends State<LoginScreen>
   Future<void> _handleLogin() async {
     FocusScope.of(context).unfocus();
 
+    // if (_emailCtrl.text.trim().isEmpty) {
+    //   Get.snackbar('Error', 'Please enter email or phone');
+    //   return;
+    // }
+
+    // if (_passCtrl.text.isEmpty) {
+    //   Get.snackbar('Error', 'Please enter password');
+    //   return;
+    // }
     if (_emailCtrl.text.trim().isEmpty) {
-      Get.snackbar('Error', 'Please enter email or phone');
+      _showError('Please enter email or phone');
       return;
     }
 
-    if (_passCtrl.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter password');
+    if (_emailCtrl.text.contains('@') &&
+        !GetUtils.isEmail(_emailCtrl.text.trim())) {
+      _showError('Please enter a valid email');
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    if (_passCtrl.text.trim().isEmpty) {
+      _showError('Please enter password');
+      return;
+    }
+
+    if (_passCtrl.text.length < 6) {
+      _showError('Password must be at least 6 characters');
+      return;
+    }
+
+    // HapticFeedback.mediumImpact();
 
     setState(() => _isLoading = true);
 
@@ -82,26 +103,50 @@ class _LoginScreenState extends State<LoginScreen>
 
       if (!mounted) return;
 
-      Get.snackbar('Success', 'Login successful');
+      // Get.snackbar('Success', 'Login successful');
 
       if (!mounted) return;
-
+      await context.read<ProfileProvider>().fetchProfile();
       Navigator.pop(context);
 
-      Future.microtask(() {
-        MainScreen.switchToHome(context);
-      });
-      await context.read<ProfileProvider>().fetchProfile();
-    } catch (e) {
-      Get.snackbar(
-        'Login Failed',
-        e.toString().replaceFirst('Exception: ', ''),
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => MainScreen()),
       );
+    } catch (e) {
+      final error = e.toString().replaceFirst('Exception: ', '');
+
+      if (error.toLowerCase().contains('unauthorized')) {
+        _showError('Incorrect email or password');
+      } else if (error.toLowerCase().contains('not found')) {
+        _showError('Account does not exist');
+      } else {
+        _showError(error);
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  void _showError(String message) {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.error_outline_rounded, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Error'),
+          ],
+        ),
+        content: Text(message),
+        actions: [
+          FilledButton(onPressed: () => Get.back(), child: const Text('OK')),
+        ],
+      ),
+    );
   }
 
   @override
@@ -278,7 +323,29 @@ class _LoginScreenState extends State<LoginScreen>
               child: TextButton(
                 onPressed: () async {
                   if (_emailCtrl.text.trim().isEmpty) {
-                    Get.snackbar('Error', 'Please enter email or phone first');
+                    Get.dialog(
+                      AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        title: const Row(
+                          children: [
+                            Icon(Icons.error_outline, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Error'),
+                          ],
+                        ),
+                        content: const Text(
+                          'Please enter email or phone first',
+                        ),
+                        actions: [
+                          FilledButton(
+                            onPressed: () => Get.back(),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
                     return;
                   }
 
@@ -323,8 +390,12 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             const SizedBox(height: 12),
             _SocialButton(
-              label: 'Continue with Apple',
-              icon: Icon(Icons.apple_rounded, size: 22, color: colors.text1),
+              label: 'Continue with Facebook',
+              icon: Icon(
+                Icons.facebook_outlined,
+                size: 22,
+                color: colors.accent,
+              ),
               colors: colors,
               onTap: () {},
             ),
@@ -730,7 +801,7 @@ class _AuthButtonState extends State<_AuthButton>
     return GestureDetector(
       onTapDown: (_) {
         _ctrl.forward();
-        HapticFeedback.lightImpact();
+        // HapticFeedback.lightImpact();
       },
       onTapUp: (_) => _ctrl.reverse(),
       onTapCancel: () => _ctrl.reverse(),
@@ -835,7 +906,7 @@ class _SocialButtonState extends State<_SocialButton>
     return GestureDetector(
       onTapDown: (_) {
         _ctrl.forward();
-        HapticFeedback.selectionClick();
+        // HapticFeedback.selectionClick();
       },
       onTapUp: (_) => _ctrl.reverse(),
       onTapCancel: () => _ctrl.reverse(),

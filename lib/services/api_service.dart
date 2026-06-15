@@ -22,6 +22,26 @@ class ApiService {
 
   // ==============Products=================
 
+  Future<List<AllProducts>> fetchAllProducts() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/products'),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('all_products_cache', response.body);
+        return allProductsFromJson(response.body);
+      } else {
+        throw Exception('Failed to load products: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
   Future<List<BannersModel>> fetchBanners() async {
     try {
       final response = await http.get(
@@ -78,6 +98,28 @@ class ApiService {
       } else {
         throw Exception(
           'Failed to load categories with products: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<List<BrandsWithProductsModel>> fetchBrandsWithProducts() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/brands'),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('brands_with_products_cache', response.body);
+        return brandsWithProductsModelFromJson(response.body);
+      } else {
+        throw Exception(
+          'Failed to load brands with products: ${response.statusCode}',
         );
       }
     } catch (e) {
@@ -165,29 +207,7 @@ class ApiService {
     }
   }
 
-  Future<List<BrandsWithProductsModel>> fetchBrandsWithProducts() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/brands'),
-        headers: {"Accept": "application/json"},
-      );
-
-      if (response.statusCode == 200) {
-        final prefs = await SharedPreferences.getInstance();
-
-        await prefs.setString('brands_with_products_cache', response.body);
-        return brandsWithProductsModelFromJson(response.body);
-      } else {
-        throw Exception(
-          'Failed to load brands with products: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
-      throw Exception(e.toString());
-    }
-  }
-
-  Future<GetProductsByBrandModel> fetchPeoductsByBrand(int id) async {
+  Future<GetProductsByBrandModel> fetchProductsByBrand(int id) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/brand/$id'),
@@ -717,52 +737,92 @@ class ApiService {
     throw Exception('Failed to load profile');
   }
 
+  // Future<Map<String, dynamic>> updateProfile({
+  //   required String fullName,
+  //   File? avatar,
+  // }) async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final token = prefs.getString('token');
+
+  //     if (token == null) {
+  //       throw Exception("Unauthorized");
+  //     }
+
+  //     var request = http.MultipartRequest(
+  //       "POST",
+  //       Uri.parse("$baseUrl/update-profile"),
+  //     );
+
+  //     request.headers["Authorization"] = "Bearer $token";
+  //     request.headers["Accept"] = "application/json";
+
+  //     request.fields["full_name"] = fullName;
+
+  //     if (avatar != null) {
+  //       request.files.add(
+  //         await http.MultipartFile.fromPath(
+  //           "avatar",
+  //           avatar.path,
+  //           contentType: MediaType('image', 'jpeg'),
+  //         ),
+  //       );
+  //     }
+
+  //     final streamedResponse = await request.send();
+
+  //     final response = await http.Response.fromStream(streamedResponse);
+
+  //     final data = jsonDecode(response.body);
+
+  //     if (response.statusCode == 200) {
+  //       return data;
+  //     }
+
+  //     throw Exception(data["message"] ?? "Profile update failed");
+  //   } catch (e) {
+  //     throw Exception(e.toString());
+  //   }
+  // }
+
   Future<Map<String, dynamic>> updateProfile({
     required String fullName,
+    required String email,
+    required String phone,
     File? avatar,
   }) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
 
-      if (token == null) {
-        throw Exception("Unauthorized");
-      }
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/my-profile/update'),
+    );
 
-      var request = http.MultipartRequest(
-        "POST",
-        Uri.parse("$baseUrl/update-profile"),
+    request.headers['Authorization'] = 'Bearer $token';
+    request.headers['Accept'] = 'application/json';
+
+    request.fields['full_name'] = fullName;
+    request.fields['email'] = email;
+    request.fields['phone'] = phone;
+
+    if (avatar != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath('avatar', avatar.path),
       );
-
-      request.headers["Authorization"] = "Bearer $token";
-      request.headers["Accept"] = "application/json";
-
-      request.fields["full_name"] = fullName;
-
-      if (avatar != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            "avatar",
-            avatar.path,
-            contentType: MediaType('image', 'jpeg'),
-          ),
-        );
-      }
-
-      final streamedResponse = await request.send();
-
-      final response = await http.Response.fromStream(streamedResponse);
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        return data;
-      }
-
-      throw Exception(data["message"] ?? "Profile update failed");
-    } catch (e) {
-      throw Exception(e.toString());
     }
+
+    final streamed = await request.send();
+
+    final response = await http.Response.fromStream(streamed);
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Failed to update profile');
   }
 
   Future<Map<String, dynamic>> updatePhone({String? phone}) async {

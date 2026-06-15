@@ -154,7 +154,7 @@ class _VerifyResetOtpScreenState extends State<VerifyResetOtpScreen>
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    // HapticFeedback.mediumImpact();
     setState(() {
       _isLoading = true;
       _errorMsg = null;
@@ -170,29 +170,29 @@ class _VerifyResetOtpScreenState extends State<VerifyResetOtpScreen>
       if (!mounted) return;
 
       // ── Success ──
-      HapticFeedback.heavyImpact();
-      Get.snackbar(
-        'Success',
-        'Verify successful',
-        backgroundColor: const Color(0xFF22C55E),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 14,
-        duration: const Duration(seconds: 2),
-        icon: const Icon(
-          Icons.check_circle_rounded,
-          color: Colors.white,
-          size: 22,
-        ),
-      );
+      // HapticFeedback.heavyImpact();
+      // Get.snackbar(
+      //   'Success',
+      //   'Verify successful',
+      //   backgroundColor: const Color(0xFF22C55E),
+      //   colorText: Colors.white,
+      //   snackPosition: SnackPosition.TOP,
+      //   margin: const EdgeInsets.all(16),
+      //   borderRadius: 14,
+      //   duration: const Duration(seconds: 2),
+      //   icon: const Icon(
+      //     Icons.check_circle_rounded,
+      //     color: Colors.white,
+      //     size: 22,
+      //   ),
+      // );
 
       Get.off(() => ResetPasswordScreen(resetToken: resetToken));
     } catch (e) {
-      HapticFeedback.vibrate();
+      // HapticFeedback.vibrate();
       if (!mounted) return;
       setState(() {
-        _errorMsg = e.toString().replaceFirst('Exception: ', '');
+        // _errorMsg = e.toString().replaceFirst('Exception: ', '');
         _isLoading = false;
       });
       // Shake the boxes on error
@@ -214,11 +214,11 @@ class _VerifyResetOtpScreenState extends State<VerifyResetOtpScreen>
 
       if (!mounted) return;
 
-      Get.snackbar('Success', 'OTP sent successfully');
+      // Get.snackbar('Success', 'OTP sent successfully');
     } catch (e) {
       if (!mounted) return;
 
-      Get.snackbar('Error', e.toString().replaceFirst('Exception: ', ''));
+      // Get.snackbar('Error', e.toString().replaceFirst('Exception: ', ''));
 
       Navigator.pop(context);
     }
@@ -468,7 +468,7 @@ class _VerifyResetOtpScreenState extends State<VerifyResetOtpScreen>
         _canResend
             ? GestureDetector(
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  // HapticFeedback.selectionClick();
                   ApiService().resendOtp(login: widget.login);
                   _startCountdown();
                 },
@@ -664,7 +664,7 @@ class _VerifyButtonState extends State<_VerifyButton>
     return GestureDetector(
       onTapDown: (_) {
         _ctrl.forward();
-        HapticFeedback.lightImpact();
+        // HapticFeedback.lightImpact();
       },
       onTapUp: (_) => _ctrl.reverse(),
       onTapCancel: () => _ctrl.reverse(),

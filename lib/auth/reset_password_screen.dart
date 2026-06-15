@@ -170,7 +170,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
   Future<void> _handleReset() async {
     if (!_validate()) return;
 
-    HapticFeedback.mediumImpact();
+    // HapticFeedback.mediumImpact();
     setState(() {
       _isLoading = true;
       _globalError = null;
@@ -184,7 +184,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
       );
 
       if (!mounted) return;
-      HapticFeedback.heavyImpact();
+      // HapticFeedback.heavyImpact();
 
       // ── Success: show success sheet then navigate ──
       await context.read<ProfileProvider>().fetchProfile();
@@ -195,7 +195,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
         (route) => false,
       );
     } catch (e) {
-      HapticFeedback.vibrate();
+      // HapticFeedback.vibrate();
       if (!mounted) return;
       setState(() {
         _globalError = e.toString().replaceFirst('Exception: ', '');
@@ -978,7 +978,7 @@ class _ResetButtonState extends State<_ResetButton>
     return GestureDetector(
       onTapDown: (_) {
         _ctrl.forward();
-        HapticFeedback.lightImpact();
+        // HapticFeedback.lightImpact();
       },
       onTapUp: (_) => _ctrl.reverse(),
       onTapCancel: () => _ctrl.reverse(),
