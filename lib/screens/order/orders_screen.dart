@@ -3976,7 +3976,7 @@ class _OrdersScreenState extends State<OrdersScreen>
           Text(
             'my_orders'.tr,
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 18,
               fontWeight: FontWeight.w800,
               color: colors.text1,
               letterSpacing: -0.5,

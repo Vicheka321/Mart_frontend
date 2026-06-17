@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:mart_frontend/models/address_model.dart';
 import 'package:mart_frontend/models/brands_with_products.dart';
 import 'package:mart_frontend/models/categories_with_products_model.dart';
+import 'package:mart_frontend/models/order_detail_model.dart';
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -717,6 +718,25 @@ class ApiService {
     }
   }
 
+  Future<OrderDetailModel> getOrderDetail(int orderId) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final token = prefs.getString("token");
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/orders/$orderId'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load order');
+    }
+
+    final json = jsonDecode(response.body);
+
+    return OrderDetailModel.fromJson(json);
+  }
+  
   // ==========================profile================
 
   Future<MyProfileModel> fetchMyProfile() async {
@@ -1004,6 +1024,7 @@ class ApiService {
     required double lng,
     required String paymentMethod,
     String? code,
+    String? note,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
@@ -1017,6 +1038,7 @@ class ApiService {
         "lng": lng.toString(),
         "payment_method": paymentMethod,
         "code": code ?? "",
+        "note": note ?? "",
       },
     );
 

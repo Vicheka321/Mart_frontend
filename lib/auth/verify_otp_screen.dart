@@ -188,7 +188,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
       //   'Login successful',
       //   backgroundColor: const Color(0xFF22C55E),
       //   colorText: Colors.white,
-      //   snackPosition: SnackPosition.TOP,
+      //   snackPosition: SnackPosition.TOP,  
       //   margin: const EdgeInsets.all(16),
       //   borderRadius: 14,
       //   duration: const Duration(seconds: 2),
@@ -201,9 +201,10 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
 
       await context.read<ProfileProvider>().fetchProfile();
 
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => MainScreen()),
+        (route) => false,
       );
     } catch (e) {
       // HapticFeedback.vibrate();

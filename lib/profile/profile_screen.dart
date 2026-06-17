@@ -1856,7 +1856,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               iconBg: c.bgicon,
               iconColor: c.text1,
               title: 'privacy_settings'.tr,
-              subtitle: 'Ddata_permissions'.tr,
+              subtitle: 'data_permissions'.tr,
               onTap: () => _navigate(context, ComingSoonScreen()),
             ),
           ],

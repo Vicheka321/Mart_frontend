@@ -724,22 +724,54 @@ import '../screens/theme/app_theme.dart';
 // MODELS
 // ─────────────────────────────────────────────
 
-enum PaymentMethod { cash, aba, khqr }
+
+
+enum PaymentMethod { cash, khqr }
 
 extension PaymentMethodX on PaymentMethod {
-  String get apiValue => ['cash', 'aba', 'khqr'][index];
-  String get label => ['Cash on Delivery', 'ABA Pay', 'KHQR'][index];
+  String get apiValue => ['cash', 'khqr'][index];
+  String get label => ['Cash on Delivery', 'KHQR'][index];
   String get desc => [
     'Pay when you receive',
-    'Open ABA app to pay',
     'Scan QR code to pay',
   ][index];
   IconData get icon => [
     Icons.payments_outlined,
-    Icons.account_balance_outlined,
     Icons.qr_code_scanner_rounded,
   ][index];
 }
+
+// enum PaymentMethod { cash, aba, khqr }
+
+// extension PaymentMethodX on PaymentMethod {
+//   String get apiValue => ['cash', 'aba', 'khqr'][index];
+//   String get label => ['Cash on Delivery', 'ABA Pay', 'KHQR'][index];
+//   String get desc => [
+//     'Pay when you receive',
+//     'Open ABA app to pay',
+//     'Scan QR code to pay',
+//   ][index];
+//   IconData get icon => [
+//     Icons.payments_outlined,
+//     Icons.account_balance_outlined,
+//     Icons.qr_code_scanner_rounded,
+//   ][index];
+// }
+
+
+
+// enum PaymentMethod { aba, khqr }
+
+// extension PaymentMethodX on PaymentMethod {
+//   String get apiValue => ['aba', 'khqr'][index];
+
+//   String get label => ['ABA Pay', 'KHQR'][index];
+
+//   String get desc => ['Open ABA app to pay', 'Scan QR code to pay'][index];
+
+//   IconData get icon =>
+//       [Icons.account_balance_outlined, Icons.qr_code_scanner_rounded][index];
+// }
 
 // Address used during checkout (may or may not be persisted)
 class DeliveryAddress {
@@ -1007,6 +1039,7 @@ class CheckoutController extends ChangeNotifier {
     onKhqr,
     required void Function(String deeplink) onAba,
     required void Function(String msg) onError,
+    required String note,
   }) async {
     try {
       _placingOrder = true;
@@ -1017,11 +1050,13 @@ class CheckoutController extends ChangeNotifier {
         lng: address.lng,
         paymentMethod: _payment.apiValue,
         code: couponCode.isEmpty ? null : couponCode,
+        note: note,
       );
 
       final data = res["data"];
 
       final orderId = data["order_id"].toString();
+      print(orderId);
 
       switch (_payment) {
         case PaymentMethod.cash:
@@ -1039,12 +1074,12 @@ class CheckoutController extends ChangeNotifier {
           );
 
           break;
-        case PaymentMethod.aba:
-          final abaRes = await ApiService().getABADeeplink(int.parse(orderId));
+        // case PaymentMethod.aba:
+        //   final abaRes = await ApiService().getABADeeplink(int.parse(orderId));
 
-          onAba(abaRes["deeplink"]);
+        //   onAba(abaRes["deeplink"]);
 
-          break;
+        //   break;
       }
     } catch (e) {
       onError(e.toString().replaceAll("Exception: ", ""));
@@ -1221,21 +1256,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
 
     await _updatePhoneIfNeeded();
+    if (_shouldSaveAddress && _address != null && !_address!.isSaved) {
+      await _ctrl.saveAddress(_address!);
+
+      await _ctrl.loadAddresses();
+    }
 
     if (!mounted) return;
     await _ctrl.placeOrder(
       address: _address!,
 
       couponCode: _ctrl.coupon?.code ?? '',
+      note: _noteCtrl.text.trim(),
       onCash: (id) {
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => OrderSuccessScreen(orderId: id)));
-        _snack('Order placed! ID: $id');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OrderSuccessScreen(orderId: int.parse(id)),
+          ),
+        );
       },
       onKhqr: (id, qrUrl, amount, md5) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => KhqrScreen(qrUrl: qrUrl, amount: amount, md5: md5),
+            builder: (_) =>
+                KhqrScreen(orderId: id, qrUrl: qrUrl, amount: amount, md5: md5),
           ),
         );
       },
