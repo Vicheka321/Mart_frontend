@@ -3245,93 +3245,93 @@ class _WishlistPageState extends State<_WishlistPage> {
   }
 }
 
-class _AddressPage extends StatefulWidget {
-  @override
-  State<_AddressPage> createState() => _AddressPageState();
-}
+// class _AddressPage extends StatefulWidget {
+//   @override
+//   State<_AddressPage> createState() => _AddressPageState();
+// }
 
-class _AddressPageState extends State<_AddressPage> {
-  late Future<List<AddressHistoryEntry>> _future;
+// class _AddressPageState extends State<_AddressPage> {
+//   late Future<List<AddressHistoryEntry>> _future;
 
-  @override
-  void initState() {
-    super.initState();
-    _future = _loadAddresses();
-  }
+//   @override
+//   void initState() {
+//     super.initState();
+//     _future = _loadAddresses();
+//   }
 
-  Future<List<AddressHistoryEntry>> _loadAddresses() async {
-    final byKey = <String, AddressHistoryEntry>{};
+//   Future<List<AddressHistoryEntry>> _loadAddresses() async {
+//     final byKey = <String, AddressHistoryEntry>{};
 
-    for (final entry in await AddressHistoryService().loadAddresses()) {
-      byKey[_keyFor(entry)] = entry;
-    }
+//     for (final entry in await AddressHistoryService().loadAddresses()) {
+//       byKey[_keyFor(entry)] = entry;
+//     }
 
-    try {
-      final orders = await ApiService().fetchMyOrders();
-      for (final order in orders.orders) {
-        if (order.address.trim().isEmpty) continue;
-        final entry = AddressHistoryEntry(
-          phone: order.phone,
-          address: order.address,
-          savedAt: DateTime.tryParse(order.createdAt) ?? DateTime.now(),
-        );
-        byKey.putIfAbsent(_keyFor(entry), () => entry);
-      }
-    } catch (_) {
-      // Local history is still useful when orders cannot be loaded.
-    }
+//     try {
+//       final orders = await ApiService().fetchMyOrders();
+//       for (final order in orders.orders) {
+//         if (order.address.trim().isEmpty) continue;
+//         final entry = AddressHistoryEntry(
+//           phone: order.phone,
+//           address: order.address,
+//           savedAt: DateTime.tryParse(order.createdAt) ?? DateTime.now(),
+//         );
+//         byKey.putIfAbsent(_keyFor(entry), () => entry);
+//       }
+//     } catch (_) {
+//       // Local history is still useful when orders cannot be loaded.
+//     }
 
-    final addresses = byKey.values.toList()
-      ..sort((a, b) => b.savedAt.compareTo(a.savedAt));
-    return addresses;
-  }
+//     final addresses = byKey.values.toList()
+//       ..sort((a, b) => b.savedAt.compareTo(a.savedAt));
+//     return addresses;
+//   }
 
-  String _keyFor(AddressHistoryEntry entry) {
-    return '${entry.phone.trim().toLowerCase()}|${entry.address.trim().toLowerCase()}';
-  }
+//   String _keyFor(AddressHistoryEntry entry) {
+//     return '${entry.phone.trim().toLowerCase()}|${entry.address.trim().toLowerCase()}';
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.bg,
-      appBar: _ProfileSubAppBar(title: 'addresses'.tr),
-      body: FutureBuilder<List<AddressHistoryEntry>>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SkeletonList(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 32),
-              showImage: false,
-            );
-          }
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: context.bg,
+//       appBar: _ProfileSubAppBar(title: 'addresses'.tr),
+//       body: FutureBuilder<List<AddressHistoryEntry>>(
+//         future: _future,
+//         builder: (context, snapshot) {
+//           if (snapshot.connectionState == ConnectionState.waiting) {
+//             return const SkeletonList(
+//               padding: EdgeInsets.fromLTRB(16, 12, 16, 32),
+//               showImage: false,
+//             );
+//           }
 
-          final addresses = snapshot.data ?? [];
-          if (addresses.isEmpty) {
-            return _ProfileEmptyState(
-              icon: Icons.location_on_outlined,
-              color: const Color(0xFF10B981),
-              title: 'no_address_history'.tr,
-              subtitle: 'address_history_hint'.tr,
-            );
-          }
+//           final addresses = snapshot.data ?? [];
+//           if (addresses.isEmpty) {
+//             return _ProfileEmptyState(
+//               icon: Icons.location_on_outlined,
+//               color: const Color(0xFF10B981),
+//               title: 'no_address_history'.tr,
+//               subtitle: 'address_history_hint'.tr,
+//             );
+//           }
 
-          return RefreshIndicator(
-            onRefresh: () async {
-              setState(() => _future = _loadAddresses());
-              await _future;
-            },
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-              itemCount: addresses.length,
-              itemBuilder: (_, index) =>
-                  _AddressHistoryTile(entry: addresses[index]),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
+//           return RefreshIndicator(
+//             onRefresh: () async {
+//               setState(() => _future = _loadAddresses());
+//               await _future;
+//             },
+//             child: ListView.builder(
+//               padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+//               itemCount: addresses.length,
+//               itemBuilder: (_, index) =>
+//                   _AddressHistoryTile(entry: addresses[index]),
+//             ),
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }
 
 class _ProfileSubAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;

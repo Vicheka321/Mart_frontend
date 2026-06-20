@@ -35,6 +35,9 @@ class _RegisterScreenState extends State<RegisterScreen>
   String _strengthLabel = '';
   Color _strengthColor = Colors.transparent;
 
+  String _confirmLabel = '';
+  Color _confirmColor = Colors.transparent;
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +53,8 @@ class _RegisterScreenState extends State<RegisterScreen>
 
     _animCtrl.forward();
     _passCtrl.addListener(_evaluateStrength);
+    _passCtrl.addListener(_checkPasswordMatch);
+    _confirmCtrl.addListener(_checkPasswordMatch);
   }
 
   @override
@@ -84,7 +89,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       color = const Color(0xFFEAB308);
     } else {
       label = 'Strong';
-      color = const Color(0xFF22C55E);
+      color = const Color(0xFF2563EB);
     }
 
     setState(() {
@@ -94,29 +99,48 @@ class _RegisterScreenState extends State<RegisterScreen>
     });
   }
 
+  void _checkPasswordMatch() {
+    if (_confirmCtrl.text.isEmpty) {
+      setState(() {
+        _confirmLabel = '';
+        _confirmColor = Colors.transparent;
+      });
+      return;
+    }
+
+    if (_passCtrl.text == _confirmCtrl.text) {
+      setState(() {
+        _confirmLabel = 'Passwords match';
+        _confirmColor = const Color(0xFF2563EB);
+      });
+    } else {
+      setState(() {
+        _confirmLabel = 'Passwords do not match';
+        _confirmColor = const Color(0xFFEF4444);
+      });
+    }
+  }
+
   Future<void> _handleSignUp() async {
     FocusScope.of(context).unfocus();
 
     if (_nameCtrl.text.trim().isEmpty) {
-      _showDialog(title: 'Error', message: 'Please enter your full name');
+      _showError('Please enter your name');
       return;
     }
 
     if (_emailCtrl.text.trim().isEmpty) {
-      _showDialog(title: 'Error', message: 'Please enter email or phone');
+      _showError('Please enter email or phone');
       return;
     }
 
     if (_passCtrl.text.length < 8) {
-      _showDialog(
-        title: 'Error',
-        message: 'Password must be at least 8 characters',
-      );
+      _showError('Password must be at least 8 characters');
       return;
     }
 
     if (_passCtrl.text != _confirmCtrl.text) {
-      _showDialog(title: 'Error', message: 'Passwords do not match');
+      _showError('Passwords do not match');
       return;
     }
 
@@ -145,10 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen>
         transition: Transition.rightToLeft,
       );
     } catch (e) {
-      _showDialog(
-        title: 'Registration Failed',
-        message: e.toString().replaceFirst('Exception: ', ''),
-      );
+      _showError(e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -156,15 +177,69 @@ class _RegisterScreenState extends State<RegisterScreen>
     }
   }
 
-  void _showDialog({required String title, required String message}) {
+  void _showError(String message) {
     Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          FilledButton(onPressed: () => Get.back(), child: const Text('OK')),
-        ],
+      Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.error_outline_rounded,
+                  color: Colors.red.shade400,
+                  size: 40,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              const Text(
+                'Registration Failed',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+              ),
+
+              const SizedBox(height: 12),
+
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey.shade600, height: 1.5),
+              ),
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: FilledButton(
+                  onPressed: () => Get.back(),
+                  style: FilledButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -319,8 +394,8 @@ class _RegisterScreenState extends State<RegisterScreen>
             // ── Full Name ──
             _AuthInput(
               controller: _nameCtrl,
-              hint: 'Your full name',
-              label: 'Full Name',
+              hint: 'Your name',
+              label: 'Name',
               icon: Icons.badge_outlined,
               keyboardType: TextInputType.name,
             ),
@@ -366,6 +441,32 @@ class _RegisterScreenState extends State<RegisterScreen>
               icon: Icons.lock_person_outlined,
               obscure: true,
             ),
+            if (_confirmLabel.isNotEmpty) ...[
+              const SizedBox(height: 8),
+
+              Row(
+                children: [
+                  Icon(
+                    _confirmColor == const Color(0xFF2563EB)
+                        ? Icons.check_circle_rounded
+                        : Icons.cancel_rounded,
+                    size: 13,
+                    color: _confirmColor,
+                  ),
+
+                  const SizedBox(width: 5),
+
+                  Text(
+                    _confirmLabel,
+                    style: TextStyle(
+                      color: _confirmColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 28),
 
             // ── Sign Up button ──

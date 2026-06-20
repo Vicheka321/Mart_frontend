@@ -1560,7 +1560,7 @@ class _ProductCardState extends State<_ProductCard> {
                       child: Text(
                         '-${double.parse(widget.product.discount!.replaceAll('%', '')).toInt()}%',
                         style: const TextStyle(
-                          color: Color(0xFF4CAF50),
+                          color: Color(0xFF2563EB),
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                         ),
@@ -1990,7 +1990,7 @@ Widget _buildRecommendedRow({
                             child: Text(
                               '-${item.discount}',
                               style: const TextStyle(
-                                color: Color(0xFF4CAF50),
+                                color: Color(0xFF2563EB),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                               ),

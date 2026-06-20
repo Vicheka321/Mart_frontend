@@ -86,8 +86,8 @@ class _LoginScreenState extends State<LoginScreen>
       return;
     }
 
-    if (_passCtrl.text.length < 6) {
-      _showError('Password must be at least 6 characters');
+    if (_passCtrl.text.length < 8) {
+      _showError('Password must be at least 8 characters');
       return;
     }
 
@@ -116,13 +116,7 @@ class _LoginScreenState extends State<LoginScreen>
     } catch (e) {
       final error = e.toString().replaceFirst('Exception: ', '');
 
-      if (error.toLowerCase().contains('unauthorized')) {
-        _showError('Incorrect email or password');
-      } else if (error.toLowerCase().contains('not found')) {
-        _showError('Account does not exist');
-      } else {
-        _showError(error);
-      }
+      _showError(error);
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -130,21 +124,89 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  // void _showError(String message) {
+  //   Get.dialog(
+  //     AlertDialog(
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+  //       title: const Row(
+  //         children: [
+  //           Icon(Icons.error_outline_rounded, color: Colors.red),
+  //           SizedBox(width: 8),
+  //           Text('Error'),
+  //         ],
+  //       ),
+  //       content: Text(message),
+  //       actions: [
+  //         FilledButton(onPressed: () => Get.back(), child: const Text('OK')),
+  //       ],
+  //     ),
+  //   );
+  // }
+
   void _showError(String message) {
     Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
-          children: [
-            Icon(Icons.error_outline_rounded, color: Colors.red),
-            SizedBox(width: 8),
-            Text('Error'),
-          ],
+      Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.error_outline_rounded,
+                  color: Colors.red,
+                  size: 38,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              const Text(
+                'Login Failed',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: FilledButton(
+                  onPressed: Get.back,
+                  style: FilledButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    'Try Again',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        content: Text(message),
-        actions: [
-          FilledButton(onPressed: () => Get.back(), child: const Text('OK')),
-        ],
       ),
     );
   }
