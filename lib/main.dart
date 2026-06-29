@@ -9,6 +9,7 @@ import 'package:mart_frontend/providers/category_provider.dart';
 import 'package:mart_frontend/providers/new_arrival_provider.dart';
 import 'package:mart_frontend/providers/profile_provider.dart';
 import 'package:mart_frontend/providers/recommend_provider.dart';
+import 'package:mart_frontend/services/api_service.dart';
 import 'package:mart_frontend/services/notification_service.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
@@ -30,8 +31,14 @@ void main() async {
   await notificationService.requestPermission();
 
   await notificationService.getToken();
-  notificationService.listenForegroundNotification();
+
   String? token = await notificationService.getToken();
+  notificationService.listenForegroundNotification();
+  if (token != null) {
+    await ApiService().saveGuestToken(token);
+  }
+
+  
   Get.put(ThemeController());
   Get.put(LanguageController());
   runApp(
