@@ -9,6 +9,8 @@ import 'package:mart_frontend/providers/category_provider.dart';
 import 'package:mart_frontend/providers/new_arrival_provider.dart';
 import 'package:mart_frontend/providers/profile_provider.dart';
 import 'package:mart_frontend/providers/recommend_provider.dart';
+import 'package:mart_frontend/services/api_service.dart';
+import 'package:mart_frontend/services/notification_service.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 import 'providers/cart_provider.dart';
@@ -16,9 +18,27 @@ import 'screens/splash/splash_screen.dart';
 import 'screens/theme/theme_controller.dart';
 import 'controllers/language_controller.dart';
 import 'translations/app_translations.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  final notificationService = NotificationService();
+
+  await notificationService.initialize();
+
+  await notificationService.requestPermission();
+
+  await notificationService.getToken();
+
+  String? token = await notificationService.getToken();
+  notificationService.listenForegroundNotification();
+  if (token != null) {
+    await ApiService().saveGuestToken(token);
+  }
+
+  
   Get.put(ThemeController());
   Get.put(LanguageController());
   runApp(
@@ -34,8 +54,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => RecommendProvider()),
         ChangeNotifierProvider(create: (_) => ProductDetailProvider()),
         ChangeNotifierProvider(create: (_) => CategoriesWithProductsProvider()),
-        ChangeNotifierProvider(create: (_) => BrandsWithProductsProvider())
-
+        ChangeNotifierProvider(create: (_) => BrandsWithProductsProvider()),
       ],
       child: MyApp(),
     ),
