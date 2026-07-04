@@ -34,6 +34,16 @@ class NotificationService {
     const settings = InitializationSettings(android: android);
 
     await flutterLocalNotificationsPlugin.initialize(settings);
+    // await flutterLocalNotificationsPlugin.initialize(
+    //   settings,
+
+    //   onDidReceiveNotificationResponse: (details) {
+    //     print(details.payload);
+
+    //     // Next Step
+    //     // Open Order Detail Screen
+    //   },
+    // );
 
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'high_importance_channel',
@@ -57,4 +67,49 @@ class NotificationService {
       print(message.notification?.body);
     });
   }
+
+  // void listenForegroundNotification() {
+  //   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+  //     print("Foreground Notification");
+
+  //     if (message.notification == null) return;
+
+  //     await flutterLocalNotificationsPlugin.show(
+  //       message.hashCode,
+
+  //       message.notification!.title,
+
+  //       message.notification!.body,
+
+  //       const NotificationDetails(
+  //         android: AndroidNotificationDetails(
+  //           'high_importance_channel',
+  //           'High Importance Notifications',
+
+  //           importance: Importance.high,
+  //           priority: Priority.high,
+  //           icon: '@mipmap/ic_launcher',
+  //         ),
+  //       ),
+
+  //       payload: message.data['order_id'],
+  //     );
+  //   });
+  // }
+
+  void handleNotificationClick() {
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      print(message.data);
+    });
+  }
+
+  Future<void> checkInitialMessage() async {
+    RemoteMessage? message = await FirebaseMessaging.instance
+        .getInitialMessage();
+
+    if (message != null) {
+      print(message.data);
+    }
+  }
+
 }

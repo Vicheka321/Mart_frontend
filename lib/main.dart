@@ -34,11 +34,13 @@ void main() async {
 
   String? token = await notificationService.getToken();
   notificationService.listenForegroundNotification();
+  // notificationService.handleNotificationClick();
+
+  await notificationService.checkInitialMessage();
   if (token != null) {
     await ApiService().saveGuestToken(token);
   }
 
-  
   Get.put(ThemeController());
   Get.put(LanguageController());
   runApp(

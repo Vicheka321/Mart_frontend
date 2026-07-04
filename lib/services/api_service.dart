@@ -750,6 +750,107 @@ class ApiService {
     return OrderDetailModel.fromJson(json);
   }
 
+  Future<Map<String, dynamic>> addFavorite(int productId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null) {
+      throw Exception('Please login first');
+    }
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/favorite'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+      body: {'product_id': productId.toString()},
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Failed to add favorite');
+  }
+
+  Future<Map<String, dynamic>> removeFavorite(int productId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null) {
+      throw Exception("Please login first");
+    }
+
+    final response = await http.delete(
+      Uri.parse('$baseUrl/favorite/$productId'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Failed to remove favorite');
+  }
+
+  Future<bool> isFavorite(int productId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null) {
+      return false;
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/favorite/check/$productId'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['is_favorite'] ?? false;
+    }
+
+    return false;
+  }
+
+  Future<List<dynamic>> getMyFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null) {
+      throw Exception("Please login first");
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/favorites'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      // If API returns:
+      // { "favorites": [...] }
+      if (data is Map<String, dynamic> && data.containsKey('favorites')) {
+        return List<dynamic>.from(data['favorites']);
+      }
+
+      // If API returns:
+      // [ ... ]
+      if (data is List) {
+        return List<dynamic>.from(data);
+      }
+
+      return [];
+    }
+
+    final data = jsonDecode(response.body);
+    throw Exception(data['message'] ?? 'Failed to load favorites');
+  }
+
   // ==========================profile================
 
   Future<MyProfileModel> fetchMyProfile() async {

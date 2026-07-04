@@ -1373,6 +1373,7 @@ import 'package:mart_frontend/auth/login_screen.dart';
 import 'package:mart_frontend/profile/address_screen.dart';
 import 'package:mart_frontend/profile/address_screen.dart';
 import 'package:mart_frontend/profile/edit_profile_screen.dart';
+import 'package:mart_frontend/profile/my_favorite_screen.dart';
 import 'package:mart_frontend/providers/profile_provider.dart';
 import 'package:mart_frontend/screens/main/coming_soon_screen.dart';
 import 'package:mart_frontend/screens/main/main_screen.dart';
@@ -1712,7 +1713,9 @@ class _ProfileScreenState extends State<ProfileScreen>
               iconColor: c.text1,
               title: 'my_orders'.tr,
               subtitle: 'total_orders'.tr,
-              onTap: () => _navigate(context, MainScreen()),
+              onTap: () {
+                MainScreen.switchToOrders(context);
+              },
             ),
             _MenuItem(
               icon: Icons.favorite_border_rounded,
@@ -1722,7 +1725,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               iconColor: c.text1,
               title: 'wishlist'.tr,
               subtitle: 'favorite_items'.tr,
-              onTap: () => _navigate(context, ComingSoonScreen()),
+              onTap: () => _navigate(context, MyFavoriteScreen()),
             ),
 
             _MenuItem(
@@ -1733,14 +1736,14 @@ class _ProfileScreenState extends State<ProfileScreen>
               subtitle: 'saved_addresses'.tr,
               onTap: () => _navigate(context, MyAddressesScreen()),
             ),
-            _MenuItem(
-              icon: Icons.credit_card_rounded,
-              iconBg: c.bgicon,
-              iconColor: c.text1,
-              title: 'payment_methods'.tr,
-              subtitle: 'visa'.tr,
-              onTap: () => _navigate(context, ComingSoonScreen()),
-            ),
+            // _MenuItem(
+            //   icon: Icons.credit_card_rounded,
+            //   iconBg: c.bgicon,
+            //   iconColor: c.text1,
+            //   title: 'payment_methods'.tr,
+            //   subtitle: 'visa'.tr,
+            //   onTap: () => _navigate(context, ComingSoonScreen()),
+            // ),
           ],
         ),
 
@@ -1857,7 +1860,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               iconColor: c.text1,
               title: 'privacy_settings'.tr,
               subtitle: 'data_permissions'.tr,
-              onTap: () => _navigate(context, ComingSoonScreen()),
+              onTap: () => _navigate(context, PrivacyPolicyScreen()),
             ),
           ],
         ),
@@ -1882,7 +1885,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               iconColor: c.text1,
               title: 'contact_us'.tr,
               subtitle: 'chat_email_phone'.tr,
-              onTap: () => _navigate(context, ComingSoonScreen()),
+              onTap: () => _navigate(context, ContactUsScreen()),
             ),
             _MenuItem(
               icon: Icons.star_outline_rounded,
@@ -1890,7 +1893,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               iconColor: c.text1,
               title: 'rate_app'.tr,
               subtitle: 'share_your_feedback'.tr,
-              onTap: () => _navigate(context, ComingSoonScreen()),
+              onTap: () => _navigate(context, RateAppScreen()),
             ),
             _MenuItem(
               icon: Icons.public_rounded,
@@ -1898,7 +1901,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               iconColor: c.text1,
               title: 'social_media'.tr,
               subtitle: 'follow_us'.tr,
-              onTap: () => _navigate(context, ComingSoonScreen()),
+              onTap: () => _navigate(context, SocialMediaScreen()),
             ),
             _MenuItem(
               icon: Icons.storefront_rounded,
@@ -1906,7 +1909,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               iconColor: c.text1,
               title: 'about_us'.tr,
               subtitle: 'learn_more'.tr,
-              onTap: () => _navigate(context, ComingSoonScreen()),
+              onTap: () => _navigate(context, AboutUsScreen()),
             ),
             _MenuItem(
               icon: Icons.policy_rounded,
@@ -1914,7 +1917,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               iconColor: c.text1,
               title: 'terms_and_conditions'.tr,
               subtitle: 'our_policies'.tr,
-              onTap: () => _navigate(context, ComingSoonScreen()),
+              onTap: () => _navigate(context, TermsScreen()),
             ),
             _MenuItem(
               icon: Icons.shield_outlined,
@@ -1922,7 +1925,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               iconColor: c.text1,
               title: 'privacy_policy'.tr,
               subtitle: 'data_privacy'.tr,
-              onTap: () => _navigate(context, ComingSoonScreen()),
+              onTap: () => _navigate(context, PrivacyPolicyScreen()),
             ),
           ],
         ),
