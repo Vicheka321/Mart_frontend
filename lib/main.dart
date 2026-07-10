@@ -26,21 +26,7 @@ void main() async {
   await Firebase.initializeApp();
   final notificationService = NotificationService();
 
-  await notificationService.initialize();
-
-  await notificationService.requestPermission();
-
-  await notificationService.getToken();
-
-  String? token = await notificationService.getToken();
-  notificationService.listenForegroundNotification();
-  // notificationService.handleNotificationClick();
-
-  await notificationService.checkInitialMessage();
-  if (token != null) {
-    await ApiService().saveGuestToken(token);
-  }
-
+  await notificationService.init();
   Get.put(ThemeController());
   Get.put(LanguageController());
   runApp(
@@ -62,48 +48,6 @@ void main() async {
     ),
   );
 }
-
-//
-// ─────────────────────────────────────────────
-// THEME CONTROLLER (GETX)
-// ─────────────────────────────────────────────
-//
-
-//
-// ─────────────────────────────────────────────
-// MAIN APP
-// ─────────────────────────────────────────────
-//
-
-// class MyApp extends StatelessWidget {
-//   MyApp({super.key});
-
-//   final ThemeController controller = Get.put(ThemeController());
-//   final languageController = Get.put(LanguageController());
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Obx(
-//       () => GetMaterialApp(
-//         translations: AppTranslations(),
-//         locale: Locale(languageController.language.value),
-//         fallbackLocale: const Locale('en'),
-//         debugShowCheckedModeBanner: false,
-
-//         // 🌞 Light Theme
-//         theme: lightTheme,
-
-//         // 🌙 Dark Theme
-//         darkTheme: darkTheme,
-
-//         // 🔥 Dynamic Theme
-//         themeMode: controller.isDark.value ? ThemeMode.dark : ThemeMode.light,
-
-//         home: SplashScreen(),
-//       ),
-//     );
-//   }
-// }
 
 class MyApp extends StatelessWidget {
   MyApp({super.key});

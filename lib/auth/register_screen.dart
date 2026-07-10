@@ -162,7 +162,6 @@ class _RegisterScreenState extends State<RegisterScreen>
 
       if (!mounted) return;
 
-      // Get.snackbar('Success', result['message'] ?? 'OTP sent successfully');
 
       Get.to(
         () => VerifyOtpScreen(login: _emailCtrl.text.trim()),

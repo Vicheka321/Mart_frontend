@@ -14,7 +14,6 @@ import '../models/categories_model.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:http_parser/http_parser.dart';
 import 'dart:io';
-
 import '../models/my_orders_model.dart';
 import '../models/profile_model.dart';
 
@@ -567,6 +566,35 @@ class ApiService {
     } catch (e) {
       throw Exception(e.toString());
     }
+  }
+
+  Future<Map<String, dynamic>> googleLogin({required String idToken}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/google-login'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'id_token': idToken}),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      final prefs = await SharedPreferences.getInstance();
+
+      await prefs.setString("token", data["token"]);
+
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+
+      if (fcmToken != null) {
+        await saveUserToken(fcmToken);
+      }
+
+      return data;
+    }
+
+    throw Exception(data["message"]);
   }
 
   // =================== orders=================

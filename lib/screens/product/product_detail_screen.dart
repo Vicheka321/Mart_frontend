@@ -707,7 +707,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         });
       }
     } catch (e) {
-      debugPrint(e.toString());
+      Get.snackbar(
+        'Stock',
+        e.toString().contains('SocketException')
+            ? 'No internet connection.'
+            : 'Something went wrong. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        borderRadius: 16,
+        backgroundColor: Get.theme.cardColor,
+        colorText: Get.theme.textTheme.bodyLarge?.color,
+        icon: const Icon(Icons.error_outline_rounded, color: Color(0xFFFF3B30)),
+        boxShadows: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+        duration: const Duration(seconds: 3),
+        isDismissible: true,
+        forwardAnimationCurve: Curves.easeOutCubic,
+      );
     } finally {
       if (mounted) {
         setState(() => cartLoading = false);
@@ -753,8 +774,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         setState(() {
           isFavorite = false;
         });
-
-
       } else {
         await ApiService().addFavorite(widget.productId);
         await _loadFavorite();
@@ -764,12 +783,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         setState(() {
           isFavorite = true;
         });
-
-
       }
-    } catch (e) {
-
-    }
+    } catch (e) {}
   }
 
   Future<void> _openCart() async {
@@ -1117,11 +1132,56 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                 color: colors.text1,
                               ),
                             ),
+                            // _QuantityStepper(
+                            //   qty: qty,
+                            //   onIncrement: () => setState(() => qty++),
+                            //   onDecrement: () {
+                            //     if (qty > 1) setState(() => qty--);
+                            //   },
+                            // ),
                             _QuantityStepper(
                               qty: qty,
-                              onIncrement: () => setState(() => qty++),
+                              onIncrement: () {
+                                if (qty >= stockQty) {
+                                  Get.snackbar(
+                                    'Out of Stock',
+                                    'Only $stockQty item(s) available.',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    margin: const EdgeInsets.fromLTRB(
+                                      16,
+                                      0,
+                                      16,
+                                      16,
+                                    ),
+                                    borderRadius: 16,
+                                    backgroundColor: Get.theme.cardColor,
+                                    colorText:
+                                        Get.theme.textTheme.bodyLarge?.color,
+                                    icon: const Icon(
+                                      Icons.inventory_2_outlined,
+                                      color: Color(0xFFFF9500),
+                                    ),
+                                    boxShadows: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.18),
+                                        blurRadius: 22,
+                                        offset: const Offset(0, 10),
+                                      ),
+                                    ],
+                                    duration: const Duration(seconds: 3),
+                                    isDismissible: true,
+                                    forwardAnimationCurve: Curves.easeOutCubic,
+                                  );
+
+                                  return;
+                                }
+
+                                setState(() => qty++);
+                              },
                               onDecrement: () {
-                                if (qty > 1) setState(() => qty--);
+                                if (qty > 1) {
+                                  setState(() => qty--);
+                                }
                               },
                             ),
                           ],
@@ -1139,12 +1199,37 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                               onTap: _toggleFavorite,
                             ),
                             const SizedBox(width: _T.sp10),
-                            _CartButton(
-                              isInCart: isInCart,
-                              loading: cartLoading,
+                            // _CartButton(
+                            //   isInCart: isInCart,
+                            //   loading: cartLoading,
 
-                              onTap: () => _handleCart(p),
-                            ),
+                            //   onTap: () => _handleCart(p),
+                            // ),
+                            if (stockQty <= 0)
+                              Expanded(
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey,
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      "OUT OF STOCK",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              _CartButton(
+                                isInCart: isInCart,
+                                loading: cartLoading,
+                                onTap: () => _handleCart(p),
+                              ),
                           ],
                         ),
                       ],

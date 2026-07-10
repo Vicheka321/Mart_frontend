@@ -9,9 +9,10 @@ import 'package:mart_frontend/providers/profile_provider.dart';
 import 'package:mart_frontend/screens/home/home_screen.dart';
 import 'package:mart_frontend/screens/main/main_screen.dart';
 import 'package:mart_frontend/services/api_service.dart';
+import 'package:mart_frontend/services/notification_service.dart';
 import 'package:provider/provider.dart';
 import '../screens/theme/app_theme.dart';
-
+import 'package:mart_frontend/services/google_service.dart';
 // ─────────────────────────────────────────────
 // LOGIN SCREEN
 // ─────────────────────────────────────────────
@@ -61,15 +62,6 @@ class _LoginScreenState extends State<LoginScreen>
   Future<void> _handleLogin() async {
     FocusScope.of(context).unfocus();
 
-    // if (_emailCtrl.text.trim().isEmpty) {
-    //   Get.snackbar('Error', 'Please enter email or phone');
-    //   return;
-    // }
-
-    // if (_passCtrl.text.isEmpty) {
-    //   Get.snackbar('Error', 'Please enter password');
-    //   return;
-    // }
     if (_emailCtrl.text.trim().isEmpty) {
       _showError('Please enter email or phone');
       return;
@@ -103,8 +95,6 @@ class _LoginScreenState extends State<LoginScreen>
 
       if (!mounted) return;
 
-      // Get.snackbar('Success', 'Login successful');
-
       if (!mounted) return;
       await context.read<ProfileProvider>().fetchProfile();
       Navigator.pop(context);
@@ -120,6 +110,40 @@ class _LoginScreenState extends State<LoginScreen>
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleGoogleLogin() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final auth = await GoogleService().signIn();
+
+      if (auth == null) {
+        return;
+      }
+
+      await ApiService().googleLogin(idToken: auth.idToken!);
+
+
+      await context.read<ProfileProvider>().fetchProfile();
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => MainScreen()),
+      );
+    } catch (e) {
+      _showError(e.toString());
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -448,7 +472,7 @@ class _LoginScreenState extends State<LoginScreen>
               label: 'Continue with Google',
               icon: _GoogleIcon(),
               colors: colors,
-              onTap: () {},
+              onTap: _handleGoogleLogin,
             ),
             const SizedBox(height: 12),
             _SocialButton(

@@ -181,24 +181,6 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
 
       if (!mounted) return;
 
-      // ── Success ──
-      // HapticFeedback.heavyImpact();
-      // Get.snackbar(
-      //   'Success',
-      //   'Login successful',
-      //   backgroundColor: const Color(0xFF22C55E),
-      //   colorText: Colors.white,
-      //   snackPosition: SnackPosition.TOP,  
-      //   margin: const EdgeInsets.all(16),
-      //   borderRadius: 14,
-      //   duration: const Duration(seconds: 2),
-      //   icon: const Icon(
-      //     Icons.check_circle_rounded,
-      //     color: Colors.white,
-      //     size: 22,
-      //   ),
-      // );
-
       await context.read<ProfileProvider>().fetchProfile();
 
       Navigator.pushAndRemoveUntil(
