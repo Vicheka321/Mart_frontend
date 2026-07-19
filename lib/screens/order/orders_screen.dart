@@ -163,7 +163,21 @@ class _OrdersScreenState extends State<OrdersScreen>
     }).toList();
   }
 
-  void _openDetail(Order order) {
+  // void _openDetail(Order order) {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(builder: (_) => InvoiceScreen(orderId: order.id)),
+  //   );
+  // }
+
+  void _openOrderDetail(Order order) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => OrderDetailScreen(order: order)),
+    );
+  }
+
+  void _openInvoice(Order order) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => InvoiceScreen(orderId: order.id)),
@@ -213,7 +227,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                     orders: _filtered(tab['filter']),
                     colors: colors,
                     onRefresh: () => _loadOrders(refresh: true),
-                    onTap: _openDetail,
+                    onTap: _openOrderDetail,
+                    onInvoice: _openInvoice,
                     onReorder: _buyAgain,
                   );
                 }).toList(),
@@ -403,6 +418,7 @@ class _OrderTabView extends StatelessWidget {
   final AppColors colors;
   final Future<void> Function() onRefresh;
   final void Function(Order) onTap;
+  final void Function(Order) onInvoice;
   final void Function(Order) onReorder;
 
   const _OrderTabView({
@@ -410,6 +426,7 @@ class _OrderTabView extends StatelessWidget {
     required this.colors,
     required this.onRefresh,
     required this.onTap,
+    required this.onInvoice,
     required this.onReorder,
   });
 
@@ -427,6 +444,7 @@ class _OrderTabView extends StatelessWidget {
           order: orders[i],
           colors: colors,
           onTap: () => onTap(orders[i]),
+          onInvoice: () => onInvoice(orders[i]),
           onReorder: () => onReorder(orders[i]),
         ),
       ),
@@ -506,12 +524,14 @@ class _OrderCard extends StatefulWidget {
   final Order order;
   final AppColors colors;
   final VoidCallback onTap;
+  final VoidCallback onInvoice;
   final VoidCallback onReorder;
 
   const _OrderCard({
     required this.order,
     required this.colors,
     required this.onTap,
+    required this.onInvoice,
     required this.onReorder,
   });
 
@@ -879,7 +899,7 @@ class _OrderCardState extends State<_OrderCard>
                         icon: Icons.receipt_long_outlined,
                         isPrimary: false,
                         colors: c,
-                        onTap: widget.onTap,
+                        onTap: widget.onInvoice,
                       ),
                     ),
                   ] else ...[
@@ -889,7 +909,7 @@ class _OrderCardState extends State<_OrderCard>
                         icon: Icons.receipt_long_outlined,
                         isPrimary: false,
                         colors: c,
-                        onTap: widget.onTap,
+                        onTap: widget.onInvoice,
                       ),
                     ),
                   ],
