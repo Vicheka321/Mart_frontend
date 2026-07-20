@@ -9,9 +9,10 @@ import 'package:mart_frontend/providers/profile_provider.dart';
 import 'package:mart_frontend/screens/home/home_screen.dart';
 import 'package:mart_frontend/screens/main/main_screen.dart';
 import 'package:mart_frontend/services/api_service.dart';
+import 'package:mart_frontend/services/notification_service.dart';
 import 'package:provider/provider.dart';
 import '../screens/theme/app_theme.dart';
-
+import 'package:mart_frontend/services/google_service.dart';
 // ─────────────────────────────────────────────
 // LOGIN SCREEN
 // ─────────────────────────────────────────────
@@ -61,15 +62,6 @@ class _LoginScreenState extends State<LoginScreen>
   Future<void> _handleLogin() async {
     FocusScope.of(context).unfocus();
 
-    // if (_emailCtrl.text.trim().isEmpty) {
-    //   Get.snackbar('Error', 'Please enter email or phone');
-    //   return;
-    // }
-
-    // if (_passCtrl.text.isEmpty) {
-    //   Get.snackbar('Error', 'Please enter password');
-    //   return;
-    // }
     if (_emailCtrl.text.trim().isEmpty) {
       _showError('Please enter email or phone');
       return;
@@ -103,8 +95,6 @@ class _LoginScreenState extends State<LoginScreen>
 
       if (!mounted) return;
 
-      // Get.snackbar('Success', 'Login successful');
-
       if (!mounted) return;
       await context.read<ProfileProvider>().fetchProfile();
       Navigator.pop(context);
@@ -130,6 +120,62 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+<<<<<<< HEAD
+=======
+  Future<void> _handleGoogleLogin() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final auth = await GoogleService().signIn();
+
+      if (auth == null) {
+        return;
+      }
+
+      await ApiService().googleLogin(idToken: auth.idToken!);
+
+
+      await context.read<ProfileProvider>().fetchProfile();
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => MainScreen()),
+      );
+    } catch (e) {
+      _showError(e.toString());
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  // void _showError(String message) {
+  //   Get.dialog(
+  //     AlertDialog(
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+  //       title: const Row(
+  //         children: [
+  //           Icon(Icons.error_outline_rounded, color: Colors.red),
+  //           SizedBox(width: 8),
+  //           Text('Error'),
+  //         ],
+  //       ),
+  //       content: Text(message),
+  //       actions: [
+  //         FilledButton(onPressed: () => Get.back(), child: const Text('OK')),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+>>>>>>> 2c31d6e4656f538dacbe2d3e0d5b6badd71468ee
   void _showError(String message) {
     Get.dialog(
       AlertDialog(
@@ -386,7 +432,7 @@ class _LoginScreenState extends State<LoginScreen>
               label: 'Continue with Google',
               icon: _GoogleIcon(),
               colors: colors,
-              onTap: () {},
+              onTap: _handleGoogleLogin,
             ),
             const SizedBox(height: 12),
             _SocialButton(

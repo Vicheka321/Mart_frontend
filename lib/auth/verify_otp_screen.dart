@@ -181,6 +181,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
 
       if (!mounted) return;
 
+<<<<<<< HEAD
       // ── Success ──
       // HapticFeedback.heavyImpact();
       // Get.snackbar(
@@ -199,6 +200,8 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
       //   ),
       // );
 
+=======
+>>>>>>> 2c31d6e4656f538dacbe2d3e0d5b6badd71468ee
       await context.read<ProfileProvider>().fetchProfile();
 
       Navigator.pushReplacement(

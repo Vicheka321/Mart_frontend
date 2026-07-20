@@ -2993,13 +2993,14 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mart_frontend/auth/login_screen.dart';
 import 'package:mart_frontend/providers/ProductDetailProvider.dart';
+import 'package:mart_frontend/screens/cart/cart_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/api_service.dart';
 import '../../translations/catalog_translation.dart';
-import '../../services/wishlist_service.dart';
+// import '../../services/wishlist_service.dart';
 import '../theme/app_theme.dart';
 
 // ─────────────────────────────────────────────────────────────
@@ -3664,10 +3665,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   }
 
   Future<void> _handleCart(dynamic p) async {
-    final loggedIn = await _checkLogin();
+    final loggedIn = await ApiService().isLoggedIn();
 
-    if (!loggedIn) return;
-
+    if (!loggedIn) {
+      Get.to(() => const LoginScreen());
+      return;
+    }
     setState(() => cartLoading = true);
 
     try {
@@ -3684,16 +3687,38 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       }
 
       if (mounted) {
-        context.read<CartProvider>().fetchCart();
+        await context.read<CartProvider>().fetchCart();
 
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        if (!mounted) return;
 
-        Future.delayed(const Duration(milliseconds: 300), () {
-          context.read<CartProvider>().fetchCart();
+        setState(() {
+          isInCart = true;
+          cartQty = qty;
         });
       }
     } catch (e) {
-      debugPrint(e.toString());
+      Get.snackbar(
+        'Stock',
+        e.toString().contains('SocketException')
+            ? 'No internet connection.'
+            : 'Something went wrong. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        borderRadius: 16,
+        backgroundColor: Get.theme.cardColor,
+        colorText: Get.theme.textTheme.bodyLarge?.color,
+        icon: const Icon(Icons.error_outline_rounded, color: Color(0xFFFF3B30)),
+        boxShadows: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+        duration: const Duration(seconds: 3),
+        isDismissible: true,
+        forwardAnimationCurve: Curves.easeOutCubic,
+      );
     } finally {
       if (mounted) {
         setState(() => cartLoading = false);
@@ -3701,81 +3726,72 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     }
   }
 
-  // Future<void> _handleCart(dynamic p) async {
-  //   setState(() => cartLoading = true);
-  //   try {
-  //     if (isInCart) {
-  //       await ApiService().updateCart(
-  //         productId: widget.productId,
-  //         quantity: qty,
-  //       );
-  //     } else {
-  //       await ApiService().addToCart(
-  //         productId: widget.productId,
-  //         quantity: qty,
-  //       );
-  //     }
-  //     if (mounted) {
-  //       setState(() {
-  //         isInCart = true;
-  //         cartQty = qty;
-  //       });
-  //       context.read<CartProvider>().fetchCart();
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text(isInCart ? 'cart_updated'.tr : 'added_to_cart'.tr),
-  //           duration: const Duration(milliseconds: 900),
-  //         ),
-  //       );
-  //     }
-  //   } catch (_) {
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(
-  //         context,
-  //       ).showSnackBar(SnackBar(content: Text('something_went_wrong'.tr)));
-  //     }
-  //   } finally {
-  //     if (mounted) setState(() => cartLoading = false);
-  //   }
-  // }
-
   Future<void> _loadFavorite() async {
-    final saved = await WishlistService().isFavorite(widget.productId);
-    if (mounted) setState(() => isFavorite = saved);
-  }
-
-  Future<void> _toggleFavourite() async {
-    final loggedIn = await _checkLogin();
+    final loggedIn = await ApiService().isLoggedIn();
 
     if (!loggedIn) return;
 
-    HapticFeedback.lightImpact();
+    try {
+      final favorite = await ApiService().isFavorite(widget.productId);
 
-    final saved = await WishlistService().toggle(widget.productId);
+      if (!mounted) return;
 
-    if (mounted) {
-      setState(() => isFavorite = saved);
+      setState(() {
+        isFavorite = favorite;
+      });
+    } catch (e) {
+      debugPrint(e.toString());
     }
-
-    _fadeCtrl.forward(from: 0);
   }
 
-  Future<bool> _checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+  Future<void> _toggleFavorite() async {
+    final loggedIn = await ApiService().isLoggedIn();
 
-    if (token == null || token.isEmpty) {
-      if (!mounted) return false;
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
-
-      return false;
+    if (!loggedIn) {
+      Get.to(() => const LoginScreen());
+      return;
     }
 
-    return true;
+    HapticFeedback.lightImpact();
+
+    try {
+      if (isFavorite) {
+        await ApiService().removeFavorite(widget.productId);
+        await _loadFavorite();
+
+        if (!mounted) return;
+
+        setState(() {
+          isFavorite = false;
+        });
+      } else {
+        await ApiService().addFavorite(widget.productId);
+        await _loadFavorite();
+
+        if (!mounted) return;
+
+        setState(() {
+          isFavorite = true;
+        });
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _openCart() async {
+    final provider = context.read<CartProvider>();
+
+    if (provider.cart == null) {
+      await provider.fetchCart();
+    }
+
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const CartBottomSheet(),
+    );
   }
 
   @override
@@ -3896,39 +3912,71 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                           top: mq.padding.top + _T.sp10,
                           right: _T.sp16,
                           child: GestureDetector(
-                            onTap: _toggleFavourite,
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: colors.cardBg.withOpacity(.88),
-                                borderRadius: BorderRadius.circular(
-                                  _T.radiusMd,
+                            onTap: _openCart,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: colors.cardBg.withOpacity(.95),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: colors.border,
+                                      width: .8,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(.05),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(
+                                    Icons.shopping_cart_outlined,
+                                    size: 22,
+                                    color: colors.accent,
+                                  ),
                                 ),
-                                border: Border.all(
-                                  color: colors.border,
-                                  width: .5,
-                                ),
-                              ),
-                              child: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 220),
-                                transitionBuilder: (c, a) =>
-                                    ScaleTransition(scale: a, child: c),
-                                child: Icon(
-                                  isFavorite
-                                      ? Icons.favorite_rounded
-                                      : Icons.favorite_border_rounded,
-                                  key: ValueKey(isFavorite),
-                                  size: 16,
-                                  color: isFavorite
-                                      ? colors.flashText
-                                      : colors.text2,
-                                ),
-                              ),
+
+                                if (cartQty > 0)
+                                  Positioned(
+                                    right: -2,
+                                    top: -2,
+                                    child: Container(
+                                      constraints: const BoxConstraints(
+                                        minWidth: 18,
+                                        minHeight: 18,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          cartQty > 99 ? '99+' : '$cartQty',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                         ),
-
                         // ── dot indicators (bottom-center) ──
                         if (images.length > 1)
                           Positioned(
@@ -4074,11 +4122,56 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                 color: colors.text1,
                               ),
                             ),
+                            // _QuantityStepper(
+                            //   qty: qty,
+                            //   onIncrement: () => setState(() => qty++),
+                            //   onDecrement: () {
+                            //     if (qty > 1) setState(() => qty--);
+                            //   },
+                            // ),
                             _QuantityStepper(
                               qty: qty,
-                              onIncrement: () => setState(() => qty++),
+                              onIncrement: () {
+                                if (qty >= stockQty) {
+                                  Get.snackbar(
+                                    'Out of Stock',
+                                    'Only $stockQty item(s) available.',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    margin: const EdgeInsets.fromLTRB(
+                                      16,
+                                      0,
+                                      16,
+                                      16,
+                                    ),
+                                    borderRadius: 16,
+                                    backgroundColor: Get.theme.cardColor,
+                                    colorText:
+                                        Get.theme.textTheme.bodyLarge?.color,
+                                    icon: const Icon(
+                                      Icons.inventory_2_outlined,
+                                      color: Color(0xFFFF9500),
+                                    ),
+                                    boxShadows: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.18),
+                                        blurRadius: 22,
+                                        offset: const Offset(0, 10),
+                                      ),
+                                    ],
+                                    duration: const Duration(seconds: 3),
+                                    isDismissible: true,
+                                    forwardAnimationCurve: Curves.easeOutCubic,
+                                  );
+
+                                  return;
+                                }
+
+                                setState(() => qty++);
+                              },
                               onDecrement: () {
-                                if (qty > 1) setState(() => qty--);
+                                if (qty > 1) {
+                                  setState(() => qty--);
+                                }
                               },
                             ),
                           ],
@@ -4093,15 +4186,40 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                           children: [
                             _WishlistButton(
                               isFavorite: isFavorite,
-                              onTap: _toggleFavourite,
+                              onTap: _toggleFavorite,
                             ),
                             const SizedBox(width: _T.sp10),
-                            _CartButton(
-                              isInCart: isInCart,
-                              loading: cartLoading,
+                            // _CartButton(
+                            //   isInCart: isInCart,
+                            //   loading: cartLoading,
 
-                              onTap: () => _handleCart(p),
-                            ),
+                            //   onTap: () => _handleCart(p),
+                            // ),
+                            if (stockQty <= 0)
+                              Expanded(
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey,
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      "OUT OF STOCK",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              _CartButton(
+                                isInCart: isInCart,
+                                loading: cartLoading,
+                                onTap: () => _handleCart(p),
+                              ),
                           ],
                         ),
                       ],

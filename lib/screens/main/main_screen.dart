@@ -9,10 +9,15 @@ import '../../profile/profile_screen.dart';
 import '../theme/app_theme.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  
+  const MainScreen({super.key,});
 
   static void switchToHome(BuildContext context) {
     context.findAncestorStateOfType<_MainScreenState>()?.switchToTab(0);
+  }
+
+  static void switchToOrders(BuildContext context) {
+    context.findAncestorStateOfType<_MainScreenState>()?.switchToTab(2);
   }
 
   @override

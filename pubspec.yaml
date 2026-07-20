@@ -46,6 +46,18 @@ dependencies:
   hugeicons: ^0.0.7
   url_launcher: ^6.2.0
   cached_network_image: ^3.4.1
+<<<<<<< HEAD
+=======
+  screenshot: ^3.0.0
+  share_plus: ^10.0.0
+  path_provider: ^2.1.4
+  firebase_core: ^4.1.1
+  firebase_messaging: ^16.0.1
+  flutter_local_notifications: ^19.4.0
+  badges: ^3.1.2
+  google_sign_in: ^6.3.0
+
+>>>>>>> 2c31d6e4656f538dacbe2d3e0d5b6badd71468ee
 
 
 dev_dependencies:

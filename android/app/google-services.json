@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "509463972265",
+    "project_id": "darita-mart-47f44",
+    "storage_bucket": "darita-mart-47f44.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:509463972265:android:89e7742d1bdf6564bd5cb8",
+        "android_client_info": {
+          "package_name": "com.example.mart_frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWBtxbN59yOk3QQ0OoXQV9UMouve5w_-I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

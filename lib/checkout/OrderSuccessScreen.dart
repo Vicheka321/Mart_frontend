@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 import 'dart:async';
 
+=======
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:cached_network_image/cached_network_image.dart';
+>>>>>>> 2c31d6e4656f538dacbe2d3e0d5b6badd71468ee
 import 'package:flutter/material.dart';
 import 'package:mart_frontend/providers/cart_provider.dart';
 import 'package:mart_frontend/screens/main/main_screen.dart';

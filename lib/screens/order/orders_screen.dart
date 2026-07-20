@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // import 'dart:async';
 // import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart';
@@ -3746,11 +3747,18 @@
 // }
 
 import 'dart:async';
+=======
+import 'dart:ui';
+>>>>>>> 2c31d6e4656f538dacbe2d3e0d5b6badd71468ee
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_utils/src/extensions/internacionalization.dart';
+<<<<<<< HEAD
 import 'package:mart_frontend/checkout/checkout_screen.dart';
+=======
+import 'package:mart_frontend/screens/order/invoice_screen.dart';
+>>>>>>> 2c31d6e4656f538dacbe2d3e0d5b6badd71468ee
 import '../../models/my_orders_model.dart';
 import '../../services/api_service.dart';
 import '../main/main_screen.dart';
@@ -3908,9 +3916,20 @@ class _OrdersScreenState extends State<OrdersScreen>
     }).toList();
   }
 
+<<<<<<< HEAD
   Future<void> _buyAgain(Order order) async {
     // HapticFeedback.mediumImpact();
 
+=======
+  // void _openDetail(Order order) {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(builder: (_) => InvoiceScreen(orderId: order.id)),
+  //   );
+  // }
+
+  void _openOrderDetail(Order order) {
+>>>>>>> 2c31d6e4656f538dacbe2d3e0d5b6badd71468ee
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -3930,6 +3949,36 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
   }
 
+<<<<<<< HEAD
+=======
+  void _openInvoice(Order order) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => InvoiceScreen(orderId: order.id)),
+    );
+  }
+
+  void _buyAgain(Order order) {
+    HapticFeedback.mediumImpact();
+    // Navigate to checkout with order items — wire up to your CheckoutScreen
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (_) => CheckoutScreen(
+    //       fromCart: false,
+    //       items: order.items.map((item) => OrderItem(
+    //         id: item.productId?.toString() ?? '',
+    //         name: item.name,
+    //         imageUrl: item.image,
+    //         unitPrice: double.parse(item.finalPrice),
+    //         quantity: item.qty,
+    //       )).toList(),
+    //     ),
+    //   ),
+    // );
+  }
+
+>>>>>>> 2c31d6e4656f538dacbe2d3e0d5b6badd71468ee
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -3953,8 +4002,14 @@ class _OrdersScreenState extends State<OrdersScreen>
                     orders: _filtered(tab['filter']),
                     colors: colors,
                     onRefresh: () => _loadOrders(refresh: true),
+<<<<<<< HEAD
                     onTap: (o) => _openDetail(o),
                     onReorder: (o) => _buyAgain(o),
+=======
+                    onTap: _openOrderDetail,
+                    onInvoice: _openInvoice,
+                    onReorder: _buyAgain,
+>>>>>>> 2c31d6e4656f538dacbe2d3e0d5b6badd71468ee
                   );
                 }).toList(),
               ),
@@ -4162,6 +4217,7 @@ class _OrderTabView extends StatelessWidget {
   final AppColors colors;
   final Future<void> Function() onRefresh;
   final void Function(Order) onTap;
+  final void Function(Order) onInvoice;
   final void Function(Order) onReorder;
 
   const _OrderTabView({
@@ -4169,6 +4225,7 @@ class _OrderTabView extends StatelessWidget {
     required this.colors,
     required this.onRefresh,
     required this.onTap,
+    required this.onInvoice,
     required this.onReorder,
   });
 
@@ -4186,6 +4243,7 @@ class _OrderTabView extends StatelessWidget {
           order: orders[i],
           colors: colors,
           onTap: () => onTap(orders[i]),
+          onInvoice: () => onInvoice(orders[i]),
           onReorder: () => onReorder(orders[i]),
         ),
       ),
@@ -4265,12 +4323,14 @@ class _OrderCard extends StatefulWidget {
   final Order order;
   final AppColors colors;
   final VoidCallback onTap;
+  final VoidCallback onInvoice;
   final VoidCallback onReorder;
 
   const _OrderCard({
     required this.order,
     required this.colors,
     required this.onTap,
+    required this.onInvoice,
     required this.onReorder,
   });
 
@@ -4618,29 +4678,39 @@ class _OrderCardState extends State<_OrderCard>
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
               child: Row(
                 children: [
-                  if (!isCancelled && !isDelivered) ...[
+                  if (!isCancelled) ...[
                     Expanded(
                       child: _CardButton(
-                        label: 'track_order'.tr,
-                        icon: Icons.local_shipping_outlined,
+                        label: isDelivered ? 'buy_again'.tr : 'track_order'.tr,
+                        icon: isDelivered
+                            ? Icons.refresh_rounded
+                            : Icons.local_shipping_outlined,
                         isPrimary: true,
                         colors: c,
-                        onTap: widget.onTap,
+                        onTap: isDelivered ? widget.onReorder : widget.onTap,
                       ),
                     ),
                     const SizedBox(width: 8),
-                  ],
-                  Expanded(
-                    child: _CardButton(
-                      label: isDelivered ? 'buy_again'.tr : 'details'.tr,
-                      icon: isDelivered
-                          ? Icons.refresh_rounded
-                          : Icons.receipt_long_outlined,
-                      isPrimary: isDelivered,
-                      colors: c,
-                      onTap: isDelivered ? widget.onReorder : widget.onTap,
+                    Expanded(
+                      child: _CardButton(
+                        label: 'invoice'.tr,
+                        icon: Icons.receipt_long_outlined,
+                        isPrimary: false,
+                        colors: c,
+                        onTap: widget.onInvoice,
+                      ),
                     ),
-                  ),
+                  ] else ...[
+                    Expanded(
+                      child: _CardButton(
+                        label: 'invoice'.tr,
+                        icon: Icons.receipt_long_outlined,
+                        isPrimary: false,
+                        colors: c,
+                        onTap: widget.onInvoice,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

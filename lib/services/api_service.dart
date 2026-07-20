@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:mart_frontend/models/address_model.dart';
 import 'package:mart_frontend/models/brands_with_products.dart';
@@ -12,7 +13,6 @@ import '../models/categories_model.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:http_parser/http_parser.dart';
 import 'dart:io';
-
 import '../models/my_orders_model.dart';
 import '../models/profile_model.dart';
 
@@ -402,6 +402,12 @@ class ApiService {
       if (data["token"] != null) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString("token", data["token"]);
+
+        final fcmToken = await FirebaseMessaging.instance.getToken();
+
+        if (fcmToken != null) {
+          await saveUserToken(fcmToken);
+        }
       }
       return data;
     }
@@ -430,6 +436,12 @@ class ApiService {
         if (data["token"] != null) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString("token", data["token"]);
+
+          final fcmToken = await FirebaseMessaging.instance.getToken();
+
+          if (fcmToken != null) {
+            await saveUserToken(fcmToken);
+          }
         }
         print(data["token"]);
 
@@ -553,6 +565,35 @@ class ApiService {
     } catch (e) {
       throw Exception(e.toString());
     }
+  }
+
+  Future<Map<String, dynamic>> googleLogin({required String idToken}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/google-login'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'id_token': idToken}),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      final prefs = await SharedPreferences.getInstance();
+
+      await prefs.setString("token", data["token"]);
+
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+
+      if (fcmToken != null) {
+        await saveUserToken(fcmToken);
+      }
+
+      return data;
+    }
+
+    throw Exception(data["message"]);
   }
 
   // =================== orders=================
@@ -717,6 +758,129 @@ class ApiService {
     }
   }
 
+<<<<<<< HEAD
+=======
+  Future<OrderDetailModel> getOrderDetail(int orderId) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final token = prefs.getString("token");
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/orders/$orderId'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load order');
+    }
+
+    final json = jsonDecode(response.body);
+
+    return OrderDetailModel.fromJson(json);
+  }
+
+  Future<Map<String, dynamic>> addFavorite(int productId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null) {
+      throw Exception('Please login first');
+    }
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/favorite'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+      body: {'product_id': productId.toString()},
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Failed to add favorite');
+  }
+
+  Future<Map<String, dynamic>> removeFavorite(int productId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null) {
+      throw Exception("Please login first");
+    }
+
+    final response = await http.delete(
+      Uri.parse('$baseUrl/favorite/$productId'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Failed to remove favorite');
+  }
+
+  Future<bool> isFavorite(int productId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null) {
+      return false;
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/favorite/check/$productId'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['is_favorite'] ?? false;
+    }
+
+    return false;
+  }
+
+  Future<List<dynamic>> getMyFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null) {
+      throw Exception("Please login first");
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/favorites'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      // If API returns:
+      // { "favorites": [...] }
+      if (data is Map<String, dynamic> && data.containsKey('favorites')) {
+        return List<dynamic>.from(data['favorites']);
+      }
+
+      // If API returns:
+      // [ ... ]
+      if (data is List) {
+        return List<dynamic>.from(data);
+      }
+
+      return [];
+    }
+
+    final data = jsonDecode(response.body);
+    throw Exception(data['message'] ?? 'Failed to load favorites');
+  }
+
+>>>>>>> 2c31d6e4656f538dacbe2d3e0d5b6badd71468ee
   // ==========================profile================
 
   Future<MyProfileModel> fetchMyProfile() async {
@@ -736,54 +900,6 @@ class ApiService {
 
     throw Exception('Failed to load profile');
   }
-
-  // Future<Map<String, dynamic>> updateProfile({
-  //   required String fullName,
-  //   File? avatar,
-  // }) async {
-  //   try {
-  //     final prefs = await SharedPreferences.getInstance();
-  //     final token = prefs.getString('token');
-
-  //     if (token == null) {
-  //       throw Exception("Unauthorized");
-  //     }
-
-  //     var request = http.MultipartRequest(
-  //       "POST",
-  //       Uri.parse("$baseUrl/update-profile"),
-  //     );
-
-  //     request.headers["Authorization"] = "Bearer $token";
-  //     request.headers["Accept"] = "application/json";
-
-  //     request.fields["full_name"] = fullName;
-
-  //     if (avatar != null) {
-  //       request.files.add(
-  //         await http.MultipartFile.fromPath(
-  //           "avatar",
-  //           avatar.path,
-  //           contentType: MediaType('image', 'jpeg'),
-  //         ),
-  //       );
-  //     }
-
-  //     final streamedResponse = await request.send();
-
-  //     final response = await http.Response.fromStream(streamedResponse);
-
-  //     final data = jsonDecode(response.body);
-
-  //     if (response.statusCode == 200) {
-  //       return data;
-  //     }
-
-  //     throw Exception(data["message"] ?? "Profile update failed");
-  //   } catch (e) {
-  //     throw Exception(e.toString());
-  //   }
-  // }
 
   Future<Map<String, dynamic>> updateProfile({
     required String fullName,
@@ -1072,5 +1188,54 @@ class ApiService {
     );
 
     return jsonDecode(response.body);
+  }
+
+  Future<void> saveGuestToken(String token) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/device-token/guest'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'fcm_token': token,
+          'device_id': 'android-device',
+          'platform': Platform.isAndroid ? 'android' : 'ios',
+        }),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print(response.body);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> saveUserToken(String fcmToken) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userToken = prefs.getString('token');
+
+    if (userToken == null) {
+      print('User not logged in');
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/device-token'),
+      headers: {
+        'Authorization': 'Bearer $userToken',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'fcm_token': fcmToken,
+        'device_id': 'android-device',
+        'platform': Platform.isAndroid ? 'android' : 'ios',
+      }),
+    );
+
+    print('Status: ${response.statusCode}');
+    print(response.body);
   }
 }
