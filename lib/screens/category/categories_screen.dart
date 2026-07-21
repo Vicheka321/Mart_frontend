@@ -740,8 +740,9 @@ class _ProductTileState extends State<_ProductTile>
                     // const SizedBox(height: 5),
                     Row(
                       children: [
+                        // Final price
                         Text(
-                          '\$${_price.toStringAsFixed(2)}',
+                          '\$${widget.product.finalPrice}',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -749,7 +750,44 @@ class _ProductTileState extends State<_ProductTile>
                           ),
                         ),
 
-                        // const SizedBox(width: 4),
+                        if (widget.product.discount != null) ...[
+                          const SizedBox(width: 8),
+
+                          // Original price
+                          Text(
+                            '\$${widget.product.salePrice}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+
+                          const SizedBox(width: 8),
+
+                          // Discount badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEAF7EA),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '-${widget.product.discount!.display}',
+                              style: const TextStyle(
+                                color: Color(0xFF2563EB),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+
+                        // const SizedBox(width: 8),
+
                         // Text(
                         //   _inStock
                         //       ? 'In stock (${widget.product.quantity})'

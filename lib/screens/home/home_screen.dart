@@ -1558,7 +1558,7 @@ class _ProductCardState extends State<_ProductCard> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        '-${double.parse(widget.product.discount!.replaceAll('%', '')).toInt()}%',
+                        "-${widget.product.discount}",
                         style: const TextStyle(
                           color: Color(0xFF2563EB),
                           fontSize: 12,
