@@ -583,18 +583,20 @@ class ApiService {
     if (response.statusCode == 200) {
       final prefs = await SharedPreferences.getInstance();
 
-      await prefs.setString("token", data["token"]);
+      // Save Sanctum token
+      if (data['token'] != null) {
+        await prefs.setString('token', data['token']);
+      }
 
+      // Save FCM token to server
       final fcmToken = await FirebaseMessaging.instance.getToken();
 
       if (fcmToken != null) {
         await saveUserToken(fcmToken);
       }
-
-      return data;
     }
 
-    throw Exception(data["message"]);
+    return data;
   }
 
   // =================== orders=================

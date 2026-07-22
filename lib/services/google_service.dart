@@ -1,22 +1,21 @@
 import 'package:google_sign_in/google_sign_in.dart';
 
 class GoogleService {
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: [
+      'email',
+    ],
+  );
 
   Future<GoogleSignInAuthentication?> signIn() async {
-    final GoogleSignInAccount? account =
-        await _googleSignIn.signIn();
+    await _googleSignIn.signOut();
 
-    if (account == null) {
-      return null;
-    }
+    final account = await _googleSignIn.signIn();
+
+    if (account == null) return null;
 
     final auth = await account.authentication;
 
     return auth;
-  }
-
-  Future<void> signOut() async {
-    await _googleSignIn.signOut();
   }
 }

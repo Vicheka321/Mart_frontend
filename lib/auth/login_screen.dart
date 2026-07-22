@@ -115,10 +115,6 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> _handleGoogleLogin() async {
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
       final auth = await GoogleService().signIn();
 
@@ -126,46 +122,39 @@ class _LoginScreenState extends State<LoginScreen>
         return;
       }
 
-      await ApiService().googleLogin(idToken: auth.idToken!);
+      if (auth.idToken == null) {
+        _showError("Google idToken is null");
+        return;
+      }
 
+      // Login to Laravel
+      final result = await ApiService().googleLogin(idToken: auth.idToken!);
 
-      await context.read<ProfileProvider>().fetchProfile();
+      // Check login success
+      if (result['token'] == null || result['token'].toString().isEmpty) {
+        _showError(
+          result['message'] ?? 'Google login failed. Please try again.',
+        );
+        return;
+      }
 
       if (!mounted) return;
 
+      await context.read<ProfileProvider>().fetchProfile();
+
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => MainScreen()),
+        MaterialPageRoute(builder: (_) => const MainScreen()),
       );
     } catch (e) {
-      _showError(e.toString());
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      _showError(e.toString().replaceFirst('Exception: ', ''));
     }
   }
 
-  // void _showError(String message) {
-  //   Get.dialog(
-  //     AlertDialog(
-  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-  //       title: const Row(
-  //         children: [
-  //           Icon(Icons.error_outline_rounded, color: Colors.red),
-  //           SizedBox(width: 8),
-  //           Text('Error'),
-  //         ],
-  //       ),
-  //       content: Text(message),
-  //       actions: [
-  //         FilledButton(onPressed: () => Get.back(), child: const Text('OK')),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   void _showError(String message) {
     Get.dialog(
@@ -474,17 +463,17 @@ class _LoginScreenState extends State<LoginScreen>
               colors: colors,
               onTap: _handleGoogleLogin,
             ),
-            const SizedBox(height: 12),
-            _SocialButton(
-              label: 'Continue with Facebook',
-              icon: Icon(
-                Icons.facebook_outlined,
-                size: 22,
-                color: colors.accent,
-              ),
-              colors: colors,
-              onTap: () {},
-            ),
+            // const SizedBox(height: 12),
+            // _SocialButton(
+            //   label: 'Continue with Facebook',
+            //   icon: Icon(
+            //     Icons.facebook_outlined,
+            //     size: 22,
+            //     color: colors.accent,
+            //   ),
+            //   colors: colors,
+            //   onTap: () {},
+            // ),
 
             const SizedBox(height: 24),
 
