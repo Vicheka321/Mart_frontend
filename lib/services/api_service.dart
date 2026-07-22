@@ -636,25 +636,25 @@ class ApiService {
 
   Future updateCart({required int productId, required int quantity}) async {
     final prefs = await SharedPreferences.getInstance();
-
     final token = prefs.getString("token");
 
     final response = await http.post(
       Uri.parse("$baseUrl/update-cart"),
-
       headers: {
         "Authorization": "Bearer $token",
         "Accept": "application/json",
         "Content-Type": "application/json",
       },
-
       body: jsonEncode({"product_id": productId, "quantity": quantity}),
     );
 
+    final body = jsonDecode(response.body);
+
     if (response.statusCode == 200) {
-      throw Exception("Cart updated successfully");
+      return body;
     }
-    throw Exception("Update failed");
+
+    throw Exception(body["message"] ?? "Update failed");
   }
 
   Future<MyCartModel> getCart() async {
