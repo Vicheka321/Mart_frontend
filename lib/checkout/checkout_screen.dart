@@ -27,21 +27,14 @@ import '../screens/theme/app_theme.dart';
 // MODELS
 // ─────────────────────────────────────────────
 
-
-
 enum PaymentMethod { cash, khqr }
 
 extension PaymentMethodX on PaymentMethod {
   String get apiValue => ['cash', 'khqr'][index];
   String get label => ['Cash on Delivery', 'KHQR'][index];
-  String get desc => [
-    'Pay when you receive',
-    'Scan QR code to pay',
-  ][index];
-  IconData get icon => [
-    Icons.payments_outlined,
-    Icons.qr_code_scanner_rounded,
-  ][index];
+  String get desc => ['Pay when you receive', 'Scan QR code to pay'][index];
+  IconData get icon =>
+      [Icons.payments_outlined, Icons.qr_code_scanner_rounded][index];
 }
 
 // enum PaymentMethod { cash, aba, khqr }
@@ -60,8 +53,6 @@ extension PaymentMethodX on PaymentMethod {
 //     Icons.qr_code_scanner_rounded,
 //   ][index];
 // }
-
-
 
 // enum PaymentMethod { aba, khqr }
 
@@ -429,17 +420,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _ctrl.loadCartSummary();
     }
     _loadProfile();
-    _ctrl.loadAddresses().then((_) {
-      final defaultAddress = _ctrl.savedAddresses
-          .where((e) => e.isDefault)
-          .firstOrNull;
+    // _ctrl.loadAddresses().then((_) {
+    //   final defaultAddress = _ctrl.savedAddresses
+    //       .where((e) => e.isDefault)
+    //       .firstOrNull;
 
-      if (defaultAddress != null) {
-        setState(() {
-          _address = defaultAddress.toDelivery();
-          _nameCtrl.text = defaultAddress.fullName ?? "";
-        });
-      }
+    //   if (defaultAddress != null) {
+    //     setState(() {
+    //       _address = defaultAddress.toDelivery();
+    //       _nameCtrl.text = defaultAddress.fullName ?? "";
+    //     });
+    //   }
+    // });
+    _ctrl.loadAddresses().then((_) {
+      if (_ctrl.savedAddresses.isEmpty) return;
+
+      // 1. Use default address if it exists
+      final selected =
+          _ctrl.savedAddresses.where((e) => e.isDefault).firstOrNull ??
+          // 2. Otherwise use the first saved address
+          _ctrl.savedAddresses.first;
+
+      setState(() {
+        _address = selected.toDelivery();
+        _nameCtrl.text = selected.fullName ?? "";
+        _shouldSaveAddress = false;
+      });
     });
   }
 
