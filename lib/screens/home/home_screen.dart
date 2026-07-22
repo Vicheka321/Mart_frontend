@@ -77,19 +77,19 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       // preload product detail
-      unawaited(
-        Future.wait([
-          ...bestSellerProvider.products
-              .take(10)
-              .map((e) => detailProvider.preload(e.id)),
-          ...newArrivalProvider.products
-              .take(10)
-              .map((e) => detailProvider.preload(e.id)),
-          ...recommendProvider.recommended
-              .take(10)
-              .map((e) => detailProvider.preload(e.id)),
-        ]),
-      );
+      // unawaited(
+      //   Future.wait([
+      //     ...bestSellerProvider.products
+      //         .take(10)
+      //         .map((e) => detailProvider.preload(e.id)),
+      //     ...newArrivalProvider.products
+      //         .take(10)
+      //         .map((e) => detailProvider.preload(e.id)),
+      //     ...recommendProvider.recommended
+      //         .take(10)
+      //         .map((e) => detailProvider.preload(e.id)),
+      //   ]),
+      // );
     });
   }
 

@@ -634,7 +634,10 @@ class ApiService {
     }
   }
 
-  Future updateCart({required int productId, required int quantity}) async {
+  Future<Map<String, dynamic>> updateCart({
+    required int productId,
+    required int quantity,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
 

@@ -706,6 +706,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           cartQty = qty;
         });
       }
+      Get.snackbar(
+        "Success",
+        "Cart updated successfully",
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        borderRadius: 16,
+        backgroundColor: Get.theme.cardColor,
+        colorText: Get.theme.textTheme.bodyLarge?.color,
+        icon: const Icon(
+          Icons.check_circle_rounded,
+          color: Color(0xFF34C759), // Green
+        ),
+        boxShadows: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+        duration: const Duration(seconds: 2),
+        isDismissible: true,
+        forwardAnimationCurve: Curves.easeOutCubic,
+      );
     } catch (e) {
       Get.snackbar(
         'Stock',
