@@ -8,7 +8,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mart_frontend/checkout/OrderSuccessScreen.dart';
 import 'package:mart_frontend/checkout/khqr_screen.dart';
 import 'package:mart_frontend/models/products_model.dart';
+import 'package:mart_frontend/providers/best_seller_provider.dart';
+import 'package:mart_frontend/providers/cart_provider.dart';
+import 'package:mart_frontend/providers/new_arrival_provider.dart';
+import 'package:mart_frontend/providers/recommend_provider.dart';
 import 'package:mart_frontend/services/api_service.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../screens/theme/app_theme.dart';
@@ -610,7 +615,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       couponCode: _ctrl.coupon?.code ?? '',
       note: _noteCtrl.text.trim(),
-      onCash: (id) {
+
+      // onCash: (id) {
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(
+      //       builder: (_) => OrderSuccessScreen(orderId: int.parse(id)),
+      //     ),
+      //   );
+      // },
+      onCash: (id) async {
+        await Future.wait([
+          context.read<CartProvider>().fetchCart(),
+          context.read<BestSellerProvider>().fetchBestSellers(),
+          context.read<NewArrivalsProvider>().fetchNewArrivals(),
+          context.read<RecommendProvider>().fetchRecommended(),
+        ]);
+
+        if (!mounted) return;
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

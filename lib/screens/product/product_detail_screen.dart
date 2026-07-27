@@ -874,7 +874,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     productFuture = context.read<ProductDetailProvider>().getOrFetch(
       widget.productId,
     );
-    _loadEverything();
+    _refreshProduct();
+    _loadFavorite();
+    _loadCartQty();
     _fadeCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 340),
@@ -924,6 +926,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           isInCart = q > 0;
         });
     } catch (_) {}
+  }
+
+  Future<void> _refreshProduct() async {
+    setState(() {
+      productFuture = ApiService().fetchProduct(widget.productId);
+    });
   }
 
   Future<void> _handleCart(dynamic p) async {

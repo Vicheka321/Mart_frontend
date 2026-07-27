@@ -3,7 +3,12 @@ import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:mart_frontend/providers/banner_provider.dart';
+import 'package:mart_frontend/providers/best_seller_provider.dart';
 import 'package:mart_frontend/providers/cart_provider.dart';
+import 'package:mart_frontend/providers/category_provider.dart';
+import 'package:mart_frontend/providers/new_arrival_provider.dart';
+import 'package:mart_frontend/providers/recommend_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
@@ -251,6 +256,25 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
       (_) => false,
     );
   }
+
+  // Future<void> _continueShopping() async {
+  //   await Future.wait([
+  //     context.read<CartProvider>().fetchCart(),
+  //     context.read<BestSellerProvider>().fetchBestSellers(),
+  //     context.read<NewArrivalsProvider>().fetchNewArrivals(),
+  //     context.read<RecommendProvider>().fetchRecommended(),
+  //     context.read<CategoryProvider>().fetchCategories(),
+  //     context.read<BannerProvider>().fetchBanners(),
+  //   ]);
+
+  //   if (!mounted) return;
+
+  //   Navigator.pushAndRemoveUntil(
+  //     context,
+  //     MaterialPageRoute(builder: (_) => const MainScreen()),
+  //     (_) => false,
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {

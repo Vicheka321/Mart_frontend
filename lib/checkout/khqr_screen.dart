@@ -2,6 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mart_frontend/providers/best_seller_provider.dart';
+import 'package:mart_frontend/providers/cart_provider.dart';
+import 'package:mart_frontend/providers/new_arrival_provider.dart';
+import 'package:mart_frontend/providers/recommend_provider.dart';
+import 'package:provider/provider.dart';
 
 import '../screens/theme/app_theme.dart';
 import '../services/api_service.dart';
@@ -87,16 +92,34 @@ class _KhqrScreenState extends State<KhqrScreen>
         _countdownTimer?.cancel();
         if (mounted) {
           setState(() => _state = _KhqrState.success);
+          // await Future.delayed(const Duration(milliseconds: 1200));
+          // if (mounted) {
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (_) =>
+          //           OrderSuccessScreen(orderId: int.parse(widget.orderId)),
+          //     ),
+          //   );
+          // }
           await Future.delayed(const Duration(milliseconds: 1200));
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    OrderSuccessScreen(orderId: int.parse(widget.orderId)),
-              ),
-            );
-          }
+
+          await Future.wait([
+            context.read<CartProvider>().fetchCart(),
+            context.read<BestSellerProvider>().fetchBestSellers(),
+            context.read<NewArrivalsProvider>().fetchNewArrivals(),
+            context.read<RecommendProvider>().fetchRecommended(),
+          ]);
+
+          if (!mounted) return;
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  OrderSuccessScreen(orderId: int.parse(widget.orderId)),
+            ),
+          );
         }
       }
     } catch (_) {}

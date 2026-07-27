@@ -885,6 +885,23 @@ class ApiService {
     throw Exception(data['message'] ?? 'Failed to load favorites');
   }
 
+  Future<Map<String, dynamic>> cancelOrder(int orderId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/order/cancel/$orderId'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Failed to cancel order');
+  }
   // ==========================profile================
 
   Future<MyProfileModel> fetchMyProfile() async {

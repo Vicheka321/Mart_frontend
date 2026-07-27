@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_utils/src/extensions/internacionalization.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mart_frontend/screens/order/invoice_screen.dart';
 import '../../models/my_orders_model.dart';
 import '../../services/api_service.dart';
@@ -170,11 +171,22 @@ class _OrdersScreenState extends State<OrdersScreen>
   //   );
   // }
 
-  void _openOrderDetail(Order order) {
-    Navigator.push(
+  // void _openOrderDetail(Order order) {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(builder: (_) => OrderDetailScreen(order: order)),
+  //   );
+  // }
+
+  Future<void> _openOrderDetail(Order order) async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => OrderDetailScreen(order: order)),
     );
+
+    if (result == true && mounted) {
+      await _loadOrders(refresh: true);
+    }
   }
 
   void _openInvoice(Order order) {
@@ -1813,6 +1825,97 @@ class _DetailActions extends StatelessWidget {
 
     return Column(
       children: [
+        if (status == 'pending')
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Cancel Order'),
+                    content: const Text(
+                      'Are you sure you want to cancel this order?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('No'),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed != true) return;
+
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => PopScope(
+                    canPop: false,
+                    child: Center(
+                      child: LoadingAnimationWidget.hexagonDots(
+                        color: const Color(0xFF2563EB),
+                        size: 60,
+                      ),
+                    ),
+                  ),
+                );
+
+                try {
+                  await ApiService().cancelOrder(order.id);
+
+                  if (!context.mounted) return;
+
+                  Navigator.pop(context); // close loading
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Order cancelled successfully'),
+                      backgroundColor: Colors.blue,
+                    ),
+                  );
+
+                  Navigator.pop(context, true);
+                } catch (e) {
+                  if (!context.mounted) return;
+
+                  Navigator.pop(context); // close loading
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        e.toString().replaceFirst('Exception: ', ''),
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.close_rounded, size: 18),
+              label: const Text(
+                'Cancel Order',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ),
         if (status == 'completed' || status == 'delivered')
           SizedBox(
             width: double.infinity,

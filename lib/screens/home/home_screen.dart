@@ -2529,13 +2529,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final _bannerController = PageController();
 
-  late Future<MyProfileModel> _profileFuture;
-  late Future<List<BannersModel>> _bannersFuture;
-  late Future<List<CategoriesModel>> _categoriesFuture;
-  late Future<List<BestSellerModel>> _bestSellerFuture;
-  late Future<List<NewArrivalsModel>> _newArrivalsFuture;
-  late Future<List<RecommendedModel>> _recommendedFuture;
-
   @override
   void initState() {
     super.initState();
@@ -2586,21 +2579,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _refresh() async {
-    setState(() {
-      _profileFuture = ApiService().fetchMyProfile();
-      _bannersFuture = ApiService().fetchBanners();
-      _categoriesFuture = ApiService().fetchCategories();
-      _bestSellerFuture = ApiService().fetchBestSellers();
-      _newArrivalsFuture = ApiService().fetchNewArrivals();
-      _recommendedFuture = ApiService().fetchRecommended();
-    });
     await Future.wait([
-      _profileFuture,
-      _bannersFuture,
-      _categoriesFuture,
-      _bestSellerFuture,
-      _newArrivalsFuture,
-      _recommendedFuture,
+      context.read<CartProvider>().fetchCart(),
+      context.read<ProfileProvider>().fetchProfile(),
+
+      context.read<BannerProvider>().fetchBanners(),
+      context.read<CategoryProvider>().fetchCategories(),
+      context.read<BestSellerProvider>().fetchBestSellers(),
+      context.read<NewArrivalsProvider>().fetchNewArrivals(),
+      context.read<BrandsProvider>().fetchBrands(),
+      context.read<RecommendProvider>().fetchRecommended(),
     ]);
   }
 
