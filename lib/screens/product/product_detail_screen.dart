@@ -966,51 +966,59 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           cartQty = qty;
         });
       }
-      Get.snackbar(
-        "Success",
-        "Cart updated successfully",
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        borderRadius: 16,
-        backgroundColor: Get.theme.cardColor,
-        colorText: Get.theme.textTheme.bodyLarge?.color,
-        icon: const Icon(
-          Icons.check_circle_rounded,
-          color: Color(0xFF34C759), // Green
-        ),
-        boxShadows: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.18),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
-          ),
-        ],
-        duration: const Duration(seconds: 2),
-        isDismissible: true,
-        forwardAnimationCurve: Curves.easeOutCubic,
+      // Get.snackbar(
+      //   "Success",
+      //   "Cart updated successfully",
+      //   snackPosition: SnackPosition.BOTTOM,
+      //   margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      //   borderRadius: 16,
+      //   backgroundColor: Get.theme.cardColor,
+      //   colorText: Get.theme.textTheme.bodyLarge?.color,
+      //   icon: const Icon(
+      //     Icons.check_circle_rounded,
+      //     color: Color(0xFF34C759), // Green
+      //   ),
+      //   boxShadows: [
+      //     BoxShadow(
+      //       color: Colors.black.withOpacity(0.18),
+      //       blurRadius: 22,
+      //       offset: const Offset(0, 10),
+      //     ),
+      //   ],
+      //   duration: const Duration(seconds: 2),
+      //   isDismissible: true,
+      //   forwardAnimationCurve: Curves.easeOutCubic,
+      // );
+      SnackBar(
+        content: Text('Cart updated successfully'),
+        backgroundColor: Colors.blue,
       );
     } catch (e) {
-      Get.snackbar(
-        'Stock',
-        e.toString().contains('SocketException')
-            ? 'No internet connection.'
-            : 'Something went wrong. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        borderRadius: 16,
-        backgroundColor: Get.theme.cardColor,
-        colorText: Get.theme.textTheme.bodyLarge?.color,
-        icon: const Icon(Icons.error_outline_rounded, color: Color(0xFFFF3B30)),
-        boxShadows: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.18),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
-          ),
-        ],
-        duration: const Duration(seconds: 3),
-        isDismissible: true,
-        forwardAnimationCurve: Curves.easeOutCubic,
+      // Get.snackbar(
+      //   'Stock',
+      //   e.toString().contains('SocketException')
+      //       ? 'No internet connection.'
+      //       : 'Something went wrong. Please try again.',
+      //   snackPosition: SnackPosition.BOTTOM,
+      //   margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      //   borderRadius: 16,
+      //   backgroundColor: Get.theme.cardColor,
+      //   colorText: Get.theme.textTheme.bodyLarge?.color,
+      //   icon: const Icon(Icons.error_outline_rounded, color: Color(0xFFFF3B30)),
+      //   boxShadows: [
+      //     BoxShadow(
+      //       color: Colors.black.withOpacity(0.18),
+      //       blurRadius: 22,
+      //       offset: const Offset(0, 10),
+      //     ),
+      //   ],
+      //   duration: const Duration(seconds: 3),
+      //   isDismissible: true,
+      //   forwardAnimationCurve: Curves.easeOutCubic,
+      // );
+      SnackBar(
+        content: Text('Something went wrong. Please try again.'),
+        backgroundColor: Colors.blue,
       );
     } finally {
       if (mounted) {
@@ -1084,10 +1092,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         isFavorite = oldValue;
       });
 
-      Get.snackbar(
-        "Favorite",
-        "Unable to update favorite.",
-        snackPosition: SnackPosition.BOTTOM,
+      // Get.snackbar(
+      //   "Favorite",
+      //   "Unable to update favorite.",
+      //   snackPosition: SnackPosition.BOTTOM,
+      // );
+      SnackBar(
+        content: Text('nable to update favorite.'),
+        backgroundColor: Colors.blue,
       );
     }
   }
@@ -1397,28 +1409,32 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           qty: qty,
           onIncrement: () {
             if (qty >= stockQty) {
-              Get.snackbar(
-                'Out of Stock',
-                'Only $stockQty item(s) available.',
-                snackPosition: SnackPosition.BOTTOM,
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                borderRadius: 16,
-                backgroundColor: Get.theme.cardColor,
-                colorText: Get.theme.textTheme.bodyLarge?.color,
-                icon: const Icon(
-                  Icons.inventory_2_outlined,
-                  color: Color(0xFFFF9500),
-                ),
-                boxShadows: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.18),
-                    blurRadius: 22,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-                duration: const Duration(seconds: 3),
-                isDismissible: true,
-                forwardAnimationCurve: Curves.easeOutCubic,
+              // Get.snackbar(
+              //   'Out of Stock',
+              //   'Only $stockQty item(s) available.',
+              //   snackPosition: SnackPosition.BOTTOM,
+              //   margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              //   borderRadius: 16,
+              //   backgroundColor: Get.theme.cardColor,
+              //   colorText: Get.theme.textTheme.bodyLarge?.color,
+              //   icon: const Icon(
+              //     Icons.inventory_2_outlined,
+              //     color: Color(0xFFFF9500),
+              //   ),
+              //   boxShadows: [
+              //     BoxShadow(
+              //       color: Colors.black.withOpacity(0.18),
+              //       blurRadius: 22,
+              //       offset: const Offset(0, 10),
+              //     ),
+              //   ],
+              //   duration: const Duration(seconds: 3),
+              //   isDismissible: true,
+              //   forwardAnimationCurve: Curves.easeOutCubic,
+              // );
+              SnackBar(
+                content: Text('Only $stockQty item(s) available.'),
+                backgroundColor: Colors.blue,
               );
 
               return;
