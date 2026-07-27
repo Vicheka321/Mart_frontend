@@ -630,7 +630,7 @@ class _CategorySection extends StatelessWidget {
                 child: Text(
                   category.name.toUpperCase(),
                   style: TextStyle(
-                    fontSize: 12.5,
+                    fontSize: 13,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.4,
                     color: c.text1,
@@ -738,22 +738,23 @@ class _ProductTileState extends State<_ProductTile>
                     const SizedBox(height: 14),
                     // _UnitBadge(unit: widget.product.unit.name.toLowerCase()),
                     // const SizedBox(height: 5),
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 6,
                       children: [
-                        // Final price
+                        // Final Price
                         Text(
                           '\$${widget.product.finalPrice}',
                           style: TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                             color: c.text1,
                           ),
                         ),
 
                         if (widget.product.discount != null) ...[
-                          const SizedBox(width: 8),
-
-                          // Original price
+                          // Original Price
                           Text(
                             '\$${widget.product.salePrice}',
                             style: TextStyle(
@@ -763,9 +764,7 @@ class _ProductTileState extends State<_ProductTile>
                             ),
                           ),
 
-                          const SizedBox(width: 8),
-
-                          // Discount badge
+                          // Discount Badge
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
@@ -779,24 +778,30 @@ class _ProductTileState extends State<_ProductTile>
                               '-${widget.product.discount!.display}',
                               style: const TextStyle(
                                 color: Color(0xFF2563EB),
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                         ],
 
-                        // const SizedBox(width: 8),
-
-                        // Text(
-                        //   _inStock
-                        //       ? 'In stock (${widget.product.quantity})'
-                        //       : 'Out of stock',
-                        //   style: TextStyle(
-                        //     fontSize: 10,
-                        //     color: _inStock ? c.flashText : c.text3,
+                        // Stock
+                        // if (_inStock)
+                        //   Text(
+                        //     'In stock (${widget.product.quantity})',
+                        //     style: TextStyle(
+                        //       fontSize: 10,
+                        //       color: c.flashText,
+                        //     ),
+                        //   )
+                        // else
+                        //   Text(
+                        //     'Out of stock',
+                        //     style: TextStyle(
+                        //       fontSize: 10,
+                        //       color: c.text3,
+                        //     ),
                         //   ),
-                        // ),
                       ],
                     ),
                   ],
@@ -1045,7 +1050,7 @@ class _BrandSection extends StatelessWidget {
                 child: Text(
                   brand.name.toUpperCase(),
                   style: TextStyle(
-                    fontSize: 12.5,
+                    fontSize: 13,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.4,
                     color: c.text1,
@@ -1152,20 +1157,21 @@ class _BrandProductTileState extends State<_BrandProductTile>
                     const SizedBox(height: 14),
                     // _UnitBadge(unit: widget.product.unit.name.toLowerCase()),
                     // const SizedBox(height: 5),
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 6,
                       children: [
                         Text(
                           '\$${widget.product.finalPrice}',
                           style: TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                             color: c.text1,
                           ),
                         ),
 
                         if (widget.product.discount != null) ...[
-                          const SizedBox(width: 8),
-
                           Text(
                             '\$${widget.product.salePrice}',
                             style: TextStyle(
@@ -1174,8 +1180,6 @@ class _BrandProductTileState extends State<_BrandProductTile>
                               decoration: TextDecoration.lineThrough,
                             ),
                           ),
-
-                          const SizedBox(width: 8),
 
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -1190,7 +1194,7 @@ class _BrandProductTileState extends State<_BrandProductTile>
                               '-${widget.product.discount!.display}',
                               style: const TextStyle(
                                 color: Color(0xFF2563EB),
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

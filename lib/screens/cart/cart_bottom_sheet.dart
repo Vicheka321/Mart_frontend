@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mart_frontend/models/products_model.dart';
@@ -9,9 +11,7 @@ import '../../widgets/skeleton_loader.dart';
 import '../theme/app_theme.dart';
 
 class CartBottomSheet extends StatefulWidget {
-
-  const CartBottomSheet({super.key, });
-  
+  const CartBottomSheet({super.key});
 
   @override
   State<CartBottomSheet> createState() => _CartBottomSheetState();
@@ -19,29 +19,57 @@ class CartBottomSheet extends StatefulWidget {
 
 class _CartBottomSheetState extends State<CartBottomSheet> {
   final Set<int> _updatingItems = {};
+  final Map<int, Timer> _debounceTimers = {};
 
   Future<void> _updateQty(
     BuildContext context,
     int productId,
     int newQty,
   ) async {
-    if (_updatingItems.contains(productId)) return;
+    final provider = context.read<CartProvider>();
 
-    setState(() => _updatingItems.add(productId));
+    final item = provider.cart!.items.firstWhere(
+      (e) => e.productId == productId,
+    );
 
-    try {
-      if (newQty <= 0) {
-        await ApiService().removeCart(productId);
-      } else {
-        await ApiService().updateCart(productId: productId, quantity: newQty);
-      }
-      if (context.mounted) {
-        await context.read<CartProvider>().fetchCart();
-      }
-    } catch (_) {
-    } finally {
-      if (mounted) setState(() => _updatingItems.remove(productId));
-    }
+    final oldQty = item.qty;
+
+    // Update UI immediately
+    provider.updateLocalQty(productId: productId, qty: newQty);
+    _debounceTimers[productId]?.cancel();
+
+    _debounceTimers[productId] = Timer(
+      const Duration(milliseconds: 300),
+      () async {
+        try {
+          if (newQty <= 0) {
+            await ApiService().removeCart(productId);
+
+            provider.removeLocalItem(productId);
+
+            if (!mounted) return;
+
+            if (provider.cart?.items.isEmpty ?? true) {
+              Navigator.of(context).pop();
+            }
+          } else {
+            await ApiService().updateCart(
+              productId: productId,
+              quantity: newQty,
+            );
+          }
+        } catch (e) {
+          // Restore previous quantity
+          provider.updateLocalQty(productId: productId, qty: oldQty);
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Failed to update cart')));
+          }
+        } finally {}
+      },
+    );
   }
 
   @override
@@ -49,8 +77,13 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
     final cart = context.watch<CartProvider>().cart;
     final colors = context.colors;
     final s = MediaQuery.of(context).size.shortestSide;
-
     if (cart == null || cart.items.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      });
+
       return const SizedBox.shrink();
     }
 
@@ -120,7 +153,6 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                       Divider(height: 1, color: colors.border),
                   itemBuilder: (_, i) {
                     final item = cart.items[i];
-                    final isUpdating = _updatingItems.contains(item.productId);
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -195,40 +227,22 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                           SizedBox(width: s * 0.03),
 
                           // Qty stepper
-                          isUpdating
-                              ? SizedBox(
-                                  width: s * 0.06,
-                                  height: s * 0.06,
-                                  child: SkeletonBox(
-                                    width: s * 0.06,
-                                    height: s * 0.06,
-                                    borderRadius: BorderRadius.circular(
-                                      s * 0.03,
-                                    ),
-                                    baseColor: colors.accent.withValues(
-                                      alpha: 0.18,
-                                    ),
-                                    highlightColor: colors.accent.withValues(
-                                      alpha: 0.35,
-                                    ),
-                                  ),
-                                )
-                              : _QtyStepper(
-                                  qty: item.qty,
-                                  accent: colors.accent,
-                                  surface: colors.surface2,
-                                  s: s,
-                                  onDecrement: () => _updateQty(
-                                    context,
-                                    item.productId,
-                                    item.qty - 1,
-                                  ),
-                                  onIncrement: () => _updateQty(
-                                    context,
-                                    item.productId,
-                                    item.qty + 1,
-                                  ),
-                                ),
+                          _QtyStepper(
+                            qty: item.qty,
+                            accent: colors.accent,
+                            surface: colors.surface2,
+                            s: s,
+                            onDecrement: () => _updateQty(
+                              context,
+                              item.productId,
+                              item.qty - 1,
+                            ),
+                            onIncrement: () => _updateQty(
+                              context,
+                              item.productId,
+                              item.qty + 1,
+                            ),
+                          ),
                         ],
                       ),
                     );
@@ -259,7 +273,8 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => CheckoutScreen(items: [], fromCart: true),
+                          builder: (_) =>
+                              CheckoutScreen(items: [], fromCart: true),
                         ),
                       );
                     },

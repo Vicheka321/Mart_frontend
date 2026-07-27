@@ -1374,6 +1374,7 @@ import 'package:mart_frontend/profile/address_screen.dart';
 import 'package:mart_frontend/profile/address_screen.dart';
 import 'package:mart_frontend/profile/edit_profile_screen.dart';
 import 'package:mart_frontend/profile/my_favorite_screen.dart';
+import 'package:mart_frontend/providers/cart_provider.dart';
 import 'package:mart_frontend/providers/profile_provider.dart';
 import 'package:mart_frontend/screens/main/coming_soon_screen.dart';
 import 'package:mart_frontend/screens/main/main_screen.dart';
@@ -1542,6 +1543,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     await prefs.remove("token");
     await prefs.remove("my_profile_cache");
     context.read<ProfileProvider>().clear();
+    context.read<CartProvider>().clear();
   }
 
   @override
@@ -2066,6 +2068,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         MaterialPageRoute(builder: (_) => const MainScreen()),
                         (_) => false,
                       );
+                      
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFEF4444),

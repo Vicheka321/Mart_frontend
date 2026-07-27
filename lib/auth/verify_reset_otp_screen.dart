@@ -49,7 +49,7 @@ class _VerifyResetOtpScreenState extends State<VerifyResetOtpScreen>
   @override
   void initState() {
     super.initState();
-    _sendOtp();
+    // _sendOtp();
     // Entry animation
     _animCtrl = AnimationController(
       vsync: this,
@@ -169,7 +169,6 @@ class _VerifyResetOtpScreenState extends State<VerifyResetOtpScreen>
 
       if (!mounted) return;
 
-
       Get.off(() => ResetPasswordScreen(resetToken: resetToken));
     } catch (e) {
       // HapticFeedback.vibrate();
@@ -192,19 +191,84 @@ class _VerifyResetOtpScreenState extends State<VerifyResetOtpScreen>
   }
 
   Future<void> _sendOtp() async {
+    // try {
+    //   await ApiService().forgotPassword(login: widget.login);
+
+    //   if (!mounted) return;
+    // } catch (e) {
+    //   if (!mounted) return;
+
+    //   // Navigator.pop(context);
+    // }
     try {
       await ApiService().forgotPassword(login: widget.login);
 
-      if (!mounted) return;
-
-  
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              VerifyResetOtpScreen(login: widget.login),
+        ),
+      );
     } catch (e) {
-      if (!mounted) return;
-
-   
-
-      // Navigator.pop(context);
+      _showError(e.toString().replaceFirst("Exception: ", ""));
     }
+  }
+
+  void _showError(String message) {
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.error_outline_rounded,
+                  color: Colors.red,
+                  size: 38,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              const Text(
+                'Account Not Found',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: FilledButton(
+                  onPressed: Get.back,
+                  child: const Text("OK"),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
   // ─────────────────────────────────────────────
   // BUILD

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -13,6 +15,7 @@ import 'package:mart_frontend/services/notification_service.dart';
 import 'package:provider/provider.dart';
 import '../screens/theme/app_theme.dart';
 import 'package:mart_frontend/services/google_service.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 // ─────────────────────────────────────────────
 // LOGIN SCREEN
 // ─────────────────────────────────────────────
@@ -34,6 +37,8 @@ class _LoginScreenState extends State<LoginScreen>
   late final Animation<Offset> _slideAnim;
 
   bool _isLoading = false;
+  bool _isForgotLoading = false;
+  bool _isGoogleLoading = false;
 
   @override
   void initState() {
@@ -114,23 +119,64 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  // Future<void> _handleGoogleLogin() async {
+  //   try {
+  //     final auth = await GoogleService().signIn();
+
+  //     if (auth == null) {
+  //       return;
+  //     }
+
+  //     if (auth.idToken == null) {
+  //       _showError("Google idToken is null");
+  //       return;
+  //     }
+
+  //     // Login to Laravel
+  //     final result = await ApiService().googleLogin(idToken: auth.idToken!);
+
+  //     // Check login success
+  //     if (result['token'] == null || result['token'].toString().isEmpty) {
+  //       _showError(
+  //         result['message'] ?? 'Google login failed. Please try again.',
+  //       );
+  //       return;
+  //     }
+
+  //     if (!mounted) return;
+
+  //     await context.read<ProfileProvider>().fetchProfile();
+
+  //     if (Navigator.canPop(context)) {
+  //       Navigator.pop(context);
+  //     }
+
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(builder: (_) => const MainScreen()),
+  //     );
+  //   } catch (e) {
+  //     _showError(e.toString().replaceFirst('Exception: ', ''));
+  //   }
+  // }
+
   Future<void> _handleGoogleLogin() async {
+    setState(() {
+      _isGoogleLoading = true;
+    });
+
     try {
       final auth = await GoogleService().signIn();
 
-      if (auth == null) {
-        return;
-      }
+      if (auth == null) return;
 
       if (auth.idToken == null) {
         _showError("Google idToken is null");
         return;
       }
 
-      // Login to Laravel
       final result = await ApiService().googleLogin(idToken: auth.idToken!);
 
-      // Check login success
       if (result['token'] == null || result['token'].toString().isEmpty) {
         _showError(
           result['message'] ?? 'Google login failed. Please try again.',
@@ -151,10 +197,15 @@ class _LoginScreenState extends State<LoginScreen>
         MaterialPageRoute(builder: (_) => const MainScreen()),
       );
     } catch (e) {
-      _showError(e.toString().replaceFirst('Exception: ', ''));
+      _showError(e.toString().replaceFirst("Exception: ", ""));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
+        });
+      }
     }
   }
-
 
   void _showError(String message) {
     Get.dialog(
@@ -282,6 +333,43 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ),
+          if (_isForgotLoading || _isGoogleLoading)
+            Container(
+              color: Colors.black45,
+              child: Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                    child: Container(
+                      width: 170,
+                      padding: const EdgeInsets.symmetric(vertical: 26),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(.92),
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          LoadingAnimationWidget.hexagonDots(
+                            color: const Color(0xFF2563EB),
+                            size: 60,
+                          ),
+                          const SizedBox(height: 18),
+                          const Text(
+                            "Loading...",
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -396,52 +484,70 @@ class _LoginScreenState extends State<LoginScreen>
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () async {
-                  if (_emailCtrl.text.trim().isEmpty) {
-                    Get.dialog(
-                      AlertDialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        title: const Row(
-                          children: [
-                            Icon(Icons.error_outline, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Error'),
-                          ],
-                        ),
-                        content: const Text(
-                          'Please enter email or phone first',
-                        ),
-                        actions: [
-                          FilledButton(
-                            onPressed: () => Get.back(),
-                            child: const Text('OK'),
-                          ),
-                        ],
-                      ),
-                    );
-                    return;
-                  }
+                onPressed: _isForgotLoading
+                    ? null
+                    : () async {
+                        if (_emailCtrl.text.trim().isEmpty) {
+                          Get.dialog(
+                            AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              title: const Row(
+                                children: [
+                                  Icon(Icons.error_outline, color: Colors.red),
+                                  SizedBox(width: 8),
+                                  Text('Error'),
+                                ],
+                              ),
+                              content: const Text(
+                                'Please enter email or phone first',
+                              ),
+                              actions: [
+                                FilledButton(
+                                  onPressed: () => Get.back(),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                          return;
+                        }
+                        setState(() {
+                          _isForgotLoading = true;
+                        });
 
-                  try {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            VerifyResetOtpScreen(login: _emailCtrl.text.trim()),
-                      ),
-                    );
-                  } catch (e) {
-                    Get.snackbar('Error', e.toString());
-                  }
-                },
+                        try {
+                          await ApiService().forgotPassword(
+                            login: _emailCtrl.text.trim(),
+                          );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => VerifyResetOtpScreen(
+                                login: _emailCtrl.text.trim(),
+                              ),
+                            ),
+                          );
+                        } catch (e) {
+                          _showError(
+                            e.toString().replaceFirst("Exception: ", ""),
+                          );
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              _isForgotLoading = false;
+                            });
+                          }
+                        }
+                      },
                 child: const Text(
                   'Forgot Password?',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
+
             // ── Login button ──
             _AuthButton(
               label: 'Login',
@@ -463,6 +569,7 @@ class _LoginScreenState extends State<LoginScreen>
               colors: colors,
               onTap: _handleGoogleLogin,
             ),
+
             // const SizedBox(height: 12),
             // _SocialButton(
             //   label: 'Continue with Facebook',
@@ -474,7 +581,6 @@ class _LoginScreenState extends State<LoginScreen>
             //   colors: colors,
             //   onTap: () {},
             // ),
-
             const SizedBox(height: 24),
 
             // ── Sign up footer ──

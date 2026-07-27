@@ -12,6 +12,8 @@ import '../../services/api_service.dart';
 import '../../translations/catalog_translation.dart';
 // import '../../services/wishlist_service.dart';
 import '../theme/app_theme.dart';
+import 'dart:ui';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS
@@ -29,54 +31,82 @@ abstract class _T {
   static const double sp24 = 24;
   static const double sp32 = 32;
 
-  static const double radiusSm = 6;
-  static const double radiusMd = 10;
-  static const double radiusLg = 14;
+  static const double radiusSm = 8;
+  static const double radiusMd = 14;
+  static const double radiusLg = 18;
+  static const double radiusXl = 26;
   static const double radiusFull = 999;
 
+  // Layout switches to a side-by-side view at/above this width.
+  static const double tabletBreakpoint = 720;
+
+  // Soft, premium elevation — used sparingly on floating surfaces only.
+  static List<BoxShadow> cardShadow(Color tint, {double opacity = .06}) => [
+    BoxShadow(
+      color: tint.withOpacity(opacity),
+      blurRadius: 24,
+      offset: const Offset(0, 10),
+      spreadRadius: -6,
+    ),
+  ];
+
+  static List<BoxShadow> softShadow(Color tint, {double opacity = .08}) => [
+    BoxShadow(
+      color: tint.withOpacity(opacity),
+      blurRadius: 14,
+      offset: const Offset(0, 4),
+      spreadRadius: -4,
+    ),
+  ];
+
   static TextStyle productName(Color c) => TextStyle(
-    fontSize: 22,
+    fontSize: 23,
     fontWeight: FontWeight.w700,
     color: c,
-    height: 1.3,
-    letterSpacing: -.2,
+    height: 1.28,
+    letterSpacing: -.4,
   );
 
   static TextStyle priceMain(Color c) => TextStyle(
-    fontSize: 24,
-    fontWeight: FontWeight.w700,
+    fontSize: 27,
+    fontWeight: FontWeight.w800,
     color: c,
-    letterSpacing: -.4,
+    letterSpacing: -.6,
   );
 
   static TextStyle priceOld(Color c) => TextStyle(
     fontSize: 13,
+    fontWeight: FontWeight.w500,
     color: c,
     decoration: TextDecoration.lineThrough,
     decorationColor: c,
   );
 
-  static TextStyle sectionLabel(Color c) =>
-      TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: c);
+  static TextStyle sectionLabel(Color c) => TextStyle(
+    fontSize: 11.5,
+    fontWeight: FontWeight.w700,
+    color: c,
+    letterSpacing: .6,
+  );
 
   static TextStyle bodyText(Color c) =>
-      TextStyle(fontSize: 13, color: c, height: 1.65);
+      TextStyle(fontSize: 13.5, color: c, height: 1.7, letterSpacing: .1);
 
   static TextStyle chipLabel(Color c) =>
-      TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: c);
+      TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: c);
 
   static TextStyle qtyNum(Color c) =>
-      TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: c);
+      TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: c);
 
   static TextStyle ctaLabel(Color c) => TextStyle(
     fontSize: 15,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     color: c,
-    letterSpacing: .2,
+    letterSpacing: .1,
   );
 
   static TextStyle discountTag(Color c) =>
-      TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: c);
+      TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: c);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -101,6 +131,7 @@ class _ShimmerState extends State<_Shimmer>
   @override
   void initState() {
     super.initState();
+
     _ctrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -136,133 +167,6 @@ class _ShimmerState extends State<_Shimmer>
             colors: [base, highlight, base],
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// SKELETON
-// ─────────────────────────────────────────────────────────────
-
-class _DetailSkeleton extends StatelessWidget {
-  const _DetailSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final mq = MediaQuery.of(context);
-    return Scaffold(
-      backgroundColor: colors.background,
-      body: Column(
-        children: [
-          // image area — full width, no padding
-          _Shimmer(
-            width: double.infinity,
-            height: mq.size.height * .44,
-            borderRadius: 0,
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(
-                _T.sp16,
-                _T.sp16,
-                _T.sp16,
-                _T.sp16,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // chips
-                  Row(
-                    children: const [
-                      _Shimmer(
-                        width: 80,
-                        height: 24,
-                        borderRadius: _T.radiusFull,
-                      ),
-                      SizedBox(width: _T.sp8),
-                      _Shimmer(
-                        width: 60,
-                        height: 24,
-                        borderRadius: _T.radiusFull,
-                      ),
-                      SizedBox(width: _T.sp8),
-                      _Shimmer(
-                        width: 70,
-                        height: 24,
-                        borderRadius: _T.radiusFull,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: _T.sp12),
-                  const _Shimmer(
-                    width: double.infinity,
-                    height: 20,
-                    borderRadius: 4,
-                  ),
-                  const SizedBox(height: _T.sp6),
-                  const _Shimmer(width: 160, height: 20, borderRadius: 4),
-                  const SizedBox(height: _T.sp10),
-                  const _Shimmer(width: 100, height: 26, borderRadius: 4),
-                  const SizedBox(height: _T.sp20),
-                  const _Shimmer(width: 60, height: 12, borderRadius: 3),
-                  const SizedBox(height: _T.sp8),
-                  ...List.generate(
-                    3,
-                    (i) => Padding(
-                      padding: const EdgeInsets.only(bottom: _T.sp6),
-                      child: _Shimmer(
-                        width: i == 2 ? 140 : double.infinity,
-                        height: 13,
-                        borderRadius: 4,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: _T.sp20),
-                  const _Shimmer(
-                    width: double.infinity,
-                    height: .5,
-                    borderRadius: 0,
-                  ),
-                  const SizedBox(height: _T.sp14),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      _Shimmer(width: 60, height: 14, borderRadius: 4),
-                      _Shimmer(
-                        width: 110,
-                        height: 38,
-                        borderRadius: _T.radiusMd,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: _T.sp20),
-                  const _Shimmer(
-                    width: double.infinity,
-                    height: .5,
-                    borderRadius: 0,
-                  ),
-                  const SizedBox(height: _T.sp14),
-                  Row(
-                    children: const [
-                      _Shimmer(
-                        width: 48,
-                        height: 48,
-                        borderRadius: _T.radiusLg,
-                      ),
-                      SizedBox(width: _T.sp10),
-                      Expanded(
-                        child: _Shimmer(height: 48, borderRadius: _T.radiusLg),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -372,20 +276,19 @@ class _Chip extends StatelessWidget {
     if (label.isEmpty) return const SizedBox.shrink();
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: _T.sp10,
-        vertical: _T.sp4,
+        horizontal: _T.sp12,
+        vertical: _T.sp6,
       ),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(_T.radiusFull),
-        border: Border.all(color: borderColor, width: .8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 11, color: textColor),
-            const SizedBox(width: 3),
+            Icon(icon, size: 12, color: textColor),
+            const SizedBox(width: 4),
           ],
           Text(label, style: _T.chipLabel(textColor)),
         ],
@@ -413,11 +316,11 @@ class _QuantityStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Container(
-      height: 38,
+      height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
-        color: colors.cardBg,
-        borderRadius: BorderRadius.circular(_T.radiusMd),
-        border: Border.all(color: colors.border, width: .8),
+        color: colors.surface2,
+        borderRadius: BorderRadius.circular(_T.radiusFull),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -425,22 +328,21 @@ class _QuantityStepper extends StatelessWidget {
           GestureDetector(
             onTap: qty > 1 ? onDecrement : null,
             child: SizedBox(
-              width: 38,
-              height: 38,
+              width: 36,
+              height: 40,
               child: Icon(
                 Icons.remove_rounded,
-                size: 15,
-                color: qty > 1 ? colors.text1 : colors.border,
+                size: 16,
+                color: qty > 1 ? colors.text1 : colors.text3,
               ),
             ),
           ),
-          Container(width: .8, height: 22, color: colors.border),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 160),
             transitionBuilder: (c, a) => ScaleTransition(scale: a, child: c),
             child: SizedBox(
               key: ValueKey(qty),
-              width: 34,
+              width: 30,
               child: Text(
                 '$qty',
                 textAlign: TextAlign.center,
@@ -448,13 +350,17 @@ class _QuantityStepper extends StatelessWidget {
               ),
             ),
           ),
-          Container(width: .8, height: 22, color: colors.border),
           GestureDetector(
             onTap: onIncrement,
-            child: SizedBox(
-              width: 38,
-              height: 38,
-              child: Icon(Icons.add_rounded, size: 15, color: colors.text1),
+            child: Container(
+              width: 36,
+              height: 36,
+              margin: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: colors.cardBg,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.add_rounded, size: 16, color: colors.text1),
             ),
           ),
         ],
@@ -483,7 +389,7 @@ class _WishlistButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: colors.cardBg,
           borderRadius: BorderRadius.circular(_T.radiusLg),
-          border: Border.all(color: colors.border, width: .8),
+          boxShadow: _T.softShadow(colors.text1, opacity: .05),
         ),
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 220),
@@ -526,6 +432,9 @@ class _CartButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: loading ? colors.accentLight : colors.accent,
             borderRadius: BorderRadius.circular(_T.radiusLg),
+            boxShadow: loading
+                ? []
+                : _T.softShadow(colors.accent, opacity: .28),
           ),
           child: Center(
             child: loading
@@ -615,6 +524,324 @@ class _ExpandableDescState extends State<_ExpandableDesc> {
 }
 
 // ─────────────────────────────────────────────────────────────
+// LOADING OVERLAY
+// ─────────────────────────────────────────────────────────────
+
+class _LoadingOverlay extends StatelessWidget {
+  const _LoadingOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          color: Colors.black.withOpacity(.28),
+          child: SafeArea(
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 16,
+                  top: 10,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => Navigator.pop(context),
+                      customBorder: const CircleBorder(),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: _T.softShadow(Colors.black, opacity: .12),
+                        ),
+                        child: const Icon(Icons.arrow_back_ios_new, size: 16),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Center(
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: 1),
+                    duration: const Duration(milliseconds: 320),
+                    curve: Curves.easeOutBack,
+                    builder: (context, t, child) => Opacity(
+                      opacity: t.clamp(0, 1),
+                      child: Transform.scale(
+                        scale: .9 + (.1 * t),
+                        child: child,
+                      ),
+                    ),
+                    child: Container(
+                      width: 190,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 28,
+                        vertical: 32,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(.96),
+                        borderRadius: BorderRadius.circular(_T.radiusXl),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(.6),
+                          width: 1,
+                        ),
+                        boxShadow: _T.cardShadow(Colors.black, opacity: .16),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 76,
+                            height: 76,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 76,
+                                  height: 76,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: RadialGradient(
+                                      colors: [
+                                        const Color(
+                                          0xff2563EB,
+                                        ).withOpacity(.14),
+                                        const Color(0xff2563EB).withOpacity(0),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                LoadingAnimationWidget.hexagonDots(
+                                  color: const Color(0xff2563EB),
+                                  size: 52,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          const Text(
+                            "Loading product",
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: .1,
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            "just a moment",
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: .1,
+                              color: const Color(0xFF1F2937).withOpacity(.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DetailSkeleton extends StatelessWidget {
+  const _DetailSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final mq = MediaQuery.of(context);
+    final galleryHeight = (mq.size.height * .46).clamp(300.0, 480.0);
+
+    return Container(
+      color: colors.background,
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── gallery placeholder + small inline loader ──
+            SizedBox(
+              height: galleryHeight,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _Shimmer(height: galleryHeight, borderRadius: 0),
+
+                  Positioned(
+                    left: _T.sp16,
+                    top: _T.sp10,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(.9),
+                        shape: BoxShape.circle,
+                        boxShadow: _T.softShadow(Colors.black, opacity: .08),
+                      ),
+                      child: const Icon(Icons.arrow_back_ios_new, size: 16),
+                    ),
+                  ),
+
+                  Center(
+                    child: LoadingAnimationWidget.hexagonDots(
+                      color: const Color(0xFF2563EB),
+                      size: 60,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── content placeholders ──
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(
+                  _T.sp20,
+                  _T.sp24,
+                  _T.sp20,
+                  _T.sp24,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // chips
+                    Row(
+                      children: const [
+                        _Shimmer(
+                          width: 92,
+                          height: 26,
+                          borderRadius: _T.radiusFull,
+                        ),
+                        SizedBox(width: _T.sp8),
+                        _Shimmer(
+                          width: 74,
+                          height: 26,
+                          borderRadius: _T.radiusFull,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: _T.sp16),
+
+                    // title (two lines)
+                    const _Shimmer(
+                      width: double.infinity,
+                      height: 20,
+                      borderRadius: _T.radiusSm,
+                    ),
+                    const SizedBox(height: _T.sp8),
+                    const _Shimmer(
+                      width: 170,
+                      height: 20,
+                      borderRadius: _T.radiusSm,
+                    ),
+
+                    const SizedBox(height: _T.sp14),
+
+                    // price
+                    const _Shimmer(
+                      width: 110,
+                      height: 26,
+                      borderRadius: _T.radiusSm,
+                    ),
+
+                    const SizedBox(height: _T.sp24),
+
+                    // description label + lines
+                    const _Shimmer(
+                      width: 80,
+                      height: 11,
+                      borderRadius: _T.radiusSm,
+                    ),
+                    const SizedBox(height: _T.sp10),
+                    const _Shimmer(
+                      width: double.infinity,
+                      height: 12,
+                      borderRadius: _T.radiusSm,
+                    ),
+                    const SizedBox(height: _T.sp6),
+                    const _Shimmer(
+                      width: double.infinity,
+                      height: 12,
+                      borderRadius: _T.radiusSm,
+                    ),
+                    const SizedBox(height: _T.sp6),
+                    const _Shimmer(
+                      width: 210,
+                      height: 12,
+                      borderRadius: _T.radiusSm,
+                    ),
+
+                    const SizedBox(height: _T.sp24),
+                    Divider(color: colors.border.withOpacity(.4), height: 1),
+                    const SizedBox(height: _T.sp16),
+
+                    // quantity row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        _Shimmer(
+                          width: 64,
+                          height: 15,
+                          borderRadius: _T.radiusSm,
+                        ),
+                        _Shimmer(
+                          width: 108,
+                          height: 40,
+                          borderRadius: _T.radiusFull,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: _T.sp16),
+                    Divider(color: colors.border.withOpacity(.4), height: 1),
+                    const SizedBox(height: _T.sp16),
+
+                    // CTA row
+                    Row(
+                      children: [
+                        const _Shimmer(
+                          width: 50,
+                          height: 50,
+                          borderRadius: _T.radiusLg,
+                        ),
+                        const SizedBox(width: _T.sp10),
+                        Expanded(
+                          child: const _Shimmer(
+                            height: 50,
+                            borderRadius: _T.radiusLg,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
 // PRODUCT DETAIL SCREEN
 // ─────────────────────────────────────────────────────────────
 
@@ -636,6 +863,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   bool cartLoading = false;
   bool isFavorite = false;
   int imageIndex = 0;
+  bool _pageLoading = true;
 
   late AnimationController _fadeCtrl;
   late Animation<double> _fade;
@@ -646,14 +874,38 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     productFuture = context.read<ProductDetailProvider>().getOrFetch(
       widget.productId,
     );
-    _loadCartQty();
-    _loadFavorite();
+    _loadEverything();
     _fadeCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 340),
     );
     _fade = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
     _fadeCtrl.forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final cart = context.watch<CartProvider>().cart;
+
+    if (cart == null) return;
+
+    final item = cart.items.where((e) => e.productId == widget.productId);
+
+    final newQty = item.isNotEmpty ? item.first.qty : 0;
+
+    if (newQty != cartQty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+
+        setState(() {
+          cartQty = newQty;
+          qty = newQty > 0 ? newQty : 1;
+          isInCart = newQty > 0;
+        });
+      });
+    }
   }
 
   @override
@@ -777,6 +1029,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     }
   }
 
+  Future<void> _loadEverything() async {
+    try {
+      await Future.wait([
+        context.read<ProductDetailProvider>().getOrFetch(widget.productId),
+        _loadFavorite(),
+        _loadCartQty(),
+      ]);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _pageLoading = false;
+        });
+      }
+    }
+  }
+
   Future<void> _toggleFavorite() async {
     final loggedIn = await ApiService().isLoggedIn();
 
@@ -787,27 +1055,33 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
     HapticFeedback.lightImpact();
 
+    final oldValue = isFavorite;
+
+    // Update UI immediately
+    setState(() {
+      isFavorite = !oldValue;
+    });
+
     try {
-      if (isFavorite) {
+      if (oldValue) {
         await ApiService().removeFavorite(widget.productId);
-        await _loadFavorite();
-
-        if (!mounted) return;
-
-        setState(() {
-          isFavorite = false;
-        });
       } else {
         await ApiService().addFavorite(widget.productId);
-        await _loadFavorite();
-
-        if (!mounted) return;
-
-        setState(() {
-          isFavorite = true;
-        });
       }
-    } catch (e) {}
+    } catch (e) {
+      // Rollback if API failed
+      if (!mounted) return;
+
+      setState(() {
+        isFavorite = oldValue;
+      });
+
+      Get.snackbar(
+        "Favorite",
+        "Unable to update favorite.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   Future<void> _openCart() async {
@@ -827,10 +1101,541 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     );
   }
 
+  // ── shared UI builders (reused by both mobile & tablet layouts) ──
+
+  Widget _buildCircleIconButton(
+    BuildContext context, {
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    final colors = context.colors;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.92),
+            shape: BoxShape.circle,
+            boxShadow: _T.softShadow(Colors.black, opacity: .1),
+          ),
+          child: Icon(icon, size: 15, color: colors.text1),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCartIconButton(BuildContext context) {
+    final colors = context.colors;
+    final cartProvider = context.watch<CartProvider>();
+    final hasCart = cartProvider.itemCount > 0;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _openCart,
+        customBorder: const CircleBorder(),
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(.92),
+                  shape: BoxShape.circle,
+                  boxShadow: _T.softShadow(Colors.black, opacity: .1),
+                ),
+                child: Icon(
+                  Icons.shopping_cart_outlined,
+                  size: 21,
+                  color: colors.accent,
+                ),
+              ),
+              // Cart dot — shown only when the cart has items.
+              if (hasCart)
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: colors.accent,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.6),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGalleryStack(
+    BuildContext context, {
+    required List images,
+    required EdgeInsets safeArea,
+  }) {
+    final colors = context.colors;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (images.isNotEmpty)
+          PageView.builder(
+            itemCount: images.length,
+            onPageChanged: (i) => setState(() => imageIndex = i),
+            itemBuilder: (_, i) => Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(30),
+              child: CachedNetworkImage(
+                imageUrl: images[i] as String,
+                fit: BoxFit.contain,
+                errorWidget: (_, __, ___) =>
+                    Icon(Icons.image_outlined, size: 56, color: colors.text3),
+              ),
+            ),
+          )
+        else
+          Container(
+            color: Colors.white,
+            child: Center(
+              child: Icon(Icons.image_outlined, size: 56, color: colors.text3),
+            ),
+          ),
+
+        // soft scrim so the rounded content sheet reads cleanly on overlap
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 100,
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withOpacity(0),
+                    Colors.white.withOpacity(.85),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        Positioned(
+          top: safeArea.top + _T.sp10,
+          left: _T.sp16,
+          child: _buildCircleIconButton(
+            context,
+            icon: Icons.arrow_back_ios_new_rounded,
+            onTap: () => Navigator.pop(context),
+          ),
+        ),
+
+        Positioned(
+          top: safeArea.top + _T.sp10,
+          right: _T.sp16,
+          child: _buildCartIconButton(context),
+        ),
+
+        if (images.length > 1)
+          Positioned(
+            bottom: _T.sp16,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: _DotIndicator(
+                count: images.length,
+                activeIndex: imageIndex,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildChipsRow(
+    BuildContext context,
+    dynamic p,
+    bool inStock,
+    int stockQty,
+  ) {
+    final colors = context.colors;
+    return Wrap(
+      spacing: _T.sp6,
+      runSpacing: _T.sp6,
+      children: [
+        if ((p.categoryName as String?)?.isNotEmpty == true)
+          _Chip(
+            label: p.categoryName as String,
+            bg: colors.bginfo,
+            textColor: colors.text2,
+            borderColor: colors.border,
+            icon: Icons.sell_outlined,
+          ),
+        if ((p.brandName as String?)?.isNotEmpty == true)
+          _Chip(
+            label: (p.brandName as String).trCatalog,
+            bg: colors.bginfo,
+            textColor: colors.text2,
+            borderColor: colors.border,
+            icon: Icons.storefront_outlined,
+          ),
+        _Chip(
+          label: inStock ? '${'in_stock'.tr} · $stockQty' : 'out_of_stock'.tr,
+          bg: inStock ? colors.accentLight : colors.flashBg,
+          textColor: inStock ? colors.accent : colors.flashText,
+          borderColor: inStock
+              ? colors.accent.withOpacity(.25)
+              : colors.flashBorder,
+          icon: inStock
+              ? Icons.check_circle_outline_rounded
+              : Icons.cancel_outlined,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTitleAndPrice(
+    BuildContext context,
+    dynamic p,
+    bool hasDiscount,
+    String? discountPct,
+  ) {
+    final colors = context.colors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(p.name as String, style: _T.productName(colors.text1)),
+        const SizedBox(height: _T.sp10),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('\$${p.finalPrice}', style: _T.priceMain(colors.text1)),
+            if (hasDiscount) ...[
+              const SizedBox(width: _T.sp8),
+              Text('\$${p.salePrice}', style: _T.priceOld(colors.text3)),
+              const SizedBox(width: _T.sp8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: _T.sp8,
+                  vertical: 3,
+                ),
+                decoration: BoxDecoration(
+                  color: colors.flashBg,
+                  borderRadius: BorderRadius.circular(_T.radiusFull),
+                  border: Border.all(color: colors.flashBorder, width: .5),
+                ),
+                child: Text(
+                  discountPct!,
+                  style: _T.discountTag(colors.flashText),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDescriptionSection(BuildContext context, dynamic p) {
+    final colors = context.colors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('description'.tr, style: _T.sectionLabel(colors.text3)),
+        const SizedBox(height: _T.sp6),
+        _ExpandableDesc(text: (p.description as String?) ?? ''),
+      ],
+    );
+  }
+
+  Widget _buildThinDivider(BuildContext context) {
+    final colors = context.colors;
+    return Divider(
+      color: colors.border.withOpacity(.5),
+      height: 1,
+      thickness: .6,
+    );
+  }
+
+  Widget _buildQuantityRow(BuildContext context, int stockQty) {
+    final colors = context.colors;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'quantity'.tr,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: colors.text1,
+          ),
+        ),
+        _QuantityStepper(
+          qty: qty,
+          onIncrement: () {
+            if (qty >= stockQty) {
+              Get.snackbar(
+                'Out of Stock',
+                'Only $stockQty item(s) available.',
+                snackPosition: SnackPosition.BOTTOM,
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                borderRadius: 16,
+                backgroundColor: Get.theme.cardColor,
+                colorText: Get.theme.textTheme.bodyLarge?.color,
+                icon: const Icon(
+                  Icons.inventory_2_outlined,
+                  color: Color(0xFFFF9500),
+                ),
+                boxShadows: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.18),
+                    blurRadius: 22,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+                duration: const Duration(seconds: 3),
+                isDismissible: true,
+                forwardAnimationCurve: Curves.easeOutCubic,
+              );
+
+              return;
+            }
+
+            setState(() => qty++);
+          },
+          onDecrement: () {
+            if (qty > 1) {
+              setState(() => qty--);
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCtaRow(BuildContext context, dynamic p, int stockQty) {
+    return Row(
+      children: [
+        _WishlistButton(isFavorite: isFavorite, onTap: _toggleFavorite),
+        const SizedBox(width: _T.sp10),
+        if (stockQty <= 0)
+          Expanded(
+            child: Container(
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.grey,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Center(
+                child: Text(
+                  "OUT OF STOCK",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          )
+        else
+          _CartButton(
+            isInCart: isInCart,
+            loading: cartLoading,
+            onTap: () => _handleCart(p),
+          ),
+      ],
+    );
+  }
+
+  // ── mobile: full-bleed gallery + rounded overlapping sheet ──
+
+  Widget _buildMobileLayout(
+    BuildContext context, {
+    required dynamic p,
+    required List images,
+    required bool hasDiscount,
+    required String? discountPct,
+    required int stockQty,
+    required bool inStock,
+  }) {
+    final colors = context.colors;
+    final mq = MediaQuery.of(context);
+    final hPad = mq.size.width < 360 ? _T.sp14 : _T.sp20;
+    final galleryHeight = (mq.size.height * .46).clamp(300.0, 480.0);
+
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverAppBar(
+          backgroundColor: Colors.white,
+          expandedHeight: galleryHeight,
+          pinned: false,
+          floating: false,
+          automaticallyImplyLeading: false,
+          surfaceTintColor: Colors.transparent,
+          flexibleSpace: FlexibleSpaceBar(
+            collapseMode: CollapseMode.pin,
+            background: _buildGalleryStack(
+              context,
+              images: images,
+              safeArea: mq.padding,
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Transform.translate(
+            offset: const Offset(0, -_T.sp20),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: colors.background,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(_T.radiusXl),
+                  topRight: Radius.circular(_T.radiusXl),
+                ),
+                boxShadow: _T.cardShadow(Colors.black, opacity: .04),
+              ),
+              padding: EdgeInsets.fromLTRB(
+                hPad,
+                _T.sp24,
+                hPad,
+                mq.padding.bottom + _T.sp24,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildChipsRow(context, p, inStock, stockQty),
+                  const SizedBox(height: _T.sp14),
+                  _buildTitleAndPrice(context, p, hasDiscount, discountPct),
+                  const SizedBox(height: _T.sp20),
+                  _buildDescriptionSection(context, p),
+                  const SizedBox(height: _T.sp20),
+                  _buildThinDivider(context),
+                  const SizedBox(height: _T.sp14),
+                  _buildQuantityRow(context, stockQty),
+                  const SizedBox(height: _T.sp20),
+                  _buildThinDivider(context),
+                  const SizedBox(height: _T.sp14),
+                  _buildCtaRow(context, p, stockQty),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── tablet / wide screens: side-by-side gallery + details panel ──
+
+  Widget _buildTabletLayout(
+    BuildContext context, {
+    required dynamic p,
+    required List images,
+    required bool hasDiscount,
+    required String? discountPct,
+    required int stockQty,
+    required bool inStock,
+  }) {
+    final colors = context.colors;
+    final mq = MediaQuery.of(context);
+
+    return Row(
+      children: [
+        // Left — full-height gallery panel.
+        Expanded(
+          flex: 5,
+          child: _buildGalleryStack(
+            context,
+            images: images,
+            safeArea: mq.padding,
+          ),
+        ),
+
+        // Right — scrollable details, CTA pinned to the bottom.
+        Expanded(
+          flex: 4,
+          child: Container(
+            color: colors.background,
+            child: SafeArea(
+              left: false,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        _T.sp32,
+                        _T.sp32,
+                        _T.sp32,
+                        _T.sp20,
+                      ),
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildChipsRow(context, p, inStock, stockQty),
+                          const SizedBox(height: _T.sp16),
+                          _buildTitleAndPrice(
+                            context,
+                            p,
+                            hasDiscount,
+                            discountPct,
+                          ),
+                          const SizedBox(height: _T.sp24),
+                          _buildDescriptionSection(context, p),
+                          const SizedBox(height: _T.sp24),
+                          _buildThinDivider(context),
+                          const SizedBox(height: _T.sp16),
+                          _buildQuantityRow(context, stockQty),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(
+                      _T.sp32,
+                      _T.sp16,
+                      _T.sp32,
+                      _T.sp20,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.background,
+                      border: Border(
+                        top: BorderSide(
+                          color: colors.border.withOpacity(.5),
+                          width: .6,
+                        ),
+                      ),
+                    ),
+                    child: _buildCtaRow(context, p, stockQty),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final mq = MediaQuery.of(context);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -858,408 +1663,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
           return FadeTransition(
             opacity: _fade,
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // ── SliverAppBar — image fills top, floats
-                //    back & wishlist buttons over it ─────────
-                SliverAppBar(
-                  backgroundColor: Colors.white,
-                  expandedHeight: mq.size.height * .44,
-                  pinned: false,
-                  floating: false,
-                  automaticallyImplyLeading: false,
-                  surfaceTintColor: Colors.transparent,
-
-                  flexibleSpace: FlexibleSpaceBar(
-                    collapseMode: CollapseMode.pin,
-                    background: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        // ── images ──
-                        if (images.isNotEmpty)
-                          PageView.builder(
-                            itemCount: images.length,
-                            onPageChanged: (i) =>
-                                setState(() => imageIndex = i),
-                            itemBuilder: (_, i) => Container(
-                              margin: const EdgeInsets.fromLTRB(24, 80, 24, 40),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: CachedNetworkImage(
-                                  imageUrl: images[i] as String,
-                                  fit: BoxFit.contain,
-                                  errorWidget: (_, __, ___) => Icon(
-                                    Icons.image_outlined,
-                                    size: 56,
-                                    color: colors.text3,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        else
-                          Center(
-                            child: Icon(
-                              Icons.image_outlined,
-                              size: 56,
-                              color: colors.text3,
-                            ),
-                          ),
-
-                        // ── back button (top-left) ──
-                        Positioned(
-                          top: mq.padding.top + _T.sp10,
-                          left: _T.sp16,
-                          child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: colors.cardBg.withOpacity(.88),
-                                borderRadius: BorderRadius.circular(
-                                  _T.radiusMd,
-                                ),
-                                border: Border.all(
-                                  color: colors.border,
-                                  width: .5,
-                                ),
-                              ),
-                              child: Icon(
-                                Icons.arrow_back_ios_new_rounded,
-                                size: 14,
-                                color: colors.text1,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // ── wishlist button (top-right) ──
-                        Positioned(
-                          top: mq.padding.top + _T.sp10,
-                          right: _T.sp16,
-                          child: GestureDetector(
-                            onTap: _openCart,
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: colors.cardBg.withOpacity(.95),
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: colors.border,
-                                      width: .8,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(.05),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Icon(
-                                    Icons.shopping_cart_outlined,
-                                    size: 22,
-                                    color: colors.accent,
-                                  ),
-                                ),
-
-                                if (cartQty > 0)
-                                  Positioned(
-                                    right: -2,
-                                    top: -2,
-                                    child: Container(
-                                      constraints: const BoxConstraints(
-                                        minWidth: 18,
-                                        minHeight: 18,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          cartQty > 99 ? '99+' : '$cartQty',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        // ── dot indicators (bottom-center) ──
-                        if (images.length > 1)
-                          Positioned(
-                            bottom: _T.sp14,
-                            left: 0,
-                            right: 0,
-                            child: Center(
-                              child: _DotIndicator(
-                                count: images.length,
-                                activeIndex: imageIndex,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // ── Content ────────────────────────────────
-                SliverToBoxAdapter(
-                  child: Container(
-                    color: colors.background,
-                    padding: EdgeInsets.fromLTRB(
-                      _T.sp16,
-                      _T.sp16,
-                      _T.sp16,
-                      mq.padding.bottom + _T.sp24,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ── Chips row ──────────────────────────────────
-                        Wrap(
-                          spacing: _T.sp6,
-                          runSpacing: _T.sp6,
-                          children: [
-                            if ((p.categoryName as String?)?.isNotEmpty == true)
-                              _Chip(
-                                label: p.categoryName as String,
-                                bg: colors.bginfo,
-                                textColor: colors.text2,
-                                borderColor: colors.border,
-                                icon: Icons.sell_outlined,
-                              ),
-                            if ((p.brandName as String?)?.isNotEmpty == true)
-                              _Chip(
-                                label: (p.brandName as String).trCatalog,
-                                bg: colors.bginfo,
-                                textColor: colors.text2,
-                                borderColor: colors.border,
-                                icon: Icons.storefront_outlined,
-                              ),
-                            _Chip(
-                              label: inStock
-                                  ? '${'in_stock'.tr} · $stockQty'
-                                  : 'out_of_stock'.tr,
-                              bg: inStock ? colors.accentLight : colors.flashBg,
-                              textColor: inStock
-                                  ? colors.accent
-                                  : colors.flashText,
-                              borderColor: inStock
-                                  ? colors.accent.withOpacity(.25)
-                                  : colors.flashBorder,
-                              icon: inStock
-                                  ? Icons.check_circle_outline_rounded
-                                  : Icons.cancel_outlined,
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: _T.sp14),
-
-                        // ── Name ───────────────────────────────────────
-                        Text(
-                          p.name as String,
-                          style: _T.productName(colors.text1),
-                        ),
-
-                        const SizedBox(height: _T.sp10),
-
-                        // ── Price ──────────────────────────────────────
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              '\$${p.finalPrice}',
-                              style: _T.priceMain(colors.text1),
-                            ),
-                            if (hasDiscount) ...[
-                              const SizedBox(width: _T.sp8),
-                              Text(
-                                '\$${p.salePrice}',
-                                style: _T.priceOld(colors.text3),
-                              ),
-                              const SizedBox(width: _T.sp8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: _T.sp8,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: colors.flashBg,
-                                  borderRadius: BorderRadius.circular(
-                                    _T.radiusFull,
-                                  ),
-                                  border: Border.all(
-                                    color: colors.flashBorder,
-                                    width: .5,
-                                  ),
-                                ),
-                                child: Text(
-                                  discountPct!,
-                                  style: _T.discountTag(colors.flashText),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-
-                        const SizedBox(height: _T.sp20),
-
-                        // ── Description ────────────────────────────────
-                        Text(
-                          'description'.tr,
-                          style: _T.sectionLabel(colors.text3),
-                        ),
-                        const SizedBox(height: _T.sp6),
-                        _ExpandableDesc(text: (p.description as String?) ?? ''),
-
-                        const SizedBox(height: _T.sp20),
-                        Divider(color: colors.border, height: 1, thickness: .5),
-                        const SizedBox(height: _T.sp14),
-
-                        // ── Quantity ───────────────────────────────────
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'quantity'.tr,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: colors.text1,
-                              ),
-                            ),
-                            // _QuantityStepper(
-                            //   qty: qty,
-                            //   onIncrement: () => setState(() => qty++),
-                            //   onDecrement: () {
-                            //     if (qty > 1) setState(() => qty--);
-                            //   },
-                            // ),
-                            _QuantityStepper(
-                              qty: qty,
-                              onIncrement: () {
-                                if (qty >= stockQty) {
-                                  Get.snackbar(
-                                    'Out of Stock',
-                                    'Only $stockQty item(s) available.',
-                                    snackPosition: SnackPosition.BOTTOM,
-                                    margin: const EdgeInsets.fromLTRB(
-                                      16,
-                                      0,
-                                      16,
-                                      16,
-                                    ),
-                                    borderRadius: 16,
-                                    backgroundColor: Get.theme.cardColor,
-                                    colorText:
-                                        Get.theme.textTheme.bodyLarge?.color,
-                                    icon: const Icon(
-                                      Icons.inventory_2_outlined,
-                                      color: Color(0xFFFF9500),
-                                    ),
-                                    boxShadows: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.18),
-                                        blurRadius: 22,
-                                        offset: const Offset(0, 10),
-                                      ),
-                                    ],
-                                    duration: const Duration(seconds: 3),
-                                    isDismissible: true,
-                                    forwardAnimationCurve: Curves.easeOutCubic,
-                                  );
-
-                                  return;
-                                }
-
-                                setState(() => qty++);
-                              },
-                              onDecrement: () {
-                                if (qty > 1) {
-                                  setState(() => qty--);
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: _T.sp20),
-                        Divider(color: colors.border, height: 1, thickness: .5),
-                        const SizedBox(height: _T.sp14),
-
-                        // ── CTA ────────────────────────────────────────
-                        Row(
-                          children: [
-                            _WishlistButton(
-                              isFavorite: isFavorite,
-                              onTap: _toggleFavorite,
-                            ),
-                            const SizedBox(width: _T.sp10),
-                            // _CartButton(
-                            //   isInCart: isInCart,
-                            //   loading: cartLoading,
-
-                            //   onTap: () => _handleCart(p),
-                            // ),
-                            if (stockQty <= 0)
-                              Expanded(
-                                child: Container(
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey,
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      "OUT OF STOCK",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              )
-                            else
-                              _CartButton(
-                                isInCart: isInCart,
-                                loading: cartLoading,
-                                onTap: () => _handleCart(p),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isTablet = constraints.maxWidth >= _T.tabletBreakpoint;
+                return isTablet
+                    ? _buildTabletLayout(
+                        context,
+                        p: p,
+                        images: images,
+                        hasDiscount: hasDiscount,
+                        discountPct: discountPct,
+                        stockQty: stockQty,
+                        inStock: inStock,
+                      )
+                    : _buildMobileLayout(
+                        context,
+                        p: p,
+                        images: images,
+                        hasDiscount: hasDiscount,
+                        discountPct: discountPct,
+                        stockQty: stockQty,
+                        inStock: inStock,
+                      );
+              },
             ),
           );
         },

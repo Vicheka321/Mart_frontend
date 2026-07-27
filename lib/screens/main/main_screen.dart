@@ -205,8 +205,7 @@ import '../../profile/profile_screen.dart';
 import '../theme/app_theme.dart';
 
 class MainScreen extends StatefulWidget {
-  
-  const MainScreen({super.key,});
+  const MainScreen({super.key});
 
   static void switchToHome(BuildContext context) {
     context.findAncestorStateOfType<_MainScreenState>()?.switchToTab(0);
@@ -373,6 +372,24 @@ class _FloatingNavBar extends StatelessWidget {
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
+                            // children: [
+                            //   Image(
+                            //     image: _items[i].icon,
+                            //     width: 22,
+                            //     height: 22,
+                            //     color: selected ? colors.cardBg : colors.text3,
+                            //   ),
+                            //   const SizedBox(height: 4),
+                            //   AnimatedContainer(
+                            //     duration: const Duration(milliseconds: 200),
+                            //     width: selected ? 4 : 0,
+                            //     height: selected ? 4 : 0,
+                            //     decoration: BoxDecoration(
+                            //       color: colors.accentLight,
+                            //       shape: BoxShape.circle,
+                            //     ),
+                            //   ),
+                            // ],
                             children: [
                               Image(
                                 image: _items[i].icon,
@@ -380,14 +397,15 @@ class _FloatingNavBar extends StatelessWidget {
                                 height: 22,
                                 color: selected ? colors.cardBg : colors.text3,
                               ),
-                              const SizedBox(height: 4),
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                width: selected ? 4 : 0,
-                                height: selected ? 4 : 0,
-                                decoration: BoxDecoration(
-                                  color: colors.accentLight,
-                                  shape: BoxShape.circle,
+                              const SizedBox(height: 2),
+                              Text(
+                                _items[i].label.tr,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: selected
+                                      ? colors.cardBg
+                                      : colors.text2,
                                 ),
                               ),
                             ],

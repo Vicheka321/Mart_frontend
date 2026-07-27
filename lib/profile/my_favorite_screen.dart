@@ -4,9 +4,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mart_frontend/models/myfavorite_model.dart';
+import 'package:mart_frontend/screens/cart/floating_cart_bar.dart';
 import 'package:mart_frontend/services/api_service.dart';
 import 'package:mart_frontend/screens/theme/app_theme.dart';
-
+import 'package:provider/provider.dart';
+import '../providers/cart_provider.dart';
+import 'package:mart_frontend/screens/product/product_detail_screen.dart';
 // ═══════════════════════════════════════════════════════════════
 // THEME SHORTHAND  — null-safe, falls back to a light default
 // ═══════════════════════════════════════════════════════════════
@@ -91,11 +94,6 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen>
     }
   }
 
-  // FIX: previously this only updated local state and left a `// TODO`
-  // for the actual API call, so a removed favorite would silently
-  // reappear the next time the screen loaded. Now it calls the API
-  // and rolls the item back (with a snackbar) if the request fails,
-  // instead of losing data silently.
   Future<void> _remove(MyFavoriteModel fav) async {
     HapticFeedback.mediumImpact();
     setState(() => _removing.add(fav.id));
@@ -109,7 +107,7 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen>
     });
 
     try {
-      await ApiService().removeFavorite(fav.id);
+      await ApiService().removeFavorite(fav.product.id);
     } catch (e) {
       if (!mounted) return;
       // Roll back: put the item back where it was and let the user know.
@@ -130,17 +128,29 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen>
     }
   }
 
-  void _addToCart(MyFavoriteModel fav) {
+  Future<void> _addToCart(MyFavoriteModel fav) async {
     HapticFeedback.lightImpact();
-    // TODO: CartProvider.add(fav.product)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${fav.product.name} added to cart'),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+
+    try {
+      await ApiService().addToCart(productId: fav.product.id, quantity: 1);
+
+      if (!mounted) return;
+
+      await context.read<CartProvider>().fetchCart();
+
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: Text('${fav.product.name} added to cart'),
+      //     behavior: SnackBarBehavior.floating,
+      //   ),
+      // );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
@@ -148,21 +158,27 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen>
     final c = context.c;
     return Scaffold(
       backgroundColor: c.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _AppBar(
-              c: c,
-              count: _items.length,
-              isGrid: _isGrid,
-              onToggle: () {
-                HapticFeedback.selectionClick();
-                setState(() => _isGrid = !_isGrid);
-              },
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                _AppBar(
+                  c: c,
+                  count: _items.length,
+                  isGrid: _isGrid,
+                  onToggle: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _isGrid = !_isGrid);
+                  },
+                ),
+                Expanded(child: _buildBody(c)),
+              ],
             ),
-            Expanded(child: _buildBody(c)),
-          ],
-        ),
+          ),
+
+          const FloatingCartBar(),
+        ],
       ),
     );
   }
@@ -200,6 +216,19 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen>
                 removing: _removing.contains(fav.id),
                 onRemove: () => _remove(fav),
                 onAddToCart: () => _addToCart(fav),
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          ProductDetailScreen(productId: fav.product.id),
+                    ),
+                  );
+
+                  if (mounted) {
+                    _load();
+                  }
+                },
                 delay: Duration(milliseconds: i * 45),
               );
             }, childCount: _items.length),
@@ -229,6 +258,18 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen>
           removing: _removing.contains(fav.id),
           onRemove: () => _remove(fav),
           onAddToCart: () => _addToCart(fav),
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ProductDetailScreen(productId: fav.product.id),
+              ),
+            );
+
+            if (mounted) {
+              _load();
+            }
+          },
           delay: Duration(milliseconds: i * 40),
         );
       },
@@ -361,7 +402,7 @@ String? _strikePrice(Product p) {
   return null;
 }
 
-double _discountPct(Product p) => double.tryParse(p.discountValue) ?? 0.0;
+double _discountPct(Product p) => double.tryParse(p.discountValue ?? '') ?? 0.0;
 
 bool _inStock(Product p) => p.status && p.quantity > 0;
 
@@ -376,6 +417,7 @@ class _GridCard extends StatefulWidget {
   final VoidCallback onRemove;
   final VoidCallback onAddToCart;
   final Duration delay;
+  final VoidCallback onTap;
 
   const _GridCard({
     required this.fav,
@@ -384,6 +426,7 @@ class _GridCard extends StatefulWidget {
     required this.onRemove,
     required this.onAddToCart,
     required this.delay,
+    required this.onTap,
   });
 
   @override
@@ -439,7 +482,10 @@ class _GridCardState extends State<_GridCard>
             duration: const Duration(milliseconds: 280),
             curve: Curves.easeInCubic,
             child: GestureDetector(
-              onTap: () => HapticFeedback.lightImpact(),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                widget.onTap();
+              },
               child: Container(
                 decoration: BoxDecoration(
                   color: c.cardBg,
@@ -611,6 +657,7 @@ class _ListCard extends StatefulWidget {
   final VoidCallback onRemove;
   final VoidCallback onAddToCart;
   final Duration delay;
+  final VoidCallback onTap;
 
   const _ListCard({
     required this.fav,
@@ -619,6 +666,7 @@ class _ListCard extends StatefulWidget {
     required this.onRemove,
     required this.onAddToCart,
     required this.delay,
+    required this.onTap,
   });
 
   @override
@@ -673,7 +721,10 @@ class _ListCardState extends State<_ListCard>
             scale: widget.removing ? 0.96 : 1.0,
             duration: const Duration(milliseconds: 280),
             child: GestureDetector(
-              onTap: () => HapticFeedback.lightImpact(),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                widget.onTap();
+              },
               child: Container(
                 decoration: BoxDecoration(
                   color: c.cardBg,
@@ -1087,14 +1138,18 @@ class _AddToCartBtnState extends State<_AddToCartBtn>
 // DISCOUNT BADGE
 // ═══════════════════════════════════════════════════════════════
 
+// FIX: `type` is now nullable to match Product.discountType (String?)
+// in the updated model, where discount_type can legitimately be null
+// in the API response. Falls back to a generic "-N" label when the
+// type isn't specified, instead of crashing on null.toLowerCase().
 class _DiscountBadge extends StatelessWidget {
   final double pct;
-  final String type;
+  final String? type;
   const _DiscountBadge({required this.pct, required this.type});
 
   @override
   Widget build(BuildContext context) {
-    final label = type.toLowerCase() == 'percent'
+    final label = type?.toLowerCase() == 'percent'
         ? '-${pct.toStringAsFixed(0)}%'
         : '-\$${pct.toStringAsFixed(0)}';
     return Container(

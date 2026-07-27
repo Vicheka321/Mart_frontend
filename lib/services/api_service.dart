@@ -19,6 +19,7 @@ import '../models/profile_model.dart';
 
 class ApiService {
   final String baseUrl = 'https://glutton-heat-trifle.ngrok-free.dev/api';
+  // final String baseUrl = 'https://accomplished-respect-production-3a13.up.railway.app/api';
   // final String baseUrl = 'http://10.0.2.2:8000/api';
 
   // ==============Products=================
@@ -1242,5 +1243,51 @@ class ApiService {
 
     print('Status: ${response.statusCode}');
     print(response.body);
+  }
+
+  // ====================notifications========================
+
+  Future<List<dynamic>> getNotifications() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/notifications'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    throw Exception('Failed to load notifications');
+  }
+
+  Future<void> readNotification(int notificationId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/notifications/$notificationId/read'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to mark notification as read');
+    }
+  }
+
+  Future<void> readAllNotifications() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/notifications/read-all'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to mark all notifications as read');
+    }
   }
 }
