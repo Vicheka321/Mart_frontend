@@ -18,8 +18,8 @@ import '../models/my_orders_model.dart';
 import '../models/profile_model.dart';
 
 class ApiService {
-  final String baseUrl = 'https://glutton-heat-trifle.ngrok-free.dev/api';
-  // final String baseUrl = 'https://accomplished-respect-production-3a13.up.railway.app/api';
+  // final String baseUrl = 'https://glutton-heat-trifle.ngrok-free.dev/api';
+  final String baseUrl = 'https://daritamart.site/api';
   // final String baseUrl = 'http://10.0.2.2:8000/api';
 
   // ==============Products=================
@@ -583,10 +583,12 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final prefs = await SharedPreferences.getInstance();
+ 
 
       // Save Sanctum token
       if (data['token'] != null) {
         await prefs.setString('token', data['token']);
+        print(idToken);
       }
 
       // Save FCM token to server

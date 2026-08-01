@@ -212,13 +212,26 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(
-                                  '\$${item.price}',
-                                  style: TextStyle(
-                                    fontSize: s * 0.036,
-                                    fontWeight: FontWeight.w500,
-                                    color: colors.text2,
-                                  ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '\$${item.price}',
+                                      style: TextStyle(
+                                        fontSize: s * 0.036,
+                                        fontWeight: FontWeight.w500,
+                                        color: colors.text2,
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      'Stock ${(item.stock - item.qty).clamp(0, item.stock)}',
+                                      style: TextStyle(
+                                        fontSize: s * 0.036,
+                                        fontWeight: FontWeight.w500,
+                                        color: colors.text2,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -237,11 +250,18 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                               item.productId,
                               item.qty - 1,
                             ),
-                            onIncrement: () => _updateQty(
-                              context,
-                              item.productId,
-                              item.qty + 1,
-                            ),
+                            // onIncrement: () => _updateQty(
+                            //   context,
+                            //   item.productId,
+                            //   item.qty + 1,
+                            // ),
+                            onIncrement: item.qty >= item.stock
+                                ? null
+                                : () => _updateQty(
+                                    context,
+                                    item.productId,
+                                    item.qty + 1,
+                                  ),
                           ),
                         ],
                       ),
@@ -344,7 +364,7 @@ class _QtyStepper extends StatelessWidget {
   final Color surface;
   final double s;
   final VoidCallback onDecrement;
-  final VoidCallback onIncrement;
+  final VoidCallback? onIncrement;
 
   const _QtyStepper({
     required this.qty,
@@ -352,7 +372,7 @@ class _QtyStepper extends StatelessWidget {
     required this.surface,
     required this.s,
     required this.onDecrement,
-    required this.onIncrement,
+    this.onIncrement,
   });
 
   @override
@@ -369,20 +389,31 @@ class _QtyStepper extends StatelessWidget {
         ),
         SizedBox(
           width: s * 0.09,
-          child: Text(
-            '$qty',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: s * 0.042,
-              fontWeight: FontWeight.w700,
-              color: accent,
-            ),
-          ),
+          child:
+              Text(
+                '$qty',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: s * 0.042,
+                  fontWeight: FontWeight.w700,
+                  color: accent,
+                ),
+              ),
+              // SizedBox(
+              //   width: 60,
+              //   child: TextField(
+              //     controller: controller,
+              //     keyboardType: TextInputType.number,
+              //     textAlign: TextAlign.center,
+              //   ),
+              // ),
         ),
         _StepBtn(
           icon: Icons.add,
-          color: accent,
-          bg: accent.withValues(alpha: 0.1),
+          color: onIncrement == null ? Colors.grey : accent,
+          bg: onIncrement == null
+              ? Colors.grey.shade200
+              : accent.withValues(alpha: 0.1),
           size: s * 0.075,
           onTap: onIncrement,
         ),
@@ -396,14 +427,14 @@ class _StepBtn extends StatelessWidget {
   final Color color;
   final Color bg;
   final double size;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _StepBtn({
     required this.icon,
     required this.color,
     required this.bg,
     required this.size,
-    required this.onTap,
+    this.onTap,
   });
 
   @override

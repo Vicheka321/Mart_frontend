@@ -3772,6 +3772,7 @@ class _ProductCardState extends State<_ProductCard> {
               productId: widget.product.id,
               name: widget.product.name,
               qty: newQty,
+              stock : widget.product.quantity,
               price: widget.product.finalPrice.toString(),
               totalPrice: price * newQty,
               images: List<String>.from(widget.product.images),

@@ -1946,7 +1946,7 @@ class _MapPickerScreenState extends State<MapPickerScreen>
   Future<void> _fetchSuggestions(String query) async {
     setState(() => _searching = true);
     try {
-      final locs = await locationFromAddress(query);
+      final locs = await locationFromAddress("$query, Cambodia");
       final results = <_Sugg>[];
       for (final loc in locs.take(5)) {
         final marks = await placemarkFromCoordinates(
@@ -2004,6 +2004,19 @@ class _MapPickerScreenState extends State<MapPickerScreen>
         desiredAccuracy: LocationAccuracy.high,
       );
       final ll = LatLng(pos.latitude, pos.longitude);
+      final ok = await _isCambodia(ll);
+
+      if (!ok) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Your current location is outside Cambodia."),
+          ),
+        );
+
+        setState(() => _locating = false);
+
+        return;
+      }
       _mapCtrl?.animateCamera(CameraUpdate.newLatLngZoom(ll, 16));
       setState(() => _picked = ll);
       _resolveAddress(ll);
@@ -2011,8 +2024,27 @@ class _MapPickerScreenState extends State<MapPickerScreen>
     setState(() => _locating = false);
   }
 
-  void _confirm() {
-    // HapticFeedback.heavyImpact();
+  // void _confirm() {
+  //   Navigator.pop(context, {
+  //     'lat': _picked!.latitude,
+  //     'lng': _picked!.longitude,
+  //     'address': _resolvedAddress,
+  //   });
+  // }
+
+  Future<void> _confirm() async {
+    final ok = await _isCambodia(_picked!);
+
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select a location inside Cambodia."),
+        ),
+      );
+
+      return;
+    }
+
     Navigator.pop(context, {
       'lat': _picked!.latitude,
       'lng': _picked!.longitude,
@@ -2058,9 +2090,31 @@ class _MapPickerScreenState extends State<MapPickerScreen>
           _loadingLocation = false;
           _locationError = true;
         });
+        if (!await _isCambodia(_picked!)) {
+          _picked = const LatLng(11.5564, 104.9282); // Phnom Penh
+        }
         await _resolveAddress(_picked!);
       }
     }
+  }
+
+  Future<bool> _isCambodia(LatLng position) async {
+    try {
+      final places = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (places.isNotEmpty) {
+        final country = places.first.country ?? "";
+
+        return country.toLowerCase() == "cambodia";
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+
+    return false;
   }
 
   @override
@@ -2081,6 +2135,12 @@ class _MapPickerScreenState extends State<MapPickerScreen>
         children: [
           Positioned.fill(
             child: GoogleMap(
+              cameraTargetBounds: CameraTargetBounds(
+                LatLngBounds(
+                  southwest: const LatLng(10.40, 102.30),
+                  northeast: const LatLng(14.70, 107.70),
+                ),
+              ),
               initialCameraPosition: CameraPosition(target: _picked!, zoom: 16),
               onMapCreated: (c) {
                 _mapCtrl = c;

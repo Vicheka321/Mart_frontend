@@ -5,67 +5,68 @@
 import 'package:meta/meta.dart';
 import 'dart:convert';
 
-List<AllProducts> allProductsFromJson(String str) => List<AllProducts>.from(json.decode(str).map((x) => AllProducts.fromJson(x)));
+List<AllProducts> allProductsFromJson(String str) => List<AllProducts>.from(
+  json.decode(str).map((x) => AllProducts.fromJson(x)),
+);
 
-String allProductsToJson(List<AllProducts> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+String allProductsToJson(List<AllProducts> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class AllProducts {
-    int id;
-    String name;
-    String description;
-    String? unit;
-    int quantity;
-    String salePrice;
-    String finalPrice;
-    String? discount;
-    String categoryName;
-    String brandName;
-    List<String> images;
+  int id;
+  String name;
+  String description;
+  String? unit;
+  int quantity;
+  String salePrice;
+  String finalPrice;
+  String? discount;
+  String categoryName;
+  String brandName;
+  List<String> images;
 
-    AllProducts({
-        required this.id,
-        required this.name,
-        required this.description,
-        this.unit,
-        required this.quantity,
-        required this.salePrice,
-        required this.finalPrice,
-        this.discount,
-        required this.categoryName,
-        required this.brandName,
-        required this.images,
-    });
+  AllProducts({
+    required this.id,
+    required this.name,
+    required this.description,
+    this.unit,
+    required this.quantity,
+    required this.salePrice,
+    required this.finalPrice,
+    this.discount,
+    required this.categoryName,
+    required this.brandName,
+    required this.images,
+  });
 
-    factory AllProducts.fromJson(Map<String, dynamic> json) => AllProducts(
-        id: json["id"],
-        name: json["name"],
-        description: json["description"],
-        unit: json["unit"],
-        quantity: json["quantity"],
-        salePrice: json["sale_price"],
-        finalPrice: json["final_price"],
-        discount: json["discount"],
-        categoryName: json["category_name"],
-        brandName: json["brand_name"],
-        images: List<String>.from(json["images"].map((x) => x)),
-    );
+  factory AllProducts.fromJson(Map<String, dynamic> json) => AllProducts(
+    id: json["id"],
+    name: json["name"],
+    description: json["description"],
+    unit: json["unit"],
+    quantity: json["quantity"],
+    salePrice: json["sale_price"],
+    finalPrice: json["final_price"],
+    discount: json["discount"],
+    categoryName: json["category_name"],
+    brandName: json["brand_name"],
+    images: List<String>.from(json["images"].map((x) => x)),
+  );
 
-    Map<String, dynamic> toJson() => {
-        "id": id,
-        "name": name,
-        "description": description,
-        "unit": unit,
-        "quantity": quantity,
-        "sale_price": salePrice,
-        "final_price": finalPrice,
-        "discount": discount,
-        "category_name": categoryName,
-        "brand_name": brandName,
-        "images": List<dynamic>.from(images.map((x) => x)),
-    };
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "description": description,
+    "unit": unit,
+    "quantity": quantity,
+    "sale_price": salePrice,
+    "final_price": finalPrice,
+    "discount": discount,
+    "category_name": categoryName,
+    "brand_name": brandName,
+    "images": List<dynamic>.from(images.map((x) => x)),
+  };
 }
-
-
 
 // =============================
 List<Products> productsFromJson(String str) =>
@@ -652,6 +653,7 @@ class Item {
   int productId;
   String name;
   int qty;
+  int stock;
   String price;
   double totalPrice;
   List<String> images;
@@ -660,6 +662,7 @@ class Item {
     required this.productId,
     required this.name,
     required this.qty,
+    required this.stock,
     required this.price,
     required this.totalPrice,
     required this.images,
@@ -669,6 +672,7 @@ class Item {
     productId: json["product_id"],
     name: json["name"],
     qty: json["qty"],
+    stock: json["stock"],
     price: json["price"].toString(),
     totalPrice: json["total_price"].toDouble(),
     images: List<String>.from(json["images"].map((x) => x)),
@@ -678,6 +682,7 @@ class Item {
     "product_id": productId,
     "name": name,
     "qty": qty,
+    "stock": stock,
     "price": price,
     "total_price": totalPrice,
     "images": List<dynamic>.from(images.map((x) => x)),
