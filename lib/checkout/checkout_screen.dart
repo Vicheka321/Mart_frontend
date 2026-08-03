@@ -181,14 +181,23 @@ class CouponResult {
 // ─────────────────────────────────────────────
 
 class CheckoutController extends ChangeNotifier {
-  // final ApiService _api;
   final List<OrderItem> items;
-  final double deliveryFee;
+  // final double deliveryFee;
+  // CheckoutController({
+  //   required this.items,
+  //   this.deliveryFee = 1.50,
+  // });
 
-  CheckoutController({
-    required this.items,
-    this.deliveryFee = 1.50,
-  }); // : _api = api;
+  double _deliveryFee = 0;
+  double get deliveryFee => _deliveryFee;
+
+  double _distanceKm = 0;
+  double get distanceKm => _distanceKm;
+
+  String? _branchName;
+  String? get branchName => _branchName;
+
+  CheckoutController({required this.items});
 
   // ── State ──────────────────────────────────
   PaymentMethod _payment = PaymentMethod.cash;
@@ -226,9 +235,10 @@ class CheckoutController extends ChangeNotifier {
   }
 
   double get discount => _coupon?.discount ?? 0;
-  // double get total =>
-  //     (subtotal + deliveryFee - discount).clamp(0, double.infinity);
-  double get total => (subtotal - discount).clamp(0, double.infinity);
+
+  // double get total => (subtotal - discount).clamp(0, double.infinity);
+  double get total =>
+      (subtotal + deliveryFee - discount).clamp(0, double.infinity);
 
   // ── Load saved addresses ───────────────────
   Future<void> loadAddresses() async {
@@ -255,6 +265,29 @@ class CheckoutController extends ChangeNotifier {
 
     _loadingAddresses = false;
     notifyListeners();
+  }
+
+  Future<void> loadDeliveryQuote({
+    required double lat,
+    required double lng,
+  }) async {
+    try {
+      final res = await ApiService().deliveryQuote(lat: lat, lng: lng);
+
+      _deliveryFee = double.parse(res["delivery_fee"].toString());
+
+      _distanceKm = double.parse(res["distance_km"].toString());
+
+      _branchName = res["branch"]["name"];
+
+      notifyListeners();
+    } catch (e) {
+      _deliveryFee = 0;
+      _distanceKm = 0;
+      _branchName = null;
+
+      rethrow;
+    }
   }
 
   // ── Payment ────────────────────────────────
@@ -481,6 +514,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       setState(() {
         _address = selected.toDelivery();
+        _ctrl.loadDeliveryQuote(lat: selected.lat, lng: selected.lng);
         _nameCtrl.text = selected.fullName ?? "";
         _shouldSaveAddress = false;
       });
@@ -552,6 +586,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         lng: result['lng'] as double,
       );
     });
+    await _ctrl.loadDeliveryQuote(lat: _address!.lat, lng: _address!.lng);
   }
 
   // ── Open saved address picker ──────────────
@@ -567,6 +602,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         onSelect: (addr) {
           setState(() {
             _address = addr.toDelivery();
+            _ctrl.loadDeliveryQuote(lat: addr.lat, lng: addr.lng);
             _nameCtrl.text = addr.fullName ?? '';
 
             _shouldSaveAddress = false;
@@ -1438,12 +1474,29 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           value: '\$${_ctrl.subtotal.toStringAsFixed(2)}',
           colors: colors,
         ),
-        // const SizedBox(height: 10),
-        // _PriceRow(
-        //   label: 'Delivery Fee',
-        //   value: '\$${_ctrl.deliveryFee.toStringAsFixed(2)}',
-        //   colors: colors,
-        // ),
+        const SizedBox(height: 10),
+        _PriceRow(
+          label: 'Delivery Fee',
+          value: _ctrl.deliveryFee == 0
+              ? 'Free'
+              : '\$${_ctrl.deliveryFee.toStringAsFixed(2)}',
+          colors: colors,
+        ),
+
+        const SizedBox(height: 10),
+        _PriceRow(
+          label: 'Distance',
+          value: '${_ctrl.distanceKm.toStringAsFixed(2)} km',
+          colors: colors,
+        ),
+
+        const SizedBox(height: 10),
+
+        _PriceRow(
+          label: 'Branch',
+          value: _ctrl.branchName ?? '-',
+          colors: colors,
+        ),
         if (_ctrl.coupon != null) ...[
           const SizedBox(height: 10),
           _PriceRow(

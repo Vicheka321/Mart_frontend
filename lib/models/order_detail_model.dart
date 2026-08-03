@@ -142,6 +142,7 @@ class Data {
   String phone;
   String address;
   String note;
+  String deliveryFee;
   String createdAt;
   List<Item> items;
 
@@ -159,6 +160,7 @@ class Data {
     required this.phone,
     required this.address,
     required this.note,
+    required this.deliveryFee,
     required this.createdAt,
     required this.items,
   });
@@ -177,6 +179,7 @@ class Data {
     phone: json["phone"] ?? "",
     address: json["address"] ?? "",
     note: json["note"] ?? "",
+    deliveryFee: json["delivery_fee"] ?? "0.00",
     createdAt: json["created_at"] ?? "",
     items: List<Item>.from(
       (json["items"] as List? ?? []).map((x) => Item.fromJson(x)),
@@ -197,6 +200,7 @@ class Data {
     "phone": phone,
     "address": address,
     "note": note,
+    "delivery_fee": deliveryFee,
     "created_at": createdAt,
     "items": List<dynamic>.from(items.map((x) => x.toJson())),
   };

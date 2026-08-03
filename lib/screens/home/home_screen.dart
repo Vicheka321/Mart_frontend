@@ -1,3 +1,7 @@
+// // // ─────────────────────────────────────────────────────────────
+// // // RECOMMENDED ROW
+// // // ─────────────────────────────────────────────────────────────
+
 // import 'dart:async';
 // import 'package:cached_network_image/cached_network_image.dart';
 // import 'package:flutter/cupertino.dart';
@@ -42,13 +46,6 @@
 //   late Timer _flashTimer;
 
 //   final _bannerController = PageController();
-
-//   late Future<MyProfileModel> _profileFuture;
-//   late Future<List<BannersModel>> _bannersFuture;
-//   late Future<List<CategoriesModel>> _categoriesFuture;
-//   late Future<List<BestSellerModel>> _bestSellerFuture;
-//   late Future<List<NewArrivalsModel>> _newArrivalsFuture;
-//   late Future<List<RecommendedModel>> _recommendedFuture;
 
 //   @override
 //   void initState() {
@@ -100,21 +97,16 @@
 //   }
 
 //   Future<void> _refresh() async {
-//     setState(() {
-//       _profileFuture = ApiService().fetchMyProfile();
-//       _bannersFuture = ApiService().fetchBanners();
-//       _categoriesFuture = ApiService().fetchCategories();
-//       _bestSellerFuture = ApiService().fetchBestSellers();
-//       _newArrivalsFuture = ApiService().fetchNewArrivals();
-//       _recommendedFuture = ApiService().fetchRecommended();
-//     });
 //     await Future.wait([
-//       _profileFuture,
-//       _bannersFuture,
-//       _categoriesFuture,
-//       _bestSellerFuture,
-//       _newArrivalsFuture,
-//       _recommendedFuture,
+//       context.read<CartProvider>().fetchCart(),
+//       context.read<ProfileProvider>().fetchProfile(),
+
+//       context.read<BannerProvider>().fetchBanners(),
+//       context.read<CategoryProvider>().fetchCategories(),
+//       context.read<BestSellerProvider>().fetchBestSellers(),
+//       context.read<NewArrivalsProvider>().fetchNewArrivals(),
+//       context.read<BrandsProvider>().fetchBrands(),
+//       context.read<RecommendProvider>().fetchRecommended(),
 //     ]);
 //   }
 
@@ -1254,7 +1246,7 @@
 
 //   /// ── Stepper +/- (debounced API call) ──────────────────────
 //   void _setQty(int newQty) {
-//     if (newQty < 0) newQty = 0;
+//     newQty = newQty.clamp(0, 99);
 
 //     final prev = _qty;
 //     final diff = newQty - prev;
@@ -1262,9 +1254,12 @@
 
 //     final price = double.parse(widget.product.finalPrice.toString());
 //     final cartProvider = context.read<CartProvider>();
+//     final existedInCart =
+//         cartProvider.cart?.items.any((e) => e.productId == widget.product.id) ??
+//         false;
 
 //     setState(() => _qty = newQty);
-//     cartProvider.updateOptimisticQty(diff: diff, price: price);
+//     // cartProvider.updateOptimisticQty(diff: diff, price: price);
 
 //     if (newQty == 0) {
 //       cartProvider.removeLocalItem(widget.product.id);
@@ -1273,28 +1268,41 @@
 //     }
 
 //     _debounce?.cancel();
-//     _debounce = Timer(const Duration(milliseconds: 400), () async {
+//     _debounce = Timer(const Duration(milliseconds: 300), () async {
 //       try {
-//         if (newQty <= 0) {
+//         if (newQty == 0) {
 //           await ApiService().removeCart(widget.product.id);
+//         } else if (!existedInCart) {
+//           await ApiService().addToCart(
+//             productId: widget.product.id,
+//             quantity: newQty,
+//           );
 //         } else {
 //           await ApiService().updateCart(
 //             productId: widget.product.id,
 //             quantity: newQty,
 //           );
 //         }
-//         // ✅ success → no need to refetch, local state already correct
+
+//         if (!existedInCart && newQty > 0) {
+//           cartProvider.addLocalItem(
+//             item: Item(
+//               productId: widget.product.id,
+//               name: widget.product.name,
+//               qty: newQty,
+//               stock : widget.product.quantity,
+//               price: widget.product.finalPrice.toString(),
+//               totalPrice: price * newQty,
+//               images: List<String>.from(widget.product.images),
+//             ),
+//           );
+//         }
+
 //         cartProvider.clearOptimistic();
 //       } catch (_) {
-//         // ❌ fail → resync truth from server
-//         if (mounted) {
-//           await cartProvider.fetchCart();
-//           final item = cartProvider.cart?.items.where(
-//             (e) => e.productId == widget.product.id,
-//           );
-//           final serverQty = (item?.isNotEmpty ?? false) ? item!.first.qty : 0;
-//           setState(() => _qty = serverQty);
-//         }
+//         setState(() => _qty = prev);
+
+//         cartProvider.updateLocalQty(productId: widget.product.id, qty: prev);
 //       }
 //     });
 //   }
@@ -1418,7 +1426,22 @@
 //                   child: _CartStepper(
 //                     qty: _qty,
 //                     colors: widget.colors,
-//                     onAdd: _handleAddTap,
+//                     // onAdd: _handleAddTap,
+//                     onAdd: () async {
+//                       final loggedIn = await ApiService().isLoggedIn();
+
+//                       if (!loggedIn) {
+//                         Navigator.push(
+//                           context,
+//                           MaterialPageRoute(
+//                             builder: (_) => const LoginScreen(),
+//                           ),
+//                         );
+//                         return;
+//                       }
+
+//                       _setQty(1);
+//                     },
 //                     onIncrement: () async => _setQty(_qty + 1),
 //                     onDecrement: () async => _setQty(_qty - 1),
 //                   ),
@@ -1890,595 +1913,41 @@
 //   );
 // }
 
-// // ─────────────────────────────────────────────────────────────
-// // PRODUCT GRID  (2-column)
-// // ─────────────────────────────────────────────────────────────
 
-// // class _ProductGrid extends StatelessWidget {
-// //   final List<dynamic> products;
-// //   final String tag;
-// //   final Color tagColor;
-// //   final AppColors colors;
 
-// //   const _ProductGrid({
-// //     super.key,
-// //     required this.products,
-// //     required this.tag,
-// //     required this.tagColor,
-// //     required this.colors,
-// //   });
 
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     return Padding(
-// //       padding: const EdgeInsets.symmetric(horizontal: _T.sp12),
-// //       child: Row(
-// //         crossAxisAlignment: CrossAxisAlignment.start,
-// //         children: products.take(2).map((p) {
-// //           return Expanded(
-// //             child: Padding(
-// //               padding: const EdgeInsets.symmetric(horizontal: _T.sp6),
-// //               child: _ProductCard(
-// //                 product: p,
-// //                 tagColor: tagColor,
-// //                 colors: colors,
-// //                 onTap: () => Navigator.push(
-// //                   context,
-// //                   MaterialPageRoute(
-// //                     builder: (_) => ProductDetailScreen(productId: p.id),
-// //                   ),
-// //                 ),
-// //               ),
-// //             ),
-// //           );
-// //         }).toList(),
-// //       ),
-// //     );
-// //   }
-// // }
 
-// // class _ProductGrid extends StatelessWidget {
-// //   final List<dynamic> products;
-// //   final String tag;
-// //   final Color tagColor;
-// //   final AppColors colors;
 
-// //   const _ProductGrid({
-// //     super.key,
-// //     required this.products,
-// //     required this.tag,
-// //     required this.tagColor,
-// //     required this.colors,
-// //   });
 
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     return SizedBox(
-// //       height: 235,
-// //       child: ListView.separated(
-// //         scrollDirection: Axis.horizontal,
-// //         padding: const EdgeInsets.symmetric(horizontal: 25),
-// //         physics: const BouncingScrollPhysics(),
-// //         itemCount: products.length,
-// //         separatorBuilder: (_, __) => const SizedBox(width: _T.sp16),
-// //         itemBuilder: (_, i) {
-// //           final p = products[i];
-// //           return SizedBox(
-// //             width: 150,
-// //             child: _ProductCard(
-// //               product: p,
-// //               tagColor: tagColor,
-// //               colors: colors,
-// //               onTap: () => Navigator.push(
-// //                 context,
-// //                 MaterialPageRoute(
-// //                   builder: (_) => ProductDetailScreen(productId: p.id),
-// //                 ),
-// //               ),
-// //             ),
-// //           );
-// //         },
-// //       ),
-// //     );
-// //   }
-// // }
 
-// // class _ProductCard extends StatefulWidget {
-// //   final dynamic product;
-// //   final Color tagColor;
-// //   final AppColors colors;
-// //   final VoidCallback onTap;
 
-// //   const _ProductCard({
-// //     super.key,
-// //     required this.product,
-// //     required this.tagColor,
-// //     required this.colors,
-// //     required this.onTap,
-// //   });
 
-// //   @override
-// //   State<_ProductCard> createState() => _ProductCardState();
-// // }
 
-// // class _ProductCardState extends State<_ProductCard> {
-// //   int _qty = 0;
 
-// //   @override
-// //   void initState() {
-// //     super.initState();
-// //     _loadCartQty();
-// //   }
 
-// //   @override
-// //   void didChangeDependencies() {
-// //     super.didChangeDependencies();
-// //     // Re-check cart qty when CartProvider changes (e.g. item deleted from cart screen)
-// //     final cart = context.watch<CartProvider>().cart;
-// //     if (cart != null) {
-// //       final item = cart.items.where((e) => e.productId == widget.product.id);
-// //       final newQty = item.isNotEmpty ? item.first.qty : 0;
-// //       if (newQty != _qty) {
-// //         WidgetsBinding.instance.addPostFrameCallback((_) {
-// //           if (mounted) setState(() => _qty = newQty);
-// //         });
-// //       }
-// //     }
-// //   }
 
-// //   Future<void> _loadCartQty() async {
-// //     try {
-// //       final qty = await ApiService().getCartQuantity(
-// //         productId: widget.product.id,
-// //       );
-// //       if (mounted) setState(() => _qty = qty);
-// //       context.read<CartProvider>().fetchCart();
-// //     } catch (_) {}
-// //   }
 
-// //   Future<void> _setQty(int newQty) async {
-// //     final prev = _qty;
-// //     setState(() => _qty = newQty < 0 ? 0 : newQty);
-// //     try {
-// //       if (newQty <= 0) {
-// //         await ApiService().removeCart(widget.product.id);
-// //         if (mounted) setState(() => _qty = 0);
-// //         context.read<CartProvider>().fetchCart();
-// //       } else {
-// //         await ApiService().updateCart(
-// //           productId: widget.product.id,
-// //           quantity: newQty,
-// //         );
-// //         context.read<CartProvider>().fetchCart();
-// //       }
-// //     } catch (_) {
-// //       if (mounted) setState(() => _qty = prev);
-// //     }
-// //   }
 
-// //   // Future<void> _handleAddTap() async {
-// //   //   final loggedIn = await ApiService().isLoggedIn();
-// //   //   if (!loggedIn) {
-// //   //     showAuthBottomSheet(context);
-// //   //     return;
-// //   //   }
-// //   //   final old = _qty;
-// //   //   setState(() => _qty = 1);
-// //   //   try {
-// //   //     await ApiService().addToCart(productId: widget.product.id, quantity: 1);
-// //   //     context.read<CartProvider>().fetchCart();
-// //   //   } catch (_) {
-// //   //     if (mounted) setState(() => _qty = old);
-// //   //   }
-// //   // }
 
-// //   Future<void> _handleAddTap() async {
-// //     final loggedIn = await ApiService().isLoggedIn();
 
-// //     if (!loggedIn) {
-// //       showAuthBottomSheet(context);
-// //       return;
-// //     }
 
-// //     final old = _qty;
 
-// //     setState(() => _qty = 1);
 
-// //     final cartProvider = context.read<CartProvider>();
 
-// //     // Update Floating Cart immediately
-// //     cartProvider.addOptimisticItem();
 
-// //     try {
-// //       await ApiService().addToCart(productId: widget.product.id, quantity: 1);
 
-// //       await cartProvider.fetchCart();
-// //     } catch (_) {
-// //       // rollback
-// //       cartProvider.rollbackOptimisticItem();
 
-// //       if (mounted) {
-// //         setState(() => _qty = old);
-// //       }
-// //     }
-// //   }
 
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     final imageUrl = widget.product.images.isNotEmpty
-// //         ? widget.product.images.first
-// //         : null;
 
-// //     return GestureDetector(
-// //       onTap: widget.onTap,
-// //       child: Container(
-// //         decoration: BoxDecoration(
-// //           // color: widget.colors.cardBg,
-// //           color: Theme.of(context).scaffoldBackgroundColor,
-// //           borderRadius: BorderRadius.circular(1),
-// //           // border: Border.all(color: widget.colors.border, width: .8),
-// //           // boxShadow: _T.shadowSm(Colors.black),
-// //         ),
-// //         clipBehavior: Clip.antiAlias,
-// //         child: Column(
-// //           crossAxisAlignment: CrossAxisAlignment.start,
-// //           children: [
-// //             // ── Image ────────────────────────────────────────
-// //             Stack(
-// //               children: [
-// //                 AspectRatio(
-// //                   aspectRatio: 1,
-// //                   child: Container(
-// //                     decoration: BoxDecoration(
-// //                       color: Colors.white,
-// //                       borderRadius: BorderRadius.circular(20),
-// //                     ),
-// //                     child: Padding(
-// //                       padding: const EdgeInsets.all(12),
-// //                       child: CachedNetworkImage(
-// //                         imageUrl: imageUrl,
-// //                         fit: BoxFit.contain,
-// //                       ),
-// //                     ),
-// //                   ),
-// //                 ),
-// //                 // discount badge
-// //                 if (widget.product.discount != null)
-// //                   Positioned(
-// //                     top: _T.sp8,
-// //                     left: _T.sp8,
-// //                     child: _Badge(
-// //                       label:
-// //                           '-${double.parse(widget.product.discount!.replaceAll('%', '')).toInt()}%',
-// //                       bgColor: widget.colors.flashText,
-// //                       textColor: Colors.white,
-// //                     ),
-// //                   ),
-// //               ],
-// //             ),
 
-// //             // ── Info ─────────────────────────────────────────
-// //             Padding(
-// //               padding: const EdgeInsets.all(_T.sp12),
-// //               child: Column(
-// //                 crossAxisAlignment: CrossAxisAlignment.start,
-// //                 children: [
-// //                   Text(
-// //                     widget.product.name,
-// //                     maxLines: 1,
-// //                     overflow: TextOverflow.ellipsis,
-// //                     style: _T.bodyMd(widget.colors.text1),
-// //                   ),
-// //                   const SizedBox(height: _T.sp8),
-// //                   Row(
-// //                     crossAxisAlignment: CrossAxisAlignment.center,
-// //                     children: [
-// //                       Expanded(
-// //                         child: Column(
-// //                           crossAxisAlignment: CrossAxisAlignment.start,
-// //                           children: [
-// //                             if (widget.product.discount != null)
-// //                               Text(
-// //                                 '\$${widget.product.salePrice}',
-// //                                 style: _T.priceSm(widget.colors.text3),
-// //                               ),
-// //                             Text(
-// //                               '\$${widget.product.finalPrice}',
-// //                               style: _T.priceLg(widget.colors.accent),
-// //                             ),
-// //                           ],
-// //                         ),
-// //                       ),
-// //                       _CartStepper(
-// //                         qty: _qty,
-// //                         colors: widget.colors,
-// //                         onAdd: _handleAddTap,
-// //                         onIncrement: () => _setQty(_qty + 1),
-// //                         onDecrement: () => _setQty(_qty - 1),
-// //                       ),
-// //                     ],
-// //                   ),
-// //                 ],
-// //               ),
-// //             ),
-// //           ],
-// //         ),
-// //       ),
-// //     );
-// //   }
-// // }
 
-// // class _ProductGrid extends StatelessWidget {
-// //   final List<dynamic> products;
-// //   final String tag;
-// //   final Color tagColor;
-// //   final AppColors colors;
 
-// //   const _ProductGrid({
-// //     super.key,
-// //     required this.products,
-// //     required this.tag,
-// //     required this.tagColor,
-// //     required this.colors,
-// //   });
 
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     return SizedBox(
-// //       height: 205,
-// //       child: ListView.separated(
-// //         scrollDirection: Axis.horizontal,
-// //         padding: const EdgeInsets.symmetric(horizontal: 25),
-// //         physics: const BouncingScrollPhysics(),
-// //         itemCount: products.length,
-// //         separatorBuilder: (_, __) => const SizedBox(width: _T.sp16),
-// //         itemBuilder: (_, i) {
-// //           final p = products[i];
-// //           return SizedBox(
-// //             width: 140,
-// //             child: _ProductCard(
-// //               product: p,
-// //               tagColor: tagColor,
-// //               colors: colors,
-// //               onTap: () => Navigator.push(
-// //                 context,
-// //                 MaterialPageRoute(
-// //                   builder: (_) => ProductDetailScreen(productId: p.id),
-// //                 ),
-// //               ),
-// //             ),
-// //           );
-// //         },
-// //       ),
-// //     );
-// //   }
-// // }
 
-// // class _ProductCard extends StatelessWidget {
-// //   final dynamic product;
-// //   final Color tagColor;
-// //   final AppColors colors;
-// //   final VoidCallback onTap;
 
-// //   const _ProductCard({
-// //     super.key,
-// //     required this.product,
-// //     required this.tagColor,
-// //     required this.colors,
-// //     required this.onTap,
-// //   });
 
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     final imageUrl = product.images.isNotEmpty ? product.images.first : null;
 
-// //     return GestureDetector(
-// //       onTap: onTap,
-// //       child: Container(
-// //         decoration: BoxDecoration(
-// //           color: Theme.of(context).scaffoldBackgroundColor,
-// //           borderRadius: BorderRadius.circular(1),
-// //         ),
-// //         clipBehavior: Clip.antiAlias,
-// //         child: Column(
-// //           crossAxisAlignment: CrossAxisAlignment.start,
-// //           children: [
-// //             // ── Image + overlaid price badge ────────────────
-// //             Stack(
-// //               children: [
-// //                 AspectRatio(
-// //                   aspectRatio: 1,
-// //                   child: Container(
-// //                     decoration: BoxDecoration(
-// //                       color: Colors.white,
-// //                       borderRadius: BorderRadius.circular(20),
-// //                     ),
-// //                     child: Padding(
-// //                       padding: const EdgeInsets.all(12),
-// //                       child: CachedNetworkImage(
-// //                         imageUrl: imageUrl,
-// //                         fit: BoxFit.contain,
-// //                       ),
-// //                     ),
-// //                   ),
-// //                 ),
 
-// //                 // discount badge — top left
-// //                 if (product.discount != null)
-// //                   Positioned(
-// //                     top: _T.sp8,
-// //                     left: _T.sp8,
-// //                     child: _Badge(
-// //                       label:
-// //                           '-${double.parse(product.discount!.replaceAll('%', '')).toInt()}%',
-// //                       bgColor: colors.flashText,
-// //                       textColor: Colors.white,
-// //                     ),
-// //                   ),
-
-// //                 // price badge — bottom left
-// //                 Positioned(
-// //                   bottom: _T.sp8,
-// //                   left: _T.sp8,
-// //                   child: Container(
-// //                     padding: const EdgeInsets.symmetric(
-// //                       horizontal: 10,
-// //                       vertical: 5,
-// //                     ),
-// //                     decoration: BoxDecoration(
-// //                       color: colors.accent,
-// //                       borderRadius: BorderRadius.circular(10),
-// //                     ),
-// //                     child: Row(
-// //                       mainAxisSize: MainAxisSize.min,
-// //                       crossAxisAlignment: CrossAxisAlignment.baseline,
-// //                       textBaseline: TextBaseline.alphabetic,
-// //                       children: [
-// //                         if (product.discount != null) ...[
-// //                           Text(
-// //                             '\$${product.salePrice}',
-// //                             style: TextStyle(
-// //                               fontSize: 10,
-// //                               fontWeight: FontWeight.w400,
-// //                               color: Colors.white.withOpacity(.65),
-// //                               decoration: TextDecoration.lineThrough,
-// //                               decorationColor: Colors.white.withOpacity(.65),
-// //                             ),
-// //                           ),
-// //                           const SizedBox(width: 4),
-// //                         ],
-// //                         Text(
-// //                           '\$${product.finalPrice}',
-// //                           style: const TextStyle(
-// //                             fontSize: 13,
-// //                             fontWeight: FontWeight.w700,
-// //                             color: Colors.white,
-// //                           ),
-// //                         ),
-// //                       ],
-// //                     ),
-// //                   ),
-// //                 ),
-// //               ],
-// //             ),
-
-// //             // ── Name ───────────────────────────────────────
-// //             Padding(
-// //               padding: const EdgeInsets.fromLTRB(
-// //                 _T.sp12,
-// //                 _T.sp10,
-// //                 _T.sp12,
-// //                 _T.sp12,
-// //               ),
-// //               child: Text(
-// //                 product.name,
-// //                 maxLines: 1,
-// //                 overflow: TextOverflow.ellipsis,
-// //                 style: _T.bodyMd(colors.text1).copyWith(fontSize: 12),
-// //               ),
-// //             ),
-// //           ],
-// //         ),
-// //       ),
-// //     );
-// //   }
-// // }
-
-// // ─────────────────────────────────────────────────────────────
-// // CART STEPPER
-// // ─────────────────────────────────────────────────────────────
-
-// // class _CartStepper extends StatelessWidget {
-// //   final int qty;
-// //   final AppColors colors;
-// //   final Future<void> Function() onAdd;
-// //   final Future<void> Function() onIncrement;
-// //   final Future<void> Function() onDecrement;
-
-// //   const _CartStepper({
-// //     required this.qty,
-// //     required this.colors,
-// //     required this.onAdd,
-// //     required this.onIncrement,
-// //     required this.onDecrement,
-// //   });
-
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     const btnSize = 32.0;
-
-// //     // ── Add button (qty == 0) ─────────────────────────────────
-// //     if (qty == 0) {
-// //       return GestureDetector(
-// //         behavior: HitTestBehavior.opaque,
-// //         onTap: onAdd,
-// //         child: Container(
-// //           width: btnSize,
-// //           height: btnSize,
-// //           decoration: BoxDecoration(
-// //             color: colors.accent,
-// //             shape: BoxShape.circle,
-// //             boxShadow: _T.shadowAccent(colors.accent),
-// //           ),
-// //           child: const Icon(Icons.add, color: Colors.white, size: 16),
-// //         ),
-// //       );
-// //     }
-
-// //     // ── Stepper (qty > 0) ─────────────────────────────────────
-// //     return AnimatedContainer(
-// //       duration: const Duration(milliseconds: 200),
-// //       curve: Curves.easeOutCubic,
-// //       height: btnSize,
-// //       decoration: BoxDecoration(
-// //         color: colors.accent,
-// //         borderRadius: BorderRadius.circular(_T.radiusFull),
-// //         boxShadow: _T.shadowAccent(colors.accent),
-// //       ),
-// //       child: Row(
-// //         mainAxisSize: MainAxisSize.min,
-// //         children: [
-// //           GestureDetector(
-// //             behavior: HitTestBehavior.opaque,
-// //             onTap: onDecrement,
-// //             child: const SizedBox(
-// //               width: btnSize,
-// //               height: btnSize,
-// //               child: Icon(Icons.remove, color: Colors.white, size: 14),
-// //             ),
-// //           ),
-// //           AnimatedSwitcher(
-// //             duration: const Duration(milliseconds: 150),
-// //             transitionBuilder: (child, anim) =>
-// //                 ScaleTransition(scale: anim, child: child),
-// //             child: SizedBox(
-// //               key: ValueKey(qty),
-// //               width: 22,
-// //               child: Text(
-// //                 '$qty',
-// //                 textAlign: TextAlign.center,
-// //                 style: const TextStyle(
-// //                   color: Colors.white,
-// //                   fontSize: 13,
-// //                   fontWeight: FontWeight.w700,
-// //                 ),
-// //               ),
-// //             ),
-// //           ),
-// //           GestureDetector(
-// //             behavior: HitTestBehavior.opaque,
-// //             onTap: onIncrement,
-// //             child: const SizedBox(
-// //               width: btnSize,
-// //               height: btnSize,
-// //               child: Icon(Icons.add, color: Colors.white, size: 14),
-// //             ),
-// //           ),
-// //         ],
-// //       ),
-// //     );
-// //   }
-// // }
 
 // // ─────────────────────────────────────────────────────────────
 // // RECOMMENDED ROW
@@ -4394,3 +3863,4 @@ Widget _buildRecommendedRowSkeleton() {
     },
   );
 }
+

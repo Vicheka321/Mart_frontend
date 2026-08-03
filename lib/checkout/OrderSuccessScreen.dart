@@ -1019,9 +1019,9 @@ class _TotalSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final promoDiscount = double.tryParse(order.promotionDiscount) ?? 0.0;
     final couponDiscount = double.tryParse(order.couponDiscount) ?? 0.0;
+    final deliveryFee = double.tryParse(order.deliveryFee) ?? 0.0;
     final grandTotal = double.tryParse(order.total) ?? 0.0;
 
-    // Reconstruct subtotal before discounts
     final subtotal = order.items.fold(0.0, (sum, item) {
       return sum + (double.tryParse(item.price) ?? 0.0) * item.qty;
     });
@@ -1045,6 +1045,11 @@ class _TotalSection extends StatelessWidget {
             '-\$${couponDiscount.toStringAsFixed(2)}',
             valueColor: const Color(0xFF10B981),
           ),
+        _row(
+          c,
+          'Delivery Fee',
+          deliveryFee <= 0 ? 'Free' : '\$${deliveryFee.toStringAsFixed(2)}',
+        ),
         const SizedBox(height: 6),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -583,7 +583,6 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final prefs = await SharedPreferences.getInstance();
- 
 
       // Save Sanctum token
       if (data['token'] != null) {
@@ -603,6 +602,7 @@ class ApiService {
   }
 
   // =================== orders=================
+
   Future<void> addToCart({
     required int productId,
     required int quantity,
@@ -904,6 +904,7 @@ class ApiService {
 
     throw Exception(data['message'] ?? 'Failed to cancel order');
   }
+
   // ==========================profile================
 
   Future<MyProfileModel> fetchMyProfile() async {
@@ -1308,5 +1309,30 @@ class ApiService {
     if (response.statusCode != 200) {
       throw Exception('Failed to mark all notifications as read');
     }
+  }
+
+  Future<Map<String, dynamic>> deliveryQuote({
+    required double lat,
+    required double lng,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+    final response = await http.post(
+      Uri.parse('$baseUrl/delivery/quote'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'lat': lat, 'lng': lng}),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Unable to calculate delivery fee');
   }
 }
