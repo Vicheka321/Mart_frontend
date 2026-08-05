@@ -2025,19 +2025,19 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       // preload product detail
-      // unawaited(
-      //   Future.wait([
-      //     ...bestSellerProvider.products
-      //         .take(10)
-      //         .map((e) => detailProvider.preload(e.id)),
-      //     ...newArrivalProvider.products
-      //         .take(10)
-      //         .map((e) => detailProvider.preload(e.id)),
-      //     ...recommendProvider.recommended
-      //         .take(10)
-      //         .map((e) => detailProvider.preload(e.id)),
-      //   ]),
-      // );
+      unawaited(
+        Future.wait([
+          ...bestSellerProvider.products
+              .take(10)
+              .map((e) => detailProvider.preload(e.id)),
+          ...newArrivalProvider.products
+              .take(10)
+              .map((e) => detailProvider.preload(e.id)),
+          ...recommendProvider.recommended
+              .take(10)
+              .map((e) => detailProvider.preload(e.id)),
+        ]),
+      );
     });
   }
 
@@ -2051,7 +2051,6 @@ class _HomeScreenState extends State<HomeScreen> {
     await Future.wait([
       context.read<CartProvider>().fetchCart(),
       context.read<ProfileProvider>().fetchProfile(),
-
       context.read<BannerProvider>().fetchBanners(),
       context.read<CategoryProvider>().fetchCategories(),
       context.read<BestSellerProvider>().fetchBestSellers(),
