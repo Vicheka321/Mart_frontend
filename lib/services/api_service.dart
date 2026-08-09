@@ -18,8 +18,8 @@ import '../models/my_orders_model.dart';
 import '../models/profile_model.dart';
 
 class ApiService {
-  final String baseUrl = 'https://glutton-heat-trifle.ngrok-free.dev/api';
-  // final String baseUrl = 'https://daritamart.site/api';
+  // final String baseUrl = 'https://glutton-heat-trifle.ngrok-free.dev/api';
+  final String baseUrl = 'https://daritamart.site/api';
   // final String baseUrl = 'http://10.0.2.2:8000/api';
 
   // ==============Products=================
