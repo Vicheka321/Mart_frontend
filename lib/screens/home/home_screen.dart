@@ -3354,25 +3354,34 @@ class _ProductCardState extends State<_ProductCard> {
                 Positioned(
                   bottom: _T.sp8,
                   right: _T.sp8,
+                  // child: _CartStepper(
+                  //   qty: _qty,
+                  //   colors: widget.colors,
+
+                  //   onAdd: () async {
+                  //     final loggedIn = await ApiService().isLoggedIn();
+
+                  //     if (!loggedIn) {
+                  //       Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(
+                  //           builder: (_) => const LoginScreen(),
+                  //         ),
+                  //       );
+                  //       return;
+                  //     }
+
+                  //     _setQty(1);
+                  //   },
+                  //   onIncrement: () async => _setQty(_qty + 1),
+                  //   onDecrement: () async => _setQty(_qty - 1),
+                  // ),
                   child: _CartStepper(
                     qty: _qty,
                     colors: widget.colors,
-                    // onAdd: _handleAddTap,
-                    onAdd: () async {
-                      final loggedIn = await ApiService().isLoggedIn();
 
-                      if (!loggedIn) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const LoginScreen(),
-                          ),
-                        );
-                        return;
-                      }
+                    onAdd: _handleAddTap,
 
-                      _setQty(1);
-                    },
                     onIncrement: () async => _setQty(_qty + 1),
                     onDecrement: () async => _setQty(_qty - 1),
                   ),
@@ -3632,179 +3641,6 @@ Widget _buildProductGridSkeleton(BuildContext context) {
     ),
   );
 }
-
-// Widget _buildRecommendedRow({
-//   required List<RecommendedModel> products,
-//   required AppColors colors,
-// }) {
-//   return ListView.separated(
-//     shrinkWrap: true,
-//     physics: const NeverScrollableScrollPhysics(),
-//     padding: const EdgeInsets.symmetric(horizontal: 25),
-//     itemCount: products.length,
-//     separatorBuilder: (_, __) =>
-//         Divider(color: Colors.transparent, height: 0, thickness: .8),
-//     itemBuilder: (context, i) {
-//       final item = products[i];
-//       final imageUrl = item.images.isNotEmpty ? item.images.first : null;
-
-//       final screenWidth = MediaQuery.of(context).size.width;
-
-//       final imageSize = (screenWidth * 0.25).clamp(110.0, 140.0);
-
-//       final titleSize = (screenWidth * 0.040).clamp(14.0, 16.0);
-
-//       final subTitleSize = (screenWidth * 0.030).clamp(11.0, 12.0);
-
-//       final priceSize = (screenWidth * 0.035).clamp(13.0, 14.0);
-
-//       final discountIconSize = (screenWidth * 0.06).clamp(22.0, 26.0);
-
-//       return GestureDetector(
-//         onTap: () => Navigator.push(
-//           context,
-//           MaterialPageRoute(
-//             builder: (_) => ProductDetailScreen(productId: item.id),
-//           ),
-//         ),
-//         child: Padding(
-//           padding: const EdgeInsets.symmetric(vertical: _T.sp10),
-//           child: Row(
-//             crossAxisAlignment: CrossAxisAlignment.center,
-//             children: [
-//               // ── Image ────────────────────────────
-//               Container(
-//                 width: imageSize,
-//                 height: imageSize,
-//                 decoration: BoxDecoration(
-//                   color: Colors.white,
-//                   borderRadius: BorderRadius.circular(20),
-//                 ),
-//                 clipBehavior: Clip.antiAlias,
-//                 child: CachedNetworkImage(
-//                   imageUrl: imageUrl!,
-//                   fit: BoxFit.contain,
-//                   imageBuilder: (context, imageProvider) {
-//                     return Container(
-//                       margin: const EdgeInsets.all(12),
-//                       decoration: BoxDecoration(
-//                         borderRadius: BorderRadius.circular(20),
-//                         image: DecorationImage(
-//                           image: imageProvider,
-//                           fit: BoxFit.contain,
-//                         ),
-//                       ),
-//                     );
-//                   },
-//                   placeholder: (_, __) =>
-//                       const Center(child: SizedBox(width: 20, height: 20)),
-//                   errorWidget: (_, __, ___) =>
-//                       Icon(Icons.image_outlined, color: colors.text3),
-//                 ),
-//               ),
-
-//               const SizedBox(width: _T.sp12),
-
-//               // ── Info ─────────────────────────────
-//               Expanded(
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     Row(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         Expanded(
-//                           child: Text(
-//                             item.name,
-//                             maxLines: 1,
-//                             overflow: TextOverflow.ellipsis,
-//                             style: TextStyle(
-//                               fontSize: titleSize,
-//                               fontWeight: FontWeight.w700,
-//                               color: colors.text1,
-//                               letterSpacing: -.2,
-//                             ),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-
-//                     const SizedBox(height: _T.sp4),
-
-//                     Row(
-//                       children: [
-//                         Expanded(
-//                           child: Text(
-//                             "${item.category} | ${item.brand}",
-//                             maxLines: 1,
-//                             overflow: TextOverflow.ellipsis,
-//                             style: TextStyle(
-//                               fontSize: subTitleSize,
-//                               fontWeight: FontWeight.w500,
-//                               color: colors.text2,
-//                             ),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-
-//                     const SizedBox(height: _T.sp4),
-
-//                     Row(
-//                       children: [
-//                         const SizedBox(width: 4),
-//                         Text(
-//                           '\$${item.finalPrice ?? item.salePrice}',
-//                           style: TextStyle(
-//                             fontSize: priceSize,
-//                             fontWeight: FontWeight.w700,
-//                           ),
-//                         ),
-//                         const SizedBox(width: 8),
-
-//                         if (item.discount != null)
-//                           Text(
-//                             '\$${item.salePrice}',
-//                             style: TextStyle(
-//                               fontSize: priceSize - 2,
-//                               color: Colors.grey.shade500,
-//                               decoration: TextDecoration.lineThrough,
-//                             ),
-//                           ),
-
-//                         const SizedBox(width: 8),
-
-//                         if (item.discount != null)
-//                           Container(
-//                             padding: const EdgeInsets.symmetric(
-//                               horizontal: 10,
-//                               vertical: 4,
-//                             ),
-//                             decoration: BoxDecoration(
-//                               color: const Color(0xFFEAF7EA),
-//                               borderRadius: BorderRadius.circular(20),
-//                             ),
-//                             child: Text(
-//                               '-${item.discount}',
-//                               style: const TextStyle(
-//                                 color: Color(0xFF2563EB),
-//                                 fontSize: 12,
-//                                 fontWeight: FontWeight.w700,
-//                               ),
-//                             ),
-//                           ),
-//                       ],
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       );
-//     },
-//   );
-// }
 
 Widget _buildRecommendedRow({
   required List<RecommendedModel> products,

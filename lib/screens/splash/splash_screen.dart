@@ -302,14 +302,14 @@ class _SplashScreenState extends State<SplashScreen>
           await context.read<BestSellerProvider>().loadCache();
           await context.read<NewArrivalsProvider>().loadCache();
           await context.read<RecommendProvider>().loadCache();
-          // await context.read<CartProvider>().fetchCart();
+       
 
           final bannerProvider = context.read<BannerProvider>();
           final categoryProvider = context.read<CategoryProvider>();
           final bestSellerProvider = context.read<BestSellerProvider>();
           final newArrivalProvider = context.read<NewArrivalsProvider>();
           final recommendProvider = context.read<RecommendProvider>();
-          // final cartProvider = context.read<CartProvider>();
+  
 
           if (bannerProvider.banners.isEmpty) {
             await bannerProvider.fetchBanners();
@@ -331,9 +331,7 @@ class _SplashScreenState extends State<SplashScreen>
             await recommendProvider.fetchRecommended();
           }
 
-          // if (cartProvider.cart == null) {
-          //   await cartProvider.fetchCart();
-          // }
+ 
 
           for (final banner in bannerProvider.banners.take(5)) {
             await precacheImage(
