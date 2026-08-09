@@ -1267,48 +1267,60 @@ class ApiService {
 
   // ====================notifications========================
 
-  Future<List<dynamic>> getNotifications() async {
+  Future<Map<String, dynamic>> getNotifications({int page = 1}) async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString("token");
+    final token = prefs.getString('token');
 
     final response = await http.get(
-      Uri.parse('$baseUrl/notifications'),
+      Uri.parse('$baseUrl/notifications?page=$page'),
       headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
+    final data = jsonDecode(response.body);
+
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      return data;
     }
 
-    throw Exception('Failed to load notifications');
+    throw Exception(data['message'] ?? 'Failed to load notifications');
   }
 
-  Future<void> readNotification(int notificationId) async {
+  Future<bool> markNotificationAsRead(int notificationId) async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString("token");
+    final token = prefs.getString('token');
 
     final response = await http.post(
       Uri.parse('$baseUrl/notifications/$notificationId/read'),
       headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to mark notification as read');
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data['success'] == true;
     }
+
+    throw Exception(data['message'] ?? 'Failed to mark notification as read');
   }
 
-  Future<void> readAllNotifications() async {
+  Future<bool> markAllNotificationsAsRead() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString("token");
+    final token = prefs.getString('token');
 
     final response = await http.post(
       Uri.parse('$baseUrl/notifications/read-all'),
       headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to mark all notifications as read');
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data['success'] == true;
     }
+
+    throw Exception(
+      data['message'] ?? 'Failed to mark all notifications as read',
+    );
   }
 
   Future<Map<String, dynamic>> deliveryQuote({

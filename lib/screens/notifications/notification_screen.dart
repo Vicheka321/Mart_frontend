@@ -7,7 +7,6 @@
 // import 'package:get/get.dart';
 // import '../../models/notification_model.dart';
 
-
 // class NotificationScreen extends StatefulWidget {
 //   const NotificationScreen({super.key});
 
@@ -615,3 +614,566 @@
 //     );
 //   }
 // }
+
+// lib/screens/notification/notification_screen.dart
+//
+// Everything the Notification screen needs in one file:
+// AppBar (title + unread badge + mark-all-as-read), list with
+// loading/empty/error states, pull-to-refresh, pagination, and the
+// notification card widget itself.
+//
+// Depends only on your existing:
+//   - models/notification_model.dart      (AppNotification, NotificationPage)
+//   - providers/notification_provider.dart (NotificationProvider)
+//   - theme/app_colors.dart                (AppColors, context.colors)
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:provider/provider.dart';
+
+
+import '../../models/notification_model.dart'; // adjust import path
+import '../../providers/notification_provider.dart';
+import '../theme/app_theme.dart'; // adjust import path
+
+class NotificationScreen extends StatefulWidget {
+  const NotificationScreen({super.key});
+
+  @override
+  State<NotificationScreen> createState() => _NotificationScreenState();
+}
+
+class _NotificationScreenState extends State<NotificationScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<NotificationProvider>().fetchNotifications(refresh: true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
+    final provider = context.read<NotificationProvider>();
+
+    // Guard: never fire a second request while one is in flight, and
+    // never fire once there are no more pages.
+    if (provider.isLoadingMore || !provider.hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      provider.loadMore();
+    }
+  }
+
+  Future<void> _handleTap(
+    AppNotification notification,
+    NotificationProvider provider,
+  ) async {
+    if (!notification.isRead) {
+      await provider.markAsRead(notification.id);
+      if (!mounted) return;
+    }
+    // Optional deep-link routing based on notification.type / notification.data
+    // e.g. if (notification.type == 'order') Get.toNamed('/orders/${notification.data?['order_id']}');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Scaffold(
+      backgroundColor: colors.background,
+      appBar: _buildAppBar(colors),
+      body: Consumer<NotificationProvider>(
+        builder: (context, provider, _) {
+          if (provider.isLoading && provider.notifications.isEmpty) {
+            return _buildLoadingState(colors);
+          }
+
+          if (provider.error != null && provider.notifications.isEmpty) {
+            return _buildErrorState(colors, provider);
+          }
+
+          if (provider.notifications.isEmpty) {
+            return _buildEmptyState(colors, provider);
+          }
+
+          return RefreshIndicator(
+            color: colors.accent,
+            backgroundColor: colors.surface,
+            onRefresh: () => provider.fetchNotifications(refresh: true),
+            child: ListView.builder(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              itemCount:
+                  provider.notifications.length + (provider.hasMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index >= provider.notifications.length) {
+                  return _buildFooter(colors, provider);
+                }
+
+                final item = provider.notifications[index];
+                return _NotificationItem(
+                  notification: item,
+                  onTap: () => _handleTap(item, provider),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(AppColors colors) {
+    return AppBar(
+      backgroundColor: colors.surface,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      foregroundColor: colors.text1,
+      titleSpacing: 0,
+      leading: IconButton(
+        icon: Icon(
+          Icons.arrow_back_ios_new_rounded,
+          size: 20,
+          color: colors.text1,
+        ),
+        onPressed: () => Get.back(),
+      ),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'notifications'.tr,
+            style: TextStyle(
+              color: colors.text1,
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Consumer<NotificationProvider>(
+            builder: (context, provider, _) {
+              if (provider.unreadCount == 0) return const SizedBox.shrink();
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: colors.accent,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${provider.unreadCount}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      actions: [
+        Consumer<NotificationProvider>(
+          builder: (context, provider, _) {
+            final enabled = provider.unreadCount > 0;
+            return TextButton(
+              onPressed: enabled ? provider.markAllAsRead : null,
+              child: Text(
+                'mark_all_read'.tr,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: enabled ? colors.accent : colors.text3,
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
+  Widget _buildLoadingState(AppColors colors) {
+    return Center(
+      child: LoadingAnimationWidget.staggeredDotsWave(
+        color: colors.accent,
+        size: 42,
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(AppColors colors, NotificationProvider provider) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return RefreshIndicator(
+          color: colors.accent,
+          backgroundColor: colors.surface,
+          onRefresh: () => provider.fetchNotifications(refresh: true),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 96,
+                        height: 96,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colors.bgicon,
+                        ),
+                        child: Icon(
+                          Icons.notifications_none_rounded,
+                          size: 44,
+                          color: colors.accent,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'no_notifications_title'.tr,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: colors.text1,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'no_notifications_subtitle'.tr,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colors.text3,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildErrorState(AppColors colors, NotificationProvider provider) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.wifi_off_rounded, size: 40, color: colors.text3),
+                    const SizedBox(height: 16),
+                    Text(
+                      provider.error ?? 'something_went_wrong'.tr,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: colors.text2),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () =>
+                          provider.fetchNotifications(refresh: true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.accent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: Text('retry'.tr),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFooter(AppColors colors, NotificationProvider provider) {
+    if (provider.isLoadingMore) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Center(
+          child: LoadingAnimationWidget.staggeredDotsWave(
+            color: colors.accent,
+            size: 28,
+          ),
+        ),
+      );
+    }
+
+    // Inline "load more failed" state — list already has items loaded,
+    // so we don't blow away the whole screen, just offer a retry here.
+    if (provider.error != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Center(
+          child: TextButton(
+            onPressed: () {
+              provider.clearError();
+              provider.loadMore();
+            },
+            child: Text('tap_to_retry'.tr),
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+}
+
+// ============================================================================
+// NOTIFICATION ITEM WIDGET (kept private to this file, on purpose)
+// ============================================================================
+
+class _NotificationItem extends StatelessWidget {
+  const _NotificationItem({required this.notification, required this.onTap});
+
+  final AppNotification notification;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final isUnread = !notification.isRead;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isUnread
+              ? colors.accentLight.withOpacity(0.35)
+              : colors.cardBg,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isUnread ? colors.accent.withOpacity(0.25) : colors.border,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildIcon(colors, notification.type, isUnread),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          notification.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: colors.text1,
+                            fontWeight: isUnread
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      if (isUnread) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: colors.accent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    notification.body.isNotEmpty ? notification.body : '—',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isUnread ? colors.text2 : colors.text3,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  if (notification.imageUrl != null &&
+                      notification.imageUrl!.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: CachedNetworkImage(
+                        imageUrl: notification.imageUrl!,
+                        height: 120,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) =>
+                            Container(height: 120, color: colors.surface2),
+                        errorWidget: (context, url, error) =>
+                            const SizedBox.shrink(),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      _buildTypeBadge(colors, notification.type),
+                      const Spacer(),
+                      Text(
+                        _timeAgo(notification.createdAt),
+                        style: TextStyle(fontSize: 11, color: colors.text3),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIcon(AppColors colors, String? type, bool isUnread) {
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: isUnread ? colors.accent.withOpacity(0.12) : colors.bgicon,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        _iconForType(type),
+        size: 20,
+        color: isUnread ? colors.accent : colors.text3,
+      ),
+    );
+  }
+
+  Widget _buildTypeBadge(AppColors colors, String? type) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: colors.surface2,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        _labelForType(type),
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: colors.text2,
+        ),
+      ),
+    );
+  }
+
+  static IconData _iconForType(String? type) {
+    switch (type) {
+      case 'promotion':
+        return Icons.local_offer;
+      case 'order':
+        return Icons.shopping_bag;
+      case 'payment':
+        return Icons.payment;
+      case 'delivery':
+        return Icons.local_shipping;
+      default:
+        return Icons.notifications;
+    }
+  }
+
+  static String _labelForType(String? type) {
+    switch (type) {
+      case 'promotion':
+        return 'Promotion';
+      case 'order':
+        return 'Order';
+      case 'payment':
+        return 'Payment';
+      case 'delivery':
+        return 'Delivery';
+      default:
+        return 'General';
+    }
+  }
+
+  static String _timeAgo(DateTime? dateTime) {
+    if (dateTime == null) return '';
+
+    final now = DateTime.now();
+    final diff = now.difference(dateTime);
+
+    if (diff.isNegative || diff.inSeconds < 60) {
+      return 'Just now';
+    }
+    if (diff.inMinutes < 60) {
+      return '${diff.inMinutes} min ago';
+    }
+    if (diff.inHours < 24) {
+      return '${diff.inHours} ${diff.inHours == 1 ? 'hour' : 'hours'} ago';
+    }
+    if (diff.inDays == 1) {
+      return 'Yesterday';
+    }
+    if (diff.inDays < 7) {
+      return '${diff.inDays} days ago';
+    }
+
+    return '${dateTime.day.toString().padLeft(2, '0')}/'
+        '${dateTime.month.toString().padLeft(2, '0')}/'
+        '${dateTime.year}';
+  }
+}

@@ -1934,6 +1934,7 @@ import 'package:mart_frontend/providers/profile_provider.dart';
 import 'package:mart_frontend/providers/recommend_provider.dart';
 import 'package:mart_frontend/screens/category/categories_screen.dart'
     hide ProductListScreen;
+import 'package:mart_frontend/screens/notifications/notification_screen.dart';
 import 'package:mart_frontend/screens/search/search_screen.dart';
 import 'package:mart_frontend/screens/theme/app_theme.dart';
 import 'package:mart_frontend/screens/category/product_by_category.dart';
@@ -1948,6 +1949,7 @@ import '../cart/floating_cart_bar.dart';
 import '../product/product_detail_screen.dart';
 import '../product/product_list_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:mart_frontend/providers/notification_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -1969,7 +1971,8 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await context.read<CartProvider>().fetchCart();
       await context.read<ProfileProvider>().fetchProfile();
-
+      final notificationProvider = context.read<NotificationProvider>();
+      unawaited(notificationProvider.fetchNotifications());
       final bannerProvider = context.read<BannerProvider>();
       final categoryProvider = context.read<CategoryProvider>();
       final bestSellerProvider = context.read<BestSellerProvider>();
@@ -1977,6 +1980,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final brandsProvider = context.read<BrandsProvider>();
       final recommendProvider = context.read<RecommendProvider>();
       final detailProvider = context.read<ProductDetailProvider>();
+
       unawaited(
         Future.wait([
           bannerProvider.fetchBanners(),
@@ -2015,6 +2019,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await Future.wait([
       context.read<CartProvider>().fetchCart(),
       context.read<ProfileProvider>().fetchProfile(),
+      context.read<NotificationProvider>().fetchNotifications(refresh: true),
       context.read<BannerProvider>().fetchBanners(),
       context.read<CategoryProvider>().fetchCategories(),
       context.read<BestSellerProvider>().fetchBestSellers(),
@@ -2545,21 +2550,87 @@ Widget _buildStickyHeader(
 
                   const SizedBox(width: 10),
 
-                  Container(
-                    width: iconSize,
-                    height: iconSize,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(.12),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withOpacity(.12)),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        CupertinoIcons.bell,
-                        color: colors.textbg1,
-                        size: iconSize * .5,
-                      ),
-                    ),
+                  // Container(
+                  //   width: iconSize,
+                  //   height: iconSize,
+                  //   decoration: BoxDecoration(
+                  //     color: Colors.white.withOpacity(.12),
+                  //     borderRadius: BorderRadius.circular(12),
+                  //     border: Border.all(color: Colors.white.withOpacity(.12)),
+                  //   ),
+                  //   child: Center(
+                  //     child: Icon(
+                  //       CupertinoIcons.bell,
+                  //       color: colors.textbg1,
+                  //       size: iconSize * .5,
+                  //     ),
+                  //   ),
+                  // ),
+                  Consumer<NotificationProvider>(
+                    builder: (context, notificationProvider, child) {
+                      final hasUnread = notificationProvider.unreadCount > 0;
+
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationScreen(),
+                            ),
+                          );
+
+                          // Refresh after returning from notification screen
+                          if (!context.mounted) return;
+
+                          await context
+                              .read<NotificationProvider>()
+                              .fetchNotifications(refresh: true);
+                        },
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: iconSize,
+                              height: iconSize,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(.12),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(.12),
+                                ),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  CupertinoIcons.bell,
+                                  color: colors.textbg1,
+                                  size: iconSize * .5,
+                                ),
+                              ),
+                            ),
+
+                            // 🔴 Unread notification dot
+                            if (hasUnread)
+                              Positioned(
+                                top: -2,
+                                right: -2,
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: colors.accent,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

@@ -7,6 +7,7 @@ import 'package:mart_frontend/providers/brands_provider.dart';
 import 'package:mart_frontend/providers/category__products_provider.dart';
 import 'package:mart_frontend/providers/category_provider.dart';
 import 'package:mart_frontend/providers/new_arrival_provider.dart';
+import 'package:mart_frontend/providers/notification_provider.dart';
 import 'package:mart_frontend/providers/profile_provider.dart';
 import 'package:mart_frontend/providers/recommend_provider.dart';
 import 'package:mart_frontend/services/api_service.dart';
@@ -43,6 +44,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ProductDetailProvider()),
         ChangeNotifierProvider(create: (_) => CategoriesWithProductsProvider()),
         ChangeNotifierProvider(create: (_) => BrandsWithProductsProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: MyApp(),
     ),
