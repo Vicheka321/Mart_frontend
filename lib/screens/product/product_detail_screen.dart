@@ -1359,7 +1359,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                   borderRadius: BorderRadius.circular(_T.radiusFull),
                   border: Border.all(color: Colors.white, width: .5),
                 ),
-                child: Text(discountPct!, style: _T.discountTag(Colors.blue)),
+                child: Text(
+                  discountPct ?? '',
+                  style: _T.discountTag(Colors.blue),
+                ),
               ),
             ],
           ],
@@ -1689,12 +1692,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           String? discountLabel;
 
           if (hasDiscount) {
-            final type = discount.discountType.toLowerCase();
+            final type = discount.discountType.trim().toLowerCase();
             final value = discount.discountValue;
 
-            if (type == 'percentage') {
+            if (type == 'percentage' || type == 'percent') {
               discountLabel = '-${value % 1 == 0 ? value.toInt() : value}%';
-            } else if (type == 'fixed') {
+            } else if (type == 'fixed' || type == 'amount') {
               discountLabel = '-\$${value % 1 == 0 ? value.toInt() : value}';
             }
           }

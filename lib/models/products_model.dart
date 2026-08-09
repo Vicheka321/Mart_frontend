@@ -657,6 +657,75 @@ class AllrecommendedModel {
 
 // ========================my cart =================
 
+// MyCartModel myCartModelFromJson(String str) =>
+//     MyCartModel.fromJson(json.decode(str));
+
+// String myCartModelToJson(MyCartModel data) => json.encode(data.toJson());
+
+// class MyCartModel {
+//   int cartId;
+//   double totalPrice;
+//   List<Item> items;
+
+//   MyCartModel({
+//     required this.cartId,
+//     required this.totalPrice,
+//     required this.items,
+//   });
+
+//   factory MyCartModel.fromJson(Map<String, dynamic> json) => MyCartModel(
+//     cartId: json["cart_id"],
+//     totalPrice: json["total_price"].toDouble(),
+//     items: List<Item>.from(json["items"].map((x) => Item.fromJson(x))),
+//   );
+
+//   Map<String, dynamic> toJson() => {
+//     "cart_id": cartId,
+//     "total_price": totalPrice,
+//     "items": List<dynamic>.from(items.map((x) => x.toJson())),
+//   };
+// }
+
+// class Item {
+//   int productId;
+//   String name;
+//   int qty;
+//   int stock;
+//   String price;
+//   double totalPrice;
+//   List<String> images;
+
+//   Item({
+//     required this.productId,
+//     required this.name,
+//     required this.qty,
+//     required this.stock,
+//     required this.price,
+//     required this.totalPrice,
+//     required this.images,
+//   });
+
+//   factory Item.fromJson(Map<String, dynamic> json) => Item(
+//     productId: json["product_id"],
+//     name: json["name"],
+//     qty: json["qty"],
+//     stock: json["stock"],
+//     price: json["price"].toString(),
+//     totalPrice: json["total_price"].toDouble(),
+//     images: List<String>.from(json["images"].map((x) => x)),
+//   );
+
+//   Map<String, dynamic> toJson() => {
+//     "product_id": productId,
+//     "name": name,
+//     "qty": qty,
+//     "stock": stock,
+//     "price": price,
+//     "total_price": totalPrice,
+//     "images": List<dynamic>.from(images.map((x) => x)),
+//   };
+// }
+
 MyCartModel myCartModelFromJson(String str) =>
     MyCartModel.fromJson(json.decode(str));
 
@@ -674,9 +743,13 @@ class MyCartModel {
   });
 
   factory MyCartModel.fromJson(Map<String, dynamic> json) => MyCartModel(
-    cartId: json["cart_id"],
-    totalPrice: json["total_price"].toDouble(),
-    items: List<Item>.from(json["items"].map((x) => Item.fromJson(x))),
+    cartId: json["cart_id"] ?? 0,
+
+    totalPrice: double.tryParse(json["total_price"]?.toString() ?? '0') ?? 0,
+
+    items: json["items"] != null
+        ? List<Item>.from(json["items"].map((x) => Item.fromJson(x)))
+        : [],
   );
 
   Map<String, dynamic> toJson() => {
@@ -706,13 +779,23 @@ class Item {
   });
 
   factory Item.fromJson(Map<String, dynamic> json) => Item(
-    productId: json["product_id"],
-    name: json["name"],
-    qty: json["qty"],
-    stock: json["stock"],
-    price: json["price"].toString(),
-    totalPrice: json["total_price"].toDouble(),
-    images: List<String>.from(json["images"].map((x) => x)),
+    productId: json["product_id"] ?? 0,
+
+    name: json["name"]?.toString() ?? '',
+
+    qty: json["qty"] ?? 0,
+
+    stock: json["stock"] ?? 0,
+
+    // Backend returns "11.38"
+    price: json["price"]?.toString() ?? '0.00',
+
+    // Backend may return "11.38" or 11.38
+    totalPrice: double.tryParse(json["total_price"]?.toString() ?? '0') ?? 0,
+
+    images: json["images"] != null
+        ? List<String>.from(json["images"].map((x) => x.toString()))
+        : [],
   );
 
   Map<String, dynamic> toJson() => {
