@@ -1355,14 +1355,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                   vertical: 3,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.flashBg,
+                  color: Colors.white.withOpacity(.92),
                   borderRadius: BorderRadius.circular(_T.radiusFull),
-                  border: Border.all(color: colors.flashBorder, width: .5),
+                  border: Border.all(color: Colors.white, width: .5),
                 ),
-                child: Text(
-                  discountPct!,
-                  style: _T.discountTag(colors.flashText),
-                ),
+                child: Text(discountPct!, style: _T.discountTag(Colors.blue)),
               ),
             ],
           ],
@@ -1675,14 +1672,35 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           }
 
           final p = snapshot.data;
+
           final images = (p.images as List?) ?? [];
+
           final finalPrice = double.tryParse(p.finalPrice.toString()) ?? 0;
-          final salePrice = double.tryParse(p.salePrice?.toString() ?? '') ?? 0;
-          final hasDiscount = p.discount != null && salePrice > finalPrice;
-          final discountPct = hasDiscount
-              ? '-${(((salePrice - finalPrice) / salePrice) * 100).round()}%'
-              : null;
+
+          final salePrice = double.tryParse(p.salePrice.toString()) ?? 0;
+
+          final discount = p.discount;
+
+          final hasDiscount =
+              discount != null &&
+              discount.discountValue > 0 &&
+              salePrice > finalPrice;
+
+          String? discountLabel;
+
+          if (hasDiscount) {
+            final type = discount.discountType.toLowerCase();
+            final value = discount.discountValue;
+
+            if (type == 'percentage') {
+              discountLabel = '-${value % 1 == 0 ? value.toInt() : value}%';
+            } else if (type == 'fixed') {
+              discountLabel = '-\$${value % 1 == 0 ? value.toInt() : value}';
+            }
+          }
+
           final stockQty = (p.quantity as int?) ?? 0;
+
           final inStock = stockQty > 0;
 
           return FadeTransition(
@@ -1696,7 +1714,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                         p: p,
                         images: images,
                         hasDiscount: hasDiscount,
-                        discountPct: discountPct,
+                        discountPct: discountLabel,
                         stockQty: stockQty,
                         inStock: inStock,
                       )
@@ -1705,7 +1723,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                         p: p,
                         images: images,
                         hasDiscount: hasDiscount,
-                        discountPct: discountPct,
+                        discountPct: discountLabel,
                         stockQty: stockQty,
                         inStock: inStock,
                       );

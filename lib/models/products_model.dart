@@ -183,7 +183,8 @@ class GetProductModel {
   String description;
   String salePrice;
   String finalPrice;
-  String? discount;
+  // String? discount;
+  DiscountModel? discount;
   int quantity;
   bool status;
   String categoryName;
@@ -211,7 +212,11 @@ class GetProductModel {
         description: json["description"] ?? '',
         salePrice: json["sale_price"] ?? '',
         finalPrice: json["final_price"] ?? '',
-        discount: json["discount"],
+        discount: json["discount"] != null
+            ? DiscountModel.fromJson(
+                Map<String, dynamic>.from(json["discount"]),
+              )
+            : null,
         quantity: json["quantity"] ?? 0,
         status: json["status"] ?? '',
         categoryName: json["category_name"] ?? '',
@@ -227,7 +232,7 @@ class GetProductModel {
     "description": description,
     "sale_price": salePrice,
     "final_price": finalPrice,
-    "discount": discount,
+    "discount": discount?.toJson(),
     "quantity": quantity,
     "status": status,
     "category_name": categoryName,
@@ -236,6 +241,26 @@ class GetProductModel {
   };
 }
 
+class DiscountModel {
+  final String discountType;
+  final double discountValue;
+
+  DiscountModel({required this.discountType, required this.discountValue});
+
+  factory DiscountModel.fromJson(Map<String, dynamic> json) {
+    return DiscountModel(
+      discountType: json["discount_type"]?.toString() ?? '',
+
+      discountValue:
+          double.tryParse(json["discount_value"]?.toString() ?? '0') ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    "discount_type": discountType,
+    "discount_value": discountValue,
+  };
+}
 // ================== best sellers =================
 
 List<BestSellerModel> bestSellerModelFromJson(String str) =>
@@ -251,7 +276,7 @@ class BestSellerModel {
   String name;
   String salePrice;
   String finalPrice;
-  dynamic discount;
+  DiscountModel? discount;
   int sold;
   List<String> images;
 
@@ -271,7 +296,11 @@ class BestSellerModel {
         name: json["name"] ?? '',
         salePrice: json["sale_price"] ?? '',
         finalPrice: json["final_price"] ?? '',
-        discount: json["discount"],
+        discount: json["discount"] != null
+            ? DiscountModel.fromJson(
+                Map<String, dynamic>.from(json["discount"]),
+              )
+            : null,
         sold: json["sold"] ?? 0,
         images: json["images"] != null
             ? List<String>.from(json["images"].map((x) => x.toString()))
@@ -283,7 +312,7 @@ class BestSellerModel {
     "name": name,
     "sale_price": salePrice,
     "final_price": finalPrice,
-    "discount": discount,
+    "discount": discount?.toJson(),
     "sold": sold,
     "images": List<dynamic>.from(images.map((x) => x)),
   };
@@ -304,7 +333,7 @@ class NewArrivalsModel {
   String name;
   String salePrice;
   String finalPrice;
-  String? discount;
+  DiscountModel? discount;
   List<String> images;
 
   NewArrivalsModel({
@@ -322,7 +351,11 @@ class NewArrivalsModel {
         name: json["name"],
         salePrice: json["sale_price"],
         finalPrice: json["final_price"],
-        discount: json["discount"],
+        discount: json["discount"] != null
+            ? DiscountModel.fromJson(
+                Map<String, dynamic>.from(json["discount"]),
+              )
+            : null,
         images: List<String>.from(json["images"].map((x) => x)),
       );
 
@@ -331,7 +364,7 @@ class NewArrivalsModel {
     "name": name,
     "sale_price": salePrice,
     "final_price": finalPrice,
-    "discount": discount,
+    "discount": discount?.toJson(),
     "images": List<dynamic>.from(images.map((x) => x)),
   };
 }
@@ -353,7 +386,7 @@ class RecommendedModel {
   String finalPrice;
   String category;
   String brand;
-  String? discount;
+  DiscountModel? discount;
   int sold;
   List<String> images;
 
@@ -377,7 +410,11 @@ class RecommendedModel {
         finalPrice: json["final_price"],
         category: json["category_name"]?.toString() ?? '',
         brand: json["brand_name"]?.toString() ?? '',
-        discount: json["discount"],
+        discount: json["discount"] != null
+            ? DiscountModel.fromJson(
+                Map<String, dynamic>.from(json["discount"]),
+              )
+            : null,
         sold: json["sold"],
         images: List<String>.from(json["images"].map((x) => x)),
       );
@@ -389,7 +426,7 @@ class RecommendedModel {
     "final_price": finalPrice,
     "category": category,
     "brand": brand,
-    "discount": discount,
+    "discount": discount?.toJson(),
     "sold": sold,
     "images": List<dynamic>.from(images.map((x) => x)),
   };
