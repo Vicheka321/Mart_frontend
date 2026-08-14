@@ -60,15 +60,22 @@ abstract class _T {
   ];
 
   static TextStyle productName(Color c) => TextStyle(
-    fontSize: 23,
+    fontSize: 22,
     fontWeight: FontWeight.w700,
     color: c,
-    height: 1.28,
+    height: 1.26,
     letterSpacing: -.4,
   );
 
+  static TextStyle brandCategory(Color c) => TextStyle(
+    fontSize: 12.5,
+    fontWeight: FontWeight.w500,
+    color: c,
+    letterSpacing: .1,
+  );
+
   static TextStyle priceMain(Color c) => TextStyle(
-    fontSize: 27,
+    fontSize: 26,
     fontWeight: FontWeight.w800,
     color: c,
     letterSpacing: -.6,
@@ -89,6 +96,13 @@ abstract class _T {
     letterSpacing: .6,
   );
 
+  static TextStyle sectionTitle(Color c) => TextStyle(
+    fontSize: 15.5,
+    fontWeight: FontWeight.w700,
+    color: c,
+    letterSpacing: -.1,
+  );
+
   static TextStyle bodyText(Color c) =>
       TextStyle(fontSize: 13.5, color: c, height: 1.7, letterSpacing: .1);
 
@@ -107,6 +121,22 @@ abstract class _T {
 
   static TextStyle discountTag(Color c) =>
       TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: c);
+}
+
+// ─────────────────────────────────────────────────────────────
+// SAFE DYNAMIC FIELD ACCESS
+//
+// The product model isn't visible here, so optional fields (ratings,
+// reviews, etc.) are read defensively: if a field doesn't exist on the
+// model yet, the corresponding UI just hides itself instead of crashing.
+// ─────────────────────────────────────────────────────────────
+
+T? _tryGet<T>(T Function() getter) {
+  try {
+    return getter();
+  } catch (_) {
+    return null;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -253,6 +283,63 @@ class _DotIndicator extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
+// THUMBNAIL STRIP (image indicators, requirement 1)
+// ─────────────────────────────────────────────────────────────
+
+class _ThumbnailStrip extends StatelessWidget {
+  final List images;
+  final int activeIndex;
+  final ValueChanged<int> onTap;
+  const _ThumbnailStrip({
+    required this.images,
+    required this.activeIndex,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return SizedBox(
+      height: 52,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: images.length,
+        separatorBuilder: (_, __) => const SizedBox(width: _T.sp8),
+        itemBuilder: (_, i) {
+          final active = i == activeIndex;
+          return GestureDetector(
+            onTap: () => onTap(i),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 52,
+              height: 52,
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(_T.radiusMd),
+                border: Border.all(
+                  color: active ? colors.accent : colors.border,
+                  width: active ? 1.6 : 1,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(_T.radiusSm),
+                child: CachedNetworkImage(
+                  imageUrl: images[i] as String,
+                  fit: BoxFit.contain,
+                  errorWidget: (_, __, ___) =>
+                      Icon(Icons.image_outlined, size: 18, color: colors.text3),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
 // CHIP
 // ─────────────────────────────────────────────────────────────
 
@@ -298,26 +385,181 @@ class _Chip extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// QUANTITY STEPPER
+// STAR RATING (requirement 3 & 11)
 // ─────────────────────────────────────────────────────────────
 
-class _QuantityStepper extends StatelessWidget {
-  final int qty;
-  final VoidCallback onDecrement;
-  final VoidCallback onIncrement;
+class _StarRating extends StatelessWidget {
+  final double rating;
+  final double size;
+  const _StarRating({required this.rating, this.size = 14});
 
-  const _QuantityStepper({
-    required this.qty,
-    required this.onDecrement,
-    required this.onIncrement,
+  @override
+  Widget build(BuildContext context) {
+    final clamped = rating.clamp(0, 5).toDouble();
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (i) {
+        final diff = clamped - i;
+        IconData icon;
+        if (diff >= 1) {
+          icon = Icons.star_rounded;
+        } else if (diff > 0) {
+          icon = Icons.star_half_rounded;
+        } else {
+          icon = Icons.star_border_rounded;
+        }
+        return Icon(icon, size: size, color: const Color(0xFFFFB020));
+      }),
+    );
+  }
+}
+
+class _ProductRatingRow extends StatelessWidget {
+  final double averageRating;
+  final int reviewCount;
+  const _ProductRatingRow({
+    required this.averageRating,
+    required this.reviewCount,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    if (reviewCount <= 0) {
+      return Row(
+        children: [
+          _StarRating(rating: 5, size: 15),
+          const SizedBox(width: _T.sp8),
+          Text(
+            'no_reviews_yet'.tr,
+            style: TextStyle(fontSize: 12.5, color: colors.text3),
+          ),
+        ],
+      );
+    }
+    return Row(
+      children: [
+        _StarRating(rating: averageRating, size: 15),
+        const SizedBox(width: _T.sp8),
+        Text(
+          averageRating.toStringAsFixed(1),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: colors.text1,
+          ),
+        ),
+        const SizedBox(width: _T.sp6),
+        Text(
+          '$reviewCount ${'reviews'.tr}',
+          style: TextStyle(fontSize: 12.5, color: colors.text3),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// QUANTITY SELECTOR — tap +/- OR type a value directly.
+// ─────────────────────────────────────────────────────────────
+
+class _QuantitySelector extends StatefulWidget {
+  final int qty;
+  final int maxQty;
+  final ValueChanged<int> onChanged;
+
+  const _QuantitySelector({
+    required this.qty,
+    required this.maxQty,
+    required this.onChanged,
+  });
+
+  @override
+  State<_QuantitySelector> createState() => _QuantitySelectorState();
+}
+
+class _QuantitySelectorState extends State<_QuantitySelector> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: '${widget.qty}');
+    _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void didUpdateWidget(covariant _QuantitySelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only push the parent's value into the field when the user isn't
+    // actively typing — otherwise we'd stomp on what they're entering.
+    if (!_focusNode.hasFocus &&
+        widget.qty != oldWidget.qty &&
+        widget.qty.toString() != _controller.text) {
+      _controller.text = '${widget.qty}';
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus) _commit();
+  }
+
+  int _clamp(int v) {
+    if (widget.maxQty <= 0) return 1;
+    if (v < 1) return 1;
+    if (v > widget.maxQty) return widget.maxQty;
+    return v;
+  }
+
+  // Handles empty input, non-numeric input (already filtered), 0, and
+  // out-of-range values safely.
+  void _commit() {
+    final parsed = int.tryParse(_controller.text.trim());
+    final safe = _clamp(parsed ?? widget.qty);
+    if ('$safe' != _controller.text) {
+      _controller.text = '$safe';
+      _controller.selection = TextSelection.collapsed(
+        offset: _controller.text.length,
+      );
+    }
+    if (safe != widget.qty) widget.onChanged(safe);
+  }
+
+  void _increment() {
+    if (widget.maxQty <= 0 || widget.qty >= widget.maxQty) return;
+    HapticFeedback.selectionClick();
+    final next = _clamp(widget.qty + 1);
+    _controller.text = '$next';
+    widget.onChanged(next);
+  }
+
+  void _decrement() {
+    if (widget.qty <= 1) return;
+    HapticFeedback.selectionClick();
+    final next = _clamp(widget.qty - 1);
+    _controller.text = '$next';
+    widget.onChanged(next);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final canIncrement = widget.maxQty > 0 && widget.qty < widget.maxQty;
+    final canDecrement = widget.qty > 1;
+    final enabled = widget.maxQty > 0;
+
     return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 2),
+      height: 44,
       decoration: BoxDecoration(
         color: colors.surface2,
         borderRadius: BorderRadius.circular(_T.radiusFull),
@@ -325,45 +567,64 @@ class _QuantityStepper extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          GestureDetector(
-            onTap: qty > 1 ? onDecrement : null,
-            child: SizedBox(
-              width: 36,
-              height: 40,
-              child: Icon(
-                Icons.remove_rounded,
-                size: 16,
-                color: qty > 1 ? colors.text1 : colors.text3,
+          _StepButton(
+            icon: Icons.remove_rounded,
+            enabled: enabled && canDecrement,
+            onTap: _decrement,
+          ),
+          SizedBox(
+            width: 40,
+            child: TextField(
+              controller: _controller,
+              focusNode: _focusNode,
+              enabled: enabled,
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              style: _T.qtyNum(colors.text1),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
               ),
+              onSubmitted: (_) => _commit(),
+              onEditingComplete: _commit,
             ),
           ),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 160),
-            transitionBuilder: (c, a) => ScaleTransition(scale: a, child: c),
-            child: SizedBox(
-              key: ValueKey(qty),
-              width: 30,
-              child: Text(
-                '$qty',
-                textAlign: TextAlign.center,
-                style: _T.qtyNum(colors.text1),
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: onIncrement,
-            child: Container(
-              width: 36,
-              height: 36,
-              margin: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: colors.cardBg,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.add_rounded, size: 16, color: colors.text1),
-            ),
+          _StepButton(
+            icon: Icons.add_rounded,
+            enabled: canIncrement,
+            onTap: _increment,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StepButton extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+  const _StepButton({
+    required this.icon,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: SizedBox(
+        width: 38,
+        height: 44,
+        child: Icon(
+          icon,
+          size: 16,
+          color: enabled ? colors.text1 : colors.text3,
+        ),
       ),
     );
   }
@@ -376,7 +637,12 @@ class _QuantityStepper extends StatelessWidget {
 class _WishlistButton extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback onTap;
-  const _WishlistButton({required this.isFavorite, required this.onTap});
+  final double size;
+  const _WishlistButton({
+    required this.isFavorite,
+    required this.onTap,
+    this.size = 44,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -384,8 +650,8 @@ class _WishlistButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 50,
-        height: 50,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           color: colors.cardBg,
           borderRadius: BorderRadius.circular(_T.radiusLg),
@@ -397,7 +663,7 @@ class _WishlistButton extends StatelessWidget {
           child: Icon(
             isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
             key: ValueKey(isFavorite),
-            size: 20,
+            size: 19,
             color: isFavorite ? colors.flashText : colors.text2,
           ),
         ),
@@ -407,34 +673,39 @@ class _WishlistButton extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// CART BUTTON
+// ADD TO CART BUTTON
 // ─────────────────────────────────────────────────────────────
 
-class _CartButton extends StatelessWidget {
+class _AddToCartButton extends StatelessWidget {
   final bool isInCart;
   final bool loading;
+  final bool enabled;
   final VoidCallback onTap;
-  const _CartButton({
+  const _AddToCartButton({
     required this.isInCart,
     required this.loading,
+    required this.enabled,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final active = enabled && !loading;
     return Expanded(
       child: GestureDetector(
-        onTap: loading ? null : onTap,
+        // `loading` guards against double submission; `enabled` covers
+        // the out-of-stock case.
+        onTap: active ? onTap : null,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           height: 50,
           decoration: BoxDecoration(
-            color: loading ? colors.accentLight : colors.accent,
+            color: !enabled
+                ? colors.border
+                : (loading ? colors.accentLight : colors.accent),
             borderRadius: BorderRadius.circular(_T.radiusLg),
-            boxShadow: loading
-                ? []
-                : _T.softShadow(colors.accent, opacity: .28),
+            boxShadow: active ? _T.softShadow(colors.accent, opacity: .28) : [],
           ),
           child: Center(
             child: loading
@@ -450,21 +721,123 @@ class _CartButton extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        isInCart
-                            ? Icons.shopping_cart_checkout_rounded
-                            : Icons.shopping_cart_outlined,
+                        !enabled
+                            ? Icons.remove_shopping_cart_outlined
+                            : (isInCart
+                                  ? Icons.shopping_cart_checkout_rounded
+                                  : Icons.shopping_cart_outlined),
                         color: colors.surface,
                         size: 18,
                       ),
                       const SizedBox(width: _T.sp8),
                       Text(
-                        isInCart ? 'update_cart'.tr : 'add_to_cart'.tr,
+                        !enabled
+                            ? 'out_of_stock'.tr
+                            : (isInCart ? 'update_cart'.tr : 'add_to_cart'.tr),
                         style: _T.ctaLabel(colors.surface),
                       ),
                     ],
                   ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// STICKY ADD-TO-CART BOTTOM BAR
+// ─────────────────────────────────────────────────────────────
+
+class _ProductBottomBar extends StatelessWidget {
+  final int qty;
+  final int maxQty;
+  final double unitPrice;
+  final bool isInCart;
+  final bool loading;
+  final ValueChanged<int> onQtyChanged;
+  final VoidCallback onAddToCart;
+
+  const _ProductBottomBar({
+    required this.qty,
+    required this.maxQty,
+    required this.unitPrice,
+    required this.isInCart,
+    required this.loading,
+    required this.onQtyChanged,
+    required this.onAddToCart,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final inStock = maxQty > 0;
+    final total = unitPrice * qty;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        _T.sp20,
+        _T.sp14,
+        _T.sp20,
+        _T.sp14 + MediaQuery.of(context).padding.bottom,
+      ),
+      decoration: BoxDecoration(
+        color: colors.background,
+        border: Border(
+          top: BorderSide(color: colors.border.withOpacity(.5), width: .6),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (inStock)
+                _QuantitySelector(
+                  qty: qty,
+                  maxQty: maxQty,
+                  onChanged: onQtyChanged,
+                )
+              else
+                const SizedBox.shrink(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'total'.tr,
+                    style: TextStyle(fontSize: 11, color: colors.text3),
+                  ),
+                  const SizedBox(height: 2),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 150),
+                    child: Text(
+                      '\$${total.toStringAsFixed(2)}',
+                      key: ValueKey(total),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: colors.text1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: _T.sp12),
+          Row(
+            children: [
+              _AddToCartButton(
+                isInCart: isInCart,
+                loading: loading,
+                enabled: inStock,
+                onTap: onAddToCart,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -524,7 +897,166 @@ class _ExpandableDescState extends State<_ExpandableDesc> {
 }
 
 // ─────────────────────────────────────────────────────────────
-// LOADING OVERLAY
+// CUSTOMER REVIEWS (requirement 11)
+// ─────────────────────────────────────────────────────────────
+
+class _ReviewTile extends StatelessWidget {
+  final dynamic review;
+  const _ReviewTile({required this.review});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    final name =
+        _tryGet<String>(() => review.customerName as String) ??
+        _tryGet<String>(() => review.userName as String) ??
+        'anonymous'.tr;
+    final avatarUrl =
+        _tryGet<String>(() => review.avatarUrl as String) ??
+        _tryGet<String>(() => review.userAvatar as String);
+    final rating = _tryGet<num>(() => review.rating as num)?.toDouble() ?? 0.0;
+    final text =
+        _tryGet<String>(() => review.comment as String) ??
+        _tryGet<String>(() => review.reviewText as String) ??
+        '';
+    final date =
+        _tryGet<String>(() => review.formattedDate as String) ??
+        _tryGet<DateTime>(() => review.createdAt as DateTime)?.let(
+          (d) =>
+              '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}',
+        );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: _T.sp16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: colors.surface2,
+            backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
+                ? CachedNetworkImageProvider(avatarUrl)
+                : null,
+            child: (avatarUrl == null || avatarUrl.isEmpty)
+                ? Text(
+                    name.isNotEmpty ? name[0].toUpperCase() : '?',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: colors.text2,
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(width: _T.sp10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: colors.text1,
+                        ),
+                      ),
+                    ),
+                    if (date != null)
+                      Text(
+                        date,
+                        style: TextStyle(fontSize: 11, color: colors.text3),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                _StarRating(rating: rating, size: 12),
+                if (text.isNotEmpty) ...[
+                  const SizedBox(height: _T.sp6),
+                  Text(text, style: _T.bodyText(colors.text2)),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Small helper so the null-aware chain above reads cleanly.
+extension _Let<T> on T {
+  R let<R>(R Function(T) f) => f(this);
+}
+
+class _ProductReviewsSection extends StatefulWidget {
+  final double averageRating;
+  final int reviewCount;
+  final List reviews;
+  const _ProductReviewsSection({
+    required this.averageRating,
+    required this.reviewCount,
+    required this.reviews,
+  });
+
+  @override
+  State<_ProductReviewsSection> createState() => _ProductReviewsSectionState();
+}
+
+class _ProductReviewsSectionState extends State<_ProductReviewsSection> {
+  bool _showAll = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    // No review model/data wired up yet — hide the section rather than
+    // showing an empty shell.
+    if (widget.reviewCount <= 0 && widget.reviews.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final visible = _showAll ? widget.reviews : widget.reviews.take(3).toList();
+    final hasMore = widget.reviews.length > 3;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('customer_reviews'.tr, style: _T.sectionTitle(colors.text1)),
+        const SizedBox(height: _T.sp10),
+        _ProductRatingRow(
+          averageRating: widget.averageRating,
+          reviewCount: widget.reviewCount,
+        ),
+        if (visible.isNotEmpty) ...[
+          const SizedBox(height: _T.sp16),
+          ...visible.map((r) => _ReviewTile(review: r)),
+          if (hasMore)
+            GestureDetector(
+              onTap: () => setState(() => _showAll = !_showAll),
+              child: Text(
+                _showAll ? 'show_less'.tr : 'see_all_reviews'.tr,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: colors.accent,
+                ),
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// SKELETON / LOADING STATES
 // ─────────────────────────────────────────────────────────────
 
 class _LoadingOverlay extends StatelessWidget {
@@ -672,7 +1204,6 @@ class _DetailSkeleton extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── gallery placeholder + small inline loader ──
             SizedBox(
               height: galleryHeight,
               width: double.infinity,
@@ -680,7 +1211,6 @@ class _DetailSkeleton extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   _Shimmer(height: galleryHeight, borderRadius: 0),
-
                   Positioned(
                     left: _T.sp16,
                     top: _T.sp10,
@@ -696,7 +1226,6 @@ class _DetailSkeleton extends StatelessWidget {
                       child: const Icon(Icons.arrow_back_ios_new, size: 16),
                     ),
                   ),
-
                   Center(
                     child: LoadingAnimationWidget.hexagonDots(
                       color: const Color(0xFF2563EB),
@@ -706,8 +1235,6 @@ class _DetailSkeleton extends StatelessWidget {
                 ],
               ),
             ),
-
-            // ── content placeholders ──
             Expanded(
               child: SingleChildScrollView(
                 physics: const NeverScrollableScrollPhysics(),
@@ -720,7 +1247,6 @@ class _DetailSkeleton extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // chips
                     Row(
                       children: const [
                         _Shimmer(
@@ -736,10 +1262,7 @@ class _DetailSkeleton extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: _T.sp16),
-
-                    // title (two lines)
                     const _Shimmer(
                       width: double.infinity,
                       height: 20,
@@ -751,19 +1274,13 @@ class _DetailSkeleton extends StatelessWidget {
                       height: 20,
                       borderRadius: _T.radiusSm,
                     ),
-
                     const SizedBox(height: _T.sp14),
-
-                    // price
                     const _Shimmer(
                       width: 110,
                       height: 26,
                       borderRadius: _T.radiusSm,
                     ),
-
                     const SizedBox(height: _T.sp24),
-
-                    // description label + lines
                     const _Shimmer(
                       width: 80,
                       height: 11,
@@ -787,12 +1304,9 @@ class _DetailSkeleton extends StatelessWidget {
                       height: 12,
                       borderRadius: _T.radiusSm,
                     ),
-
                     const SizedBox(height: _T.sp24),
                     Divider(color: colors.border.withOpacity(.4), height: 1),
                     const SizedBox(height: _T.sp16),
-
-                    // quantity row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
@@ -808,31 +1322,27 @@ class _DetailSkeleton extends StatelessWidget {
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: _T.sp16),
-                    Divider(color: colors.border.withOpacity(.4), height: 1),
-                    const SizedBox(height: _T.sp16),
-
-                    // CTA row
-                    Row(
-                      children: [
-                        const _Shimmer(
-                          width: 50,
-                          height: 50,
-                          borderRadius: _T.radiusLg,
-                        ),
-                        const SizedBox(width: _T.sp10),
-                        Expanded(
-                          child: const _Shimmer(
-                            height: 50,
-                            borderRadius: _T.radiusLg,
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
+            ),
+            // bottom bar placeholder
+            Container(
+              padding: const EdgeInsets.fromLTRB(
+                _T.sp20,
+                _T.sp14,
+                _T.sp20,
+                _T.sp14,
+              ),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: colors.border.withOpacity(.4),
+                    width: .6,
+                  ),
+                ),
+              ),
+              child: const _Shimmer(height: 50, borderRadius: _T.radiusLg),
             ),
           ],
         ),
@@ -934,7 +1444,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     });
   }
 
-  Future<void> _handleCart(dynamic p) async {
+  Future<void> _handleCart(dynamic p, int stockQty) async {
+    if (stockQty <= 0 || cartLoading) return;
+
     final loggedIn = await ApiService().isLoggedIn();
 
     if (!loggedIn) {
@@ -944,6 +1456,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     setState(() => cartLoading = true);
 
     try {
+      // Always send the exact selected quantity — never re-add on top of
+      // what's already in the cart.
       if (isInCart) {
         await ApiService().updateCart(
           productId: widget.productId,
@@ -966,59 +1480,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           cartQty = qty;
         });
       }
-      // Get.snackbar(
-      //   "Success",
-      //   "Cart updated successfully",
-      //   snackPosition: SnackPosition.BOTTOM,
-      //   margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      //   borderRadius: 16,
-      //   backgroundColor: Get.theme.cardColor,
-      //   colorText: Get.theme.textTheme.bodyLarge?.color,
-      //   icon: const Icon(
-      //     Icons.check_circle_rounded,
-      //     color: Color(0xFF34C759), // Green
-      //   ),
-      //   boxShadows: [
-      //     BoxShadow(
-      //       color: Colors.black.withOpacity(0.18),
-      //       blurRadius: 22,
-      //       offset: const Offset(0, 10),
-      //     ),
-      //   ],
-      //   duration: const Duration(seconds: 2),
-      //   isDismissible: true,
-      //   forwardAnimationCurve: Curves.easeOutCubic,
-      // );
-      SnackBar(
-        content: Text('Cart updated successfully'),
-        backgroundColor: Colors.blue,
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cart updated successfully')),
       );
     } catch (e) {
-      // Get.snackbar(
-      //   'Stock',
-      //   e.toString().contains('SocketException')
-      //       ? 'No internet connection.'
-      //       : 'Something went wrong. Please try again.',
-      //   snackPosition: SnackPosition.BOTTOM,
-      //   margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      //   borderRadius: 16,
-      //   backgroundColor: Get.theme.cardColor,
-      //   colorText: Get.theme.textTheme.bodyLarge?.color,
-      //   icon: const Icon(Icons.error_outline_rounded, color: Color(0xFFFF3B30)),
-      //   boxShadows: [
-      //     BoxShadow(
-      //       color: Colors.black.withOpacity(0.18),
-      //       blurRadius: 22,
-      //       offset: const Offset(0, 10),
-      //     ),
-      //   ],
-      //   duration: const Duration(seconds: 3),
-      //   isDismissible: true,
-      //   forwardAnimationCurve: Curves.easeOutCubic,
-      // );
-      SnackBar(
-        content: Text('Something went wrong. Please try again.'),
-        backgroundColor: Colors.blue,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().contains('SocketException')
+                ? 'No internet connection.'
+                : 'Something went wrong. Please try again.',
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -1073,7 +1546,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
     final oldValue = isFavorite;
 
-    // Update UI immediately
     setState(() {
       isFavorite = !oldValue;
     });
@@ -1085,21 +1557,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         await ApiService().addFavorite(widget.productId);
       }
     } catch (e) {
-      // Rollback if API failed
       if (!mounted) return;
 
       setState(() {
         isFavorite = oldValue;
       });
 
-      // Get.snackbar(
-      //   "Favorite",
-      //   "Unable to update favorite.",
-      //   snackPosition: SnackPosition.BOTTOM,
-      // );
-      SnackBar(
-        content: Text('nable to update favorite.'),
-        backgroundColor: Colors.blue,
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to update favorite.')),
       );
     }
   }
@@ -1119,6 +1584,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       backgroundColor: Colors.transparent,
       builder: (_) => const CartBottomSheet(),
     );
+  }
+
+  void _onQtyChanged(int value) {
+    setState(() => qty = value);
   }
 
   // ── shared UI builders (reused by both mobile & tablet layouts) ──
@@ -1179,7 +1648,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                   color: colors.accent,
                 ),
               ),
-              // Cart dot — shown only when the cart has items.
               if (hasCart)
                 Positioned(
                   right: 6,
@@ -1201,6 +1669,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     );
   }
 
+  // requirement 1: image gallery
   Widget _buildGalleryStack(
     BuildContext context, {
     required List images,
@@ -1220,6 +1689,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
               child: CachedNetworkImage(
                 imageUrl: images[i] as String,
                 fit: BoxFit.contain,
+                placeholder: (_, __) => const Center(
+                  child: SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
                 errorWidget: (_, __, ___) =>
                     Icon(Icons.image_outlined, size: 56, color: colors.text3),
               ),
@@ -1233,7 +1709,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
             ),
           ),
 
-        // soft scrim so the rounded content sheet reads cleanly on overlap
         Positioned(
           left: 0,
           right: 0,
@@ -1287,87 +1762,119 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     );
   }
 
-  Widget _buildChipsRow(
-    BuildContext context,
-    dynamic p,
-    bool inStock,
-    int stockQty,
-  ) {
+  // requirement 2: product header (name + favorite)
+  Widget _buildProductHeader(BuildContext context, dynamic p) {
     final colors = context.colors;
-    return Wrap(
-      spacing: _T.sp6,
-      runSpacing: _T.sp6,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if ((p.categoryName as String?)?.isNotEmpty == true)
-          _Chip(
-            label: p.categoryName as String,
-            bg: colors.bginfo,
-            textColor: colors.text2,
-            borderColor: colors.border,
-            icon: Icons.sell_outlined,
-          ),
-        if ((p.brandName as String?)?.isNotEmpty == true)
-          _Chip(
-            label: (p.brandName as String).trCatalog,
-            bg: colors.bginfo,
-            textColor: colors.text2,
-            borderColor: colors.border,
-            icon: Icons.storefront_outlined,
-          ),
-        _Chip(
-          label: inStock ? '${'in_stock'.tr} · $stockQty' : 'out_of_stock'.tr,
-          bg: inStock ? colors.accentLight : colors.flashBg,
-          textColor: inStock ? colors.accent : colors.flashText,
-          borderColor: inStock
-              ? colors.accent.withOpacity(.25)
-              : colors.flashBorder,
-          icon: inStock
-              ? Icons.check_circle_outline_rounded
-              : Icons.cancel_outlined,
+        Expanded(
+          child: Text(p.name as String, style: _T.productName(colors.text1)),
+        ),
+        const SizedBox(width: _T.sp10),
+        _WishlistButton(
+          isFavorite: isFavorite,
+          onTap: _toggleFavorite,
+          size: 42,
         ),
       ],
     );
   }
 
-  Widget _buildTitleAndPrice(
+  // requirement 2: brand / category
+  Widget _buildBrandCategoryRow(BuildContext context, dynamic p) {
+    final colors = context.colors;
+    final brand = _tryGet<String>(() => p.brandName as String) ?? '';
+    final category = _tryGet<String>(() => p.categoryName as String) ?? '';
+    if (brand.isEmpty && category.isEmpty) return const SizedBox.shrink();
+
+    return Wrap(
+      spacing: _T.sp8,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (brand.isNotEmpty)
+          Text(brand.trCatalog, style: _T.brandCategory(colors.text2)),
+        if (brand.isNotEmpty && category.isNotEmpty)
+          Container(
+            width: 3,
+            height: 3,
+            decoration: BoxDecoration(
+              color: colors.text3,
+              shape: BoxShape.circle,
+            ),
+          ),
+        if (category.isNotEmpty)
+          Text(category, style: _T.brandCategory(colors.text3)),
+      ],
+    );
+  }
+
+  // requirement 4: price section
+  Widget _buildPriceSection(
     BuildContext context,
     dynamic p,
     bool hasDiscount,
     String? discountPct,
   ) {
     final colors = context.colors;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(p.name as String, style: _T.productName(colors.text1)),
-        const SizedBox(height: _T.sp10),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('\$${p.finalPrice}', style: _T.priceMain(colors.text1)),
-            if (hasDiscount) ...[
-              const SizedBox(width: _T.sp8),
-              Text('\$${p.salePrice}', style: _T.priceOld(colors.text3)),
-              const SizedBox(width: _T.sp8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: _T.sp8,
-                  vertical: 3,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.92),
-                  borderRadius: BorderRadius.circular(_T.radiusFull),
-                  border: Border.all(color: Colors.white, width: .5),
-                ),
-                child: Text(
-                  discountPct ?? '',
-                  style: _T.discountTag(Colors.blue),
-                ),
-              ),
-            ],
-          ],
-        ),
+        Text('\$${p.finalPrice}', style: _T.priceMain(colors.text1)),
+        if (hasDiscount) ...[
+          const SizedBox(width: _T.sp8),
+          Text('\$${p.salePrice}', style: _T.priceOld(colors.text3)),
+          const SizedBox(width: _T.sp8),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: _T.sp8,
+              vertical: 3,
+            ),
+            decoration: BoxDecoration(
+              color: colors.flashBg,
+              borderRadius: BorderRadius.circular(_T.radiusFull),
+            ),
+            child: Text(
+              discountPct ?? '',
+              style: _T.discountTag(colors.flashText),
+            ),
+          ),
+        ],
       ],
+    );
+  }
+
+  // requirement 6: stock info
+  Widget _buildStockRow(BuildContext context, int stockQty) {
+    final colors = context.colors;
+    String label;
+    Color bg, fg;
+    IconData icon;
+
+    if (stockQty <= 0) {
+      label = 'out_of_stock'.tr;
+      bg = colors.flashBg;
+      fg = colors.flashText;
+      icon = Icons.cancel_outlined;
+    } else if (stockQty <= 5) {
+      label = '${'only'.tr} $stockQty ${'left'.tr}';
+      bg = colors.flashBg;
+      fg = colors.flashText;
+      icon = Icons.warning_amber_rounded;
+    } else {
+      label = '${'in_stock'.tr}: $stockQty';
+      bg = colors.accentLight;
+      fg = colors.accent;
+      icon = Icons.check_circle_outline_rounded;
+    }
+
+    return _Chip(
+      label: label,
+      bg: bg,
+      textColor: fg,
+      borderColor: bg,
+      icon: icon,
     );
   }
 
@@ -1392,96 +1899,39 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     );
   }
 
-  Widget _buildQuantityRow(BuildContext context, int stockQty) {
-    final colors = context.colors;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  // ── main scrollable content, shared by mobile & tablet ──
+  Widget _buildContent(
+    BuildContext context, {
+    required dynamic p,
+    required bool hasDiscount,
+    required String? discountPct,
+    required int stockQty,
+    required double avgRating,
+    required int reviewCount,
+    required List reviews,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'quantity'.tr,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: colors.text1,
-          ),
+        _buildProductHeader(context, p),
+        const SizedBox(height: _T.sp6),
+        _buildBrandCategoryRow(context, p),
+        const SizedBox(height: _T.sp12),
+        _ProductRatingRow(averageRating: avgRating, reviewCount: reviewCount),
+        const SizedBox(height: _T.sp14),
+        _buildPriceSection(context, p, hasDiscount, discountPct),
+        const SizedBox(height: _T.sp12),
+        _buildStockRow(context, stockQty),
+        const SizedBox(height: _T.sp20),
+        _buildDescriptionSection(context, p),
+        const SizedBox(height: _T.sp20),
+        _buildThinDivider(context),
+        const SizedBox(height: _T.sp20),
+        _ProductReviewsSection(
+          averageRating: avgRating,
+          reviewCount: reviewCount,
+          reviews: reviews,
         ),
-        _QuantityStepper(
-          qty: qty,
-          onIncrement: () {
-            if (qty >= stockQty) {
-              // Get.snackbar(
-              //   'Out of Stock',
-              //   'Only $stockQty item(s) available.',
-              //   snackPosition: SnackPosition.BOTTOM,
-              //   margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              //   borderRadius: 16,
-              //   backgroundColor: Get.theme.cardColor,
-              //   colorText: Get.theme.textTheme.bodyLarge?.color,
-              //   icon: const Icon(
-              //     Icons.inventory_2_outlined,
-              //     color: Color(0xFFFF9500),
-              //   ),
-              //   boxShadows: [
-              //     BoxShadow(
-              //       color: Colors.black.withOpacity(0.18),
-              //       blurRadius: 22,
-              //       offset: const Offset(0, 10),
-              //     ),
-              //   ],
-              //   duration: const Duration(seconds: 3),
-              //   isDismissible: true,
-              //   forwardAnimationCurve: Curves.easeOutCubic,
-              // );
-              SnackBar(
-                content: Text('Only $stockQty item(s) available.'),
-                backgroundColor: Colors.blue,
-              );
-
-              return;
-            }
-
-            setState(() => qty++);
-          },
-          onDecrement: () {
-            if (qty > 1) {
-              setState(() => qty--);
-            }
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCtaRow(BuildContext context, dynamic p, int stockQty) {
-    return Row(
-      children: [
-        _WishlistButton(isFavorite: isFavorite, onTap: _toggleFavorite),
-        const SizedBox(width: _T.sp10),
-        if (stockQty <= 0)
-          Expanded(
-            child: Container(
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.grey,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Center(
-                child: Text(
-                  "OUT OF STOCK",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          )
-        else
-          _CartButton(
-            isInCart: isInCart,
-            loading: cartLoading,
-            onTap: () => _handleCart(p),
-          ),
       ],
     );
   }
@@ -1495,12 +1945,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     required bool hasDiscount,
     required String? discountPct,
     required int stockQty,
-    required bool inStock,
+    required double avgRating,
+    required int reviewCount,
+    required List reviews,
   }) {
     final colors = context.colors;
     final mq = MediaQuery.of(context);
     final hPad = mq.size.width < 360 ? _T.sp14 : _T.sp20;
-    final galleryHeight = (mq.size.height * .46).clamp(300.0, 480.0);
+    final galleryHeight = (mq.size.height * .42).clamp(280.0, 440.0);
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
@@ -1534,28 +1986,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                 ),
                 boxShadow: _T.cardShadow(Colors.black, opacity: .04),
               ),
-              padding: EdgeInsets.fromLTRB(
-                hPad,
-                _T.sp24,
-                hPad,
-                mq.padding.bottom + _T.sp24,
-              ),
+              padding: EdgeInsets.fromLTRB(hPad, _T.sp24, hPad, _T.sp24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildChipsRow(context, p, inStock, stockQty),
-                  const SizedBox(height: _T.sp14),
-                  _buildTitleAndPrice(context, p, hasDiscount, discountPct),
-                  const SizedBox(height: _T.sp20),
-                  _buildDescriptionSection(context, p),
-                  const SizedBox(height: _T.sp20),
-                  _buildThinDivider(context),
-                  const SizedBox(height: _T.sp14),
-                  _buildQuantityRow(context, stockQty),
-                  const SizedBox(height: _T.sp20),
-                  _buildThinDivider(context),
-                  const SizedBox(height: _T.sp14),
-                  _buildCtaRow(context, p, stockQty),
+                  if (images.length > 1) ...[
+                    _ThumbnailStrip(
+                      images: images,
+                      activeIndex: imageIndex,
+                      onTap: (i) => setState(() => imageIndex = i),
+                    ),
+                    const SizedBox(height: _T.sp16),
+                  ],
+                  _buildContent(
+                    context,
+                    p: p,
+                    hasDiscount: hasDiscount,
+                    discountPct: discountPct,
+                    stockQty: stockQty,
+                    avgRating: avgRating,
+                    reviewCount: reviewCount,
+                    reviews: reviews,
+                  ),
                 ],
               ),
             ),
@@ -1574,14 +2026,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     required bool hasDiscount,
     required String? discountPct,
     required int stockQty,
-    required bool inStock,
+    required double avgRating,
+    required int reviewCount,
+    required List reviews,
   }) {
     final colors = context.colors;
     final mq = MediaQuery.of(context);
 
     return Row(
       children: [
-        // Left — full-height gallery panel.
         Expanded(
           flex: 5,
           child: _buildGalleryStack(
@@ -1590,65 +2043,43 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
             safeArea: mq.padding,
           ),
         ),
-
-        // Right — scrollable details, CTA pinned to the bottom.
         Expanded(
           flex: 4,
           child: Container(
             color: colors.background,
             child: SafeArea(
               left: false,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(
-                        _T.sp32,
-                        _T.sp32,
-                        _T.sp32,
-                        _T.sp20,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  _T.sp32,
+                  _T.sp32,
+                  _T.sp32,
+                  _T.sp20,
+                ),
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (images.length > 1) ...[
+                      _ThumbnailStrip(
+                        images: images,
+                        activeIndex: imageIndex,
+                        onTap: (i) => setState(() => imageIndex = i),
                       ),
-                      physics: const BouncingScrollPhysics(),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildChipsRow(context, p, inStock, stockQty),
-                          const SizedBox(height: _T.sp16),
-                          _buildTitleAndPrice(
-                            context,
-                            p,
-                            hasDiscount,
-                            discountPct,
-                          ),
-                          const SizedBox(height: _T.sp24),
-                          _buildDescriptionSection(context, p),
-                          const SizedBox(height: _T.sp24),
-                          _buildThinDivider(context),
-                          const SizedBox(height: _T.sp16),
-                          _buildQuantityRow(context, stockQty),
-                        ],
-                      ),
+                      const SizedBox(height: _T.sp16),
+                    ],
+                    _buildContent(
+                      context,
+                      p: p,
+                      hasDiscount: hasDiscount,
+                      discountPct: discountPct,
+                      stockQty: stockQty,
+                      avgRating: avgRating,
+                      reviewCount: reviewCount,
+                      reviews: reviews,
                     ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.fromLTRB(
-                      _T.sp32,
-                      _T.sp16,
-                      _T.sp32,
-                      _T.sp20,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.background,
-                      border: Border(
-                        top: BorderSide(
-                          color: colors.border.withOpacity(.5),
-                          width: .6,
-                        ),
-                      ),
-                    ),
-                    child: _buildCtaRow(context, p, stockQty),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -1663,6 +2094,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
     return Scaffold(
       backgroundColor: colors.background,
+      resizeToAvoidBottomInset: true,
       body: FutureBuilder(
         future: productFuture,
         builder: (context, snapshot) {
@@ -1679,7 +2111,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           final images = (p.images as List?) ?? [];
 
           final finalPrice = double.tryParse(p.finalPrice.toString()) ?? 0;
-
           final salePrice = double.tryParse(p.salePrice.toString()) ?? 0;
 
           final discount = p.discount;
@@ -1690,7 +2121,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
               salePrice > finalPrice;
 
           String? discountLabel;
-
           if (hasDiscount) {
             final type = discount.discountType.trim().toLowerCase();
             final value = discount.discountValue;
@@ -1704,32 +2134,64 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
           final stockQty = (p.quantity as int?) ?? 0;
 
-          final inStock = stockQty > 0;
+          // requirement 3 & 11: rating / reviews — read defensively since
+          // the model shape for these isn't known here.
+          final avgRating =
+              _tryGet<num>(() => p.averageRating as num)?.toDouble() ?? 0.0;
+          final reviewCount = _tryGet<int>(() => p.reviewCount as int) ?? 0;
+          final reviews = _tryGet<List>(() => p.reviews as List) ?? [];
+
+          // Quantity can never exceed what's currently in stock, even if
+          // it was set (e.g. from the cart) before stock changed.
+          if (qty > stockQty && stockQty > 0) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) setState(() => qty = stockQty);
+            });
+          }
 
           return FadeTransition(
             opacity: _fade,
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final isTablet = constraints.maxWidth >= _T.tabletBreakpoint;
-                return isTablet
-                    ? _buildTabletLayout(
-                        context,
-                        p: p,
-                        images: images,
-                        hasDiscount: hasDiscount,
-                        discountPct: discountLabel,
-                        stockQty: stockQty,
-                        inStock: inStock,
-                      )
-                    : _buildMobileLayout(
-                        context,
-                        p: p,
-                        images: images,
-                        hasDiscount: hasDiscount,
-                        discountPct: discountLabel,
-                        stockQty: stockQty,
-                        inStock: inStock,
-                      );
+                return Column(
+                  children: [
+                    Expanded(
+                      child: isTablet
+                          ? _buildTabletLayout(
+                              context,
+                              p: p,
+                              images: images,
+                              hasDiscount: hasDiscount,
+                              discountPct: discountLabel,
+                              stockQty: stockQty,
+                              avgRating: avgRating,
+                              reviewCount: reviewCount,
+                              reviews: reviews,
+                            )
+                          : _buildMobileLayout(
+                              context,
+                              p: p,
+                              images: images,
+                              hasDiscount: hasDiscount,
+                              discountPct: discountLabel,
+                              stockQty: stockQty,
+                              avgRating: avgRating,
+                              reviewCount: reviewCount,
+                              reviews: reviews,
+                            ),
+                    ),
+                    _ProductBottomBar(
+                      qty: qty.clamp(1, stockQty > 0 ? stockQty : 1),
+                      maxQty: stockQty,
+                      unitPrice: finalPrice,
+                      isInCart: isInCart,
+                      loading: cartLoading,
+                      onQtyChanged: _onQtyChanged,
+                      onAddToCart: () => _handleCart(p, stockQty),
+                    ),
+                  ],
+                );
               },
             ),
           );

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; 
 import 'package:mart_frontend/models/products_model.dart';
 import 'package:provider/provider.dart';
 import '../../checkout/checkout_screen.dart';
@@ -242,6 +243,7 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                           // Qty stepper
                           _QtyStepper(
                             qty: item.qty,
+                            stock: item.stock,
                             accent: colors.accent,
                             surface: colors.surface2,
                             s: s,
@@ -250,11 +252,6 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                               item.productId,
                               item.qty - 1,
                             ),
-                            // onIncrement: () => _updateQty(
-                            //   context,
-                            //   item.productId,
-                            //   item.qty + 1,
-                            // ),
                             onIncrement: item.qty >= item.stock
                                 ? null
                                 : () => _updateQty(
@@ -262,6 +259,8 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                                     item.productId,
                                     item.qty + 1,
                                   ),
+                            onQtyChanged: (newQty) =>
+                                _updateQty(context, item.productId, newQty),
                           ),
                         ],
                       ),
@@ -358,22 +357,96 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
 
 // ── Quantity stepper widget ──────────────────────────────────────────────────
 
-class _QtyStepper extends StatelessWidget {
+class _QtyStepper extends StatefulWidget {
   final int qty;
+  final int stock;
   final Color accent;
   final Color surface;
   final double s;
   final VoidCallback onDecrement;
   final VoidCallback? onIncrement;
+  final ValueChanged<int> onQtyChanged;
 
   const _QtyStepper({
     required this.qty,
+    required this.stock,
     required this.accent,
     required this.surface,
     required this.s,
     required this.onDecrement,
     this.onIncrement,
+    required this.onQtyChanged,
   });
+
+  @override
+  State<_QtyStepper> createState() => _QtyStepperState();
+}
+
+class _QtyStepperState extends State<_QtyStepper> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: '${widget.qty}');
+    _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void didUpdateWidget(covariant _QtyStepper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If qty changed from outside (e.g. +/- buttons) while the field
+    // isn't focused, keep the text field in sync.
+    if (!_focusNode.hasFocus && oldWidget.qty != widget.qty) {
+      _controller.text = '${widget.qty}';
+    }
+  }
+
+  void _onFocusChange() {
+    if (_focusNode.hasFocus) {
+      // Select all text so typing replaces the current value.
+      _controller.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: _controller.text.length,
+      );
+    } else {
+      _submit();
+    }
+  }
+
+  void _submit() {
+    final raw = _controller.text.trim();
+    int? value = int.tryParse(raw);
+
+    // Invalid or empty input -> clamp to minimum.
+    if (value == null || value < 1) {
+      value = 1;
+    }
+    // Safety net: never exceed available stock
+    // (the input formatter already blocks this while typing).
+    if (value > widget.stock) {
+      value = widget.stock;
+    }
+
+    // Reflect the clamped value back into the field.
+    _controller.text = '$value';
+
+    // Only fire the update if the value actually changed —
+    // avoids redundant API calls / debounce restarts.
+    if (value != widget.qty) {
+      widget.onQtyChanged(value);
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -381,44 +454,88 @@ class _QtyStepper extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _StepBtn(
-          icon: qty <= 1 ? Icons.delete_outline_rounded : Icons.remove,
-          color: qty <= 1 ? Colors.red.shade400 : accent,
-          bg: qty <= 1 ? Colors.red.shade50 : accent.withValues(alpha: 0.1),
-          size: s * 0.075,
-          onTap: onDecrement,
+          icon: widget.qty <= 1 ? Icons.delete_outline_rounded : Icons.remove,
+          color: widget.qty <= 1 ? Colors.red.shade400 : widget.accent,
+          bg: widget.qty <= 1
+              ? Colors.red.shade50
+              : widget.accent.withValues(alpha: 0.1),
+          size: widget.s * 0.075,
+          onTap: widget.onDecrement,
         ),
-        SizedBox(
-          width: s * 0.09,
-          child:
-              Text(
-                '$qty',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: s * 0.042,
-                  fontWeight: FontWeight.w700,
-                  color: accent,
+        Container(
+          width: widget.s * 0.13,
+          margin: EdgeInsets.symmetric(horizontal: widget.s * 0.015),
+          child: TextField(
+            controller: _controller,
+            focusNode: _focusNode,
+            textAlign: TextAlign.center,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              _MaxValueInputFormatter(max: widget.stock),
+            ],
+            style: TextStyle(
+              fontSize: widget.s * 0.042,
+              fontWeight: FontWeight.w700,
+              color: widget.accent,
+            ),
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(vertical: widget.s * 0.018),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: widget.accent.withValues(alpha: 0.3),
                 ),
               ),
-              // SizedBox(
-              //   width: 60,
-              //   child: TextField(
-              //     controller: controller,
-              //     keyboardType: TextInputType.number,
-              //     textAlign: TextAlign.center,
-              //   ),
-              // ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: widget.accent.withValues(alpha: 0.3),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: widget.accent, width: 1.5),
+              ),
+            ),
+            onSubmitted: (_) => _focusNode.unfocus(),
+          ),
         ),
         _StepBtn(
           icon: Icons.add,
-          color: onIncrement == null ? Colors.grey : accent,
-          bg: onIncrement == null
+          color: widget.onIncrement == null ? Colors.grey : widget.accent,
+          bg: widget.onIncrement == null
               ? Colors.grey.shade200
-              : accent.withValues(alpha: 0.1),
-          size: s * 0.075,
-          onTap: onIncrement,
+              : widget.accent.withValues(alpha: 0.1),
+          size: widget.s * 0.075,
+          onTap: widget.onIncrement,
         ),
       ],
     );
+  }
+}
+
+/// Prevents the user from ever typing a number greater than [max].
+/// Rejects the edit in real time instead of waiting for blur.
+class _MaxValueInputFormatter extends TextInputFormatter {
+  final int max;
+
+  _MaxValueInputFormatter({required this.max});
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) return newValue;
+
+    final parsed = int.tryParse(newValue.text);
+    if (parsed == null) return oldValue;
+
+    if (parsed > max) return oldValue; // reject the keystroke entirely
+
+    return newValue;
   }
 }
 

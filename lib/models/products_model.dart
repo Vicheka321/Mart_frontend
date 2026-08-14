@@ -189,6 +189,8 @@ class GetProductModel {
   bool status;
   String categoryName;
   String brandName;
+  double averageRating;
+  int reviewCount;
   List<String> images;
 
   GetProductModel({
@@ -203,6 +205,8 @@ class GetProductModel {
     required this.categoryName,
     required this.brandName,
     required this.images,
+    required this.averageRating,
+    required this.reviewCount,
   });
 
   factory GetProductModel.fromJson(Map<String, dynamic> json) =>
@@ -221,6 +225,10 @@ class GetProductModel {
         status: json["status"] ?? '',
         categoryName: json["category_name"] ?? '',
         brandName: json["brand_name"] ?? '',
+        averageRating:
+            double.tryParse(json["average_rating"]?.toString() ?? '0') ?? 0,
+
+        reviewCount: int.tryParse(json["review_count"]?.toString() ?? '0') ?? 0,
         images: json["images"] != null
             ? List<String>.from(json["images"].map((x) => x.toString()))
             : [],
@@ -237,6 +245,8 @@ class GetProductModel {
     "status": status,
     "category_name": categoryName,
     "brand_name": brandName,
+    "average_rating": averageRating,
+    "review_count": reviewCount,
     "images": List<dynamic>.from(images.map((x) => x)),
   };
 }
@@ -656,75 +666,6 @@ class AllrecommendedModel {
 }
 
 // ========================my cart =================
-
-// MyCartModel myCartModelFromJson(String str) =>
-//     MyCartModel.fromJson(json.decode(str));
-
-// String myCartModelToJson(MyCartModel data) => json.encode(data.toJson());
-
-// class MyCartModel {
-//   int cartId;
-//   double totalPrice;
-//   List<Item> items;
-
-//   MyCartModel({
-//     required this.cartId,
-//     required this.totalPrice,
-//     required this.items,
-//   });
-
-//   factory MyCartModel.fromJson(Map<String, dynamic> json) => MyCartModel(
-//     cartId: json["cart_id"],
-//     totalPrice: json["total_price"].toDouble(),
-//     items: List<Item>.from(json["items"].map((x) => Item.fromJson(x))),
-//   );
-
-//   Map<String, dynamic> toJson() => {
-//     "cart_id": cartId,
-//     "total_price": totalPrice,
-//     "items": List<dynamic>.from(items.map((x) => x.toJson())),
-//   };
-// }
-
-// class Item {
-//   int productId;
-//   String name;
-//   int qty;
-//   int stock;
-//   String price;
-//   double totalPrice;
-//   List<String> images;
-
-//   Item({
-//     required this.productId,
-//     required this.name,
-//     required this.qty,
-//     required this.stock,
-//     required this.price,
-//     required this.totalPrice,
-//     required this.images,
-//   });
-
-//   factory Item.fromJson(Map<String, dynamic> json) => Item(
-//     productId: json["product_id"],
-//     name: json["name"],
-//     qty: json["qty"],
-//     stock: json["stock"],
-//     price: json["price"].toString(),
-//     totalPrice: json["total_price"].toDouble(),
-//     images: List<String>.from(json["images"].map((x) => x)),
-//   );
-
-//   Map<String, dynamic> toJson() => {
-//     "product_id": productId,
-//     "name": name,
-//     "qty": qty,
-//     "stock": stock,
-//     "price": price,
-//     "total_price": totalPrice,
-//     "images": List<dynamic>.from(images.map((x) => x)),
-//   };
-// }
 
 MyCartModel myCartModelFromJson(String str) =>
     MyCartModel.fromJson(json.decode(str));

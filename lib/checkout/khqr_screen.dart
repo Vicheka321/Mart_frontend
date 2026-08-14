@@ -79,7 +79,7 @@ class _KhqrScreenState extends State<KhqrScreen>
 
   // ── Polling every 2 s ──────────────────────
   void _startPolling() {
-    _pollTimer = Timer.periodic(const Duration(seconds: 10), (_) => _check());
+    _pollTimer = Timer.periodic(const Duration(seconds: 2), (_) => _check());
   }
 
   Future<void> _check() async {

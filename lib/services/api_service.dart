@@ -18,8 +18,8 @@ import '../models/my_orders_model.dart';
 import '../models/profile_model.dart';
 
 class ApiService {
-  // final String baseUrl = 'https://glutton-heat-trifle.ngrok-free.dev/api';
-  final String baseUrl = 'https://daritamart.site/api';
+  final String baseUrl = 'https://glutton-heat-trifle.ngrok-free.dev/api';
+  // final String baseUrl = 'https://daritamart.site/api';
   // final String baseUrl = 'http://10.0.2.2:8000/api';
 
   // ==============Products=================
@@ -1346,5 +1346,66 @@ class ApiService {
     }
 
     throw Exception(data['message'] ?? 'Unable to calculate delivery fee');
+  }
+
+  Future<Map<String, dynamic>> submitReview({
+    required int productId,
+    required int orderId,
+    required int rating,
+    String? review,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/products/$productId/reviews'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'order_id': orderId,
+        'rating': rating,
+        'review': review,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return data;
+    }
+
+    throw Exception(data['message'] ?? 'Failed to submit review');
+  }
+
+  Future<Map<String, dynamic>> updateReview({
+    required int productId,
+    required int reviewId,
+    required int rating,
+    String? review,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final token = prefs.getString("token");
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/products/$productId/reviews/$reviewId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'rating': rating, 'review': review}),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return Map<String, dynamic>.from(data);
+    }
+
+    throw Exception(data['message'] ?? 'Failed to update review');
   }
 }

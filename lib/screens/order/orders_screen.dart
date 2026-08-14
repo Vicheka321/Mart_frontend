@@ -1129,6 +1129,484 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
     super.dispose();
   }
 
+  Future<void> _showReviewDialog() async {
+    final c = context.colors;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: c.cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: c.accentLight,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.rate_review_outlined, color: c.accent),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Review your order',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: c.text1,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Your order has been completed. '
+            'Would you like to review your products?',
+            style: TextStyle(fontSize: 14, height: 1.5, color: c.text2),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: Text(
+                'Later',
+                style: TextStyle(color: c.text3, fontWeight: FontWeight.w600),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                _showProductReviewSelector();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: c.accent,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Review Now',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showProductReviewSelector() {
+    final c = context.colors;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return Container(
+          decoration: BoxDecoration(
+            color: c.cardBg,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 42,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: c.border,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Text(
+                    'Review your products',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: c.text1,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    'Choose a product to leave a review.',
+                    style: TextStyle(fontSize: 13, color: c.text3),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  ...widget.order.items.map((item) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _ReviewProductTile(
+                        item: item,
+                        colors: c,
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          _showReviewForm(item);
+                        },
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showReviewForm(Item item) async {
+    final c = context.colors;
+
+    // ==========================================================
+    // EDIT MODE
+    // ==========================================================
+
+    final isEdit = item.review != null;
+
+    int selectedRating = item.review?.rating ?? 5;
+
+    bool isSubmitting = false;
+
+    final reviewController = TextEditingController(
+      text: item.review?.review ?? '',
+    );
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              decoration: BoxDecoration(
+                color: c.cardBg,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
+              ),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ==================================================
+                    // HANDLE
+                    // ==================================================
+                    Center(
+                      child: Container(
+                        width: 42,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: c.border,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ==================================================
+                    // TITLE
+                    // ==================================================
+                    Text(
+                      isEdit ? 'Edit your review' : 'Write a review',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: c.text1,
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // ==================================================
+                    // PRODUCT
+                    // ==================================================
+                    Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: c.border.withOpacity(.15),
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              item.image,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) {
+                                return Icon(
+                                  Icons.image_outlined,
+                                  color: c.text3,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        Expanded(
+                          child: Text(
+                            item.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: c.text1,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 22),
+
+                    // ==================================================
+                    // RATING
+                    // ==================================================
+                    Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(5, (index) {
+                          final star = index + 1;
+
+                          return GestureDetector(
+                            onTap: isSubmitting
+                                ? null
+                                : () {
+                                    HapticFeedback.selectionClick();
+
+                                    setModalState(() {
+                                      selectedRating = star;
+                                    });
+                                  },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                              child: Icon(
+                                star <= selectedRating
+                                    ? Icons.star_rounded
+                                    : Icons.star_border_rounded,
+                                size: 38,
+                                color: star <= selectedRating
+                                    ? const Color(0xFFFFB800)
+                                    : c.text3,
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Center(
+                      child: Text(
+                        '$selectedRating / 5',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: c.text2,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    // ==================================================
+                    // REVIEW TEXT
+                    // ==================================================
+                    TextField(
+                      controller: reviewController,
+                      enabled: !isSubmitting,
+                      maxLines: 4,
+                      maxLength: 2000,
+                      textInputAction: TextInputAction.newline,
+                      decoration: InputDecoration(
+                        hintText: 'Write your review...',
+                        hintStyle: TextStyle(color: c.text3, fontSize: 13),
+                        filled: true,
+                        fillColor: c.surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.all(16),
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // ==================================================
+                    // SUBMIT / UPDATE
+                    // ==================================================
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isSubmitting
+                            ? null
+                            : () async {
+                                setModalState(() {
+                                  isSubmitting = true;
+                                });
+
+                                final productId = item.productId ?? 0;
+
+                                final orderId = widget.order.id;
+
+                                final reviewText =
+                                    reviewController.text.trim().isEmpty
+                                    ? null
+                                    : reviewController.text.trim();
+
+                                try {
+                                  // ======================================
+                                  // EDIT REVIEW
+                                  // ======================================
+
+                                  if (isEdit) {
+                                    await ApiService().updateReview(
+                                      productId: productId,
+                                      reviewId: item.review!.id,
+                                      rating: selectedRating,
+                                      review: reviewText,
+                                    );
+                                  }
+                                  // ======================================
+                                  // CREATE REVIEW
+                                  // ======================================
+                                  else {
+                                    await ApiService().submitReview(
+                                      productId: productId,
+                                      orderId: orderId,
+                                      rating: selectedRating,
+                                      review: reviewText,
+                                    );
+                                  }
+
+                                  if (!context.mounted) {
+                                    return;
+                                  }
+
+                                  Navigator.pop(sheetContext);
+
+                                  ScaffoldMessenger.of(
+                                    this.context,
+                                  ).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        isEdit
+                                            ? 'Review updated successfully'
+                                            : 'Review submitted successfully',
+                                      ),
+                                      backgroundColor: Colors.blue,
+                                    ),
+                                  );
+                                } catch (e) {
+                                  setModalState(() {
+                                    isSubmitting = false;
+                                  });
+
+                                  if (!context.mounted) {
+                                    return;
+                                  }
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        e.toString().replaceFirst(
+                                          'Exception: ',
+                                          '',
+                                        ),
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: c.accent,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: c.accent.withOpacity(.6),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: isSubmitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                            : Text(
+                                isEdit ? 'Update Review' : 'Submit Review',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    reviewController.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -1254,7 +1732,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
                 const SizedBox(height: 24),
 
                 // CTA
-                _DetailActions(order: order, colors: c),
+                _DetailActions(
+                  order: order,
+                  colors: c,
+                  onReview: _showReviewDialog,
+                ),
               ],
             ),
           ),
@@ -1265,6 +1747,84 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
 }
 
 // ─── Section wrapper ──────────────────────────────────────────
+
+class _ReviewProductTile extends StatelessWidget {
+  final dynamic item;
+  final AppColors colors;
+  final VoidCallback onTap;
+
+  const _ReviewProductTile({
+    required this.item,
+    required this.colors,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.border.withOpacity(.15)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Image.network(
+                item.image,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) {
+                  return Icon(Icons.image_outlined, color: colors.text3);
+                },
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: colors.text1,
+                    ),
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  Text(
+                    'Qty: ${item.qty}',
+                    style: TextStyle(fontSize: 11, color: colors.text3),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 8),
+
+            Icon(Icons.chevron_right_rounded, color: colors.text3),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _Section extends StatelessWidget {
   final String title;
@@ -1783,6 +2343,7 @@ class _PriceSummary extends StatelessWidget {
     final promoDiscount = double.tryParse(order.promotionDiscount) ?? 0.0;
     final couponDiscount = double.tryParse(order.couponDiscount) ?? 0.0;
     final grandTotal = double.tryParse(order.total) ?? subtotal;
+    final deliveryFee = double.tryParse(order.deliveryFee) ?? 0.0;
 
     return Column(
       children: [
@@ -1804,6 +2365,12 @@ class _PriceSummary extends StatelessWidget {
             isDiscount: true,
           ),
         ],
+        _row(
+          c,
+          'delivery_fee'.tr,
+          deliveryFee > 0 ? '\$${deliveryFee.toStringAsFixed(2)}' : 'FREE',
+        ),
+
         Divider(height: 16, color: c.border.withOpacity(0.15)),
         _row(c, 'total'.tr, '\$${grandTotal.toStringAsFixed(2)}', bold: true),
       ],
@@ -1816,7 +2383,13 @@ class _PriceSummary extends StatelessWidget {
 class _DetailActions extends StatelessWidget {
   final Order order;
   final AppColors colors;
-  const _DetailActions({required this.order, required this.colors});
+  final VoidCallback onReview;
+
+  const _DetailActions({
+    required this.order,
+    required this.colors,
+    required this.onReview,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1916,21 +2489,19 @@ class _DetailActions extends StatelessWidget {
               ),
             ),
           ),
-        if (status == 'completed' || status == 'delivered')
+
+        if (status == 'completed' || status == 'delivered') ...[
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () {
                 HapticFeedback.mediumImpact();
-                Navigator.pop(context);
+                onReview();
               },
-              icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: Text(
-                'buy_again'.tr,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
+              icon: const Icon(Icons.star_outline_rounded, size: 18),
+              label: const Text(
+                'Review Products',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: c.accent,
@@ -1943,6 +2514,35 @@ class _DetailActions extends StatelessWidget {
               ),
             ),
           ),
+
+          const SizedBox(height: 10),
+
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                Navigator.pop(context);
+              },
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: Text(
+                'buy_again'.tr,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: c.accent,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                side: BorderSide(color: c.accent.withOpacity(.25)),
+              ),
+            ),
+          ),
+        ],
         if (status == 'shipping')
           SizedBox(
             width: double.infinity,

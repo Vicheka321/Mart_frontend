@@ -860,10 +860,6 @@ class _ProductTileState extends State<_ProductTile>
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// BRANDS TAB  — identical mixin usage
-// ═══════════════════════════════════════════════════════════════
-
 class _BrandsTab extends StatefulWidget {
   final List<brand_model.BrandsWithProductsModel> brands;
   const _BrandsTab({required this.brands});
